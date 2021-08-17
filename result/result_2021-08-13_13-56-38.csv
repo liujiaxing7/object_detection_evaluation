@@ -1,0 +1,11 @@
+
+mAP,recall,F1
+0.787,0.781,0.838
+
+class_names ,person,person_dummy,person_model,escalator_handrails,escalator,
+count       ,869,0,0,0,0,
+AP          ,0.787,0,0,0,0,
+F1          ,0.838,0,0,0,0,
+Prediction  ,0.903,0,0,0,0,
+recall      ,0.781,0,0,0,0,
+score       ,0.344,0,0,0,0,
