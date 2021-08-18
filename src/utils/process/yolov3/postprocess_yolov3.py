@@ -239,3 +239,16 @@ def post_processing(img, conf_thresh, nms_thresh, output):
     # print('-----------------------------------')
 
     return bboxes_batch
+def get_prediction_yolov3(boxes,oriX,oriY):
+    box_es = []
+    labels = []
+    scores = []
+    for result in boxes:
+        if len(result) > 0:
+            result = result.tolist()
+            for i in result:
+                box_es.append([i[0] * oriX, i[1] * oriY, i[2] * oriX, i[3] * oriY])
+                labels.append(i[6])
+                scores.append(i[4])
+    prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
+    return prediction

@@ -13,7 +13,7 @@ class VOCDataset(XML):
     # class_names = ('person', 'escalator', 'escalator_handrails', 'person_dummy', 'escalator_model', 'escalator_handrails_model')
     # class_names = ['person','person_dummy','person_model','escalator_handrails','escalator']
 
-    def __init__(self, data_dir,classes, image_sets_file, target, transform=None, target_transform=None, keep_difficult=False, train=False):
+    def __init__(self, data_dir,classes, target, transform=None, target_transform=None, keep_difficult=False, train=False):
         """Dataset for VOC data.
         Args:
             data_dir: the root of the VOC2007 or VOC2012 dataset, the directory contains the following sub-directories:
@@ -29,12 +29,16 @@ class VOCDataset(XML):
     def get_file(self, index):
         image_id = self.file_list[index]
         image_file = os.path.join(self.data_dir, "JPEGImages", "%s.png" % image_id)
+        if not os.path.isfile(image_file):
+            image_file = os.path.join(self.data_dir, "JPEGImages", "%s.jpg" % image_id)
         annotation_file = os.path.join(self.data_dir, "Annotations", "%s.xml" % image_id)
         return image_file, annotation_file
 
     def get_file_darknet(self, index):
         image_id = self.file_list[index]
-        image_file = os.path.join(self.data_dir, "JPEGImages", "%s.jpg" % image_id)
+        image_file = os.path.join(self.data_dir, "JPEGImages", "%s.png" % image_id)
+        if not os.path.isfile(image_file):
+            image_file = os.path.join(self.data_dir, "JPEGImages", "%s.jpg" % image_id)
         annotation_file = os.path.join(self.data_dir, "labels", "%s.txt" % image_id)
         return image_file, annotation_file
 
@@ -43,3 +47,4 @@ class VOCDataset(XML):
 
     def get_file_json(self):
         json_file=os.path.join(self.data_dir,"train.json")
+        return json_file

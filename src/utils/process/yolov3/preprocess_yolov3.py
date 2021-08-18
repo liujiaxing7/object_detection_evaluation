@@ -10,10 +10,14 @@
 
 import numpy as np
 import cv2
+IMAGE_SIZE_YOLOV3=416
 
 def pre_process(inp_img):
+    gray = inp_img[:, :, 0]
+    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
 
-    img = np.half(inp_img)
+    img = np.half(image)
     img /= 255.0
     if img.shape[-1] == 3:
         img = np.expand_dims(img, 0)

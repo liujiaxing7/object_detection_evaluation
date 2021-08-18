@@ -192,3 +192,18 @@ def PostProcessor_YOLOV5(x):
     pred = non_max_suppression(output, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
+def get_prediction_yolov5(boxes,oriX,oriY):
+    box_es = []
+    labels = []
+    scores = []
+    for result in boxes:
+        if len(result) > 0:
+            result = result.tolist()
+            result = [r for r in result if r[4] > THRESHOLD_YOLOV5]
+            for i in result:
+                box_es.append([i[0]/IMAGE_SIZE_YOLOV5 * oriX, i[1]/IMAGE_SIZE_YOLOV5 * oriY,
+                               i[2]/IMAGE_SIZE_YOLOV5 * oriX, i[3]/IMAGE_SIZE_YOLOV5 * oriY])
+                labels.append(i[5])
+                scores.append(i[4])
+    prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
+    return prediction

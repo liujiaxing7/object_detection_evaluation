@@ -60,10 +60,10 @@ def convert_annotation(image_id,file_path,classes):
 
 def voctodark(file_path,classes):
     create_txt(file_path)
-    image_ids = open(file_path+'/ImageSets/Main/trainval.txt').read().strip().split()
-    list_file = open(file_path+'/trainval.txt', 'w')
-
-    for image_id in image_ids:
-        # convert_annotation(image_id,file_path,classes)
-        list_file.write(file_path+'/images/%s.jpg\n' % (image_id))
-    list_file.close()
+    # image_ids = open(file_path+'/ImageSets/Main/trainval.txt').read().strip().split()
+    # list_file = open(file_path+'/trainval.txt', 'w')
+    #
+    # for image_id in image_ids:
+    #     # convert_annotation(image_id,file_path,classes)
+    #     list_file.write(file_path+'/images/%s.jpg\n' % (image_id))
+    # list_file.close()

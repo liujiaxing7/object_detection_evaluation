@@ -32,12 +32,12 @@ def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labe
 
     # fpr, tpr, thresholds = metrics.roc_curve(gt_labels, pred_labels, y_type == "multiclass", pos_label=16)
     class_count = get_box_num(gt_labels, class_num)
-    prec, rec, score = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, gt_difficults, iou_thresh=iou_thresh)
+    prec, rec, score,tp,fp,fn = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, gt_difficults, iou_thresh=iou_thresh)
 
     ap = voc_ap(prec, rec, use_07_metric=use_07_metric)
     precision, recalls, f1, score = voc_F1(prec, rec, score, threshold)
 
-    return {'ap': ap, 'prec':precision, 'rec':recalls, 'num': class_count, 'f1': f1, 'threshold':score}
+    return {'ap': ap, 'prec':precision, 'rec':recalls, 'num': class_count, 'f1': f1, 'threshold':score,'tp':tp,'fp':fp,'fn':fn}
 
 def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,
                          gt_difficults=None, iou_thresh=0.5):
@@ -199,7 +199,9 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
     prec = [None] * n_fg_class
     rec = [None] * n_fg_class
     score_sort = [None] * n_fg_class
-
+    TP_all=0
+    FP_all=0
+    FN_all=0
     for l in range(n_fg_class):
         score_l = np.array(score[l])
         match_l = np.array(match[l], dtype=np.int8)
@@ -211,13 +213,18 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         tp = np.cumsum(match_l == 1)
         fp = np.cumsum(match_l == 0)
 
+        TP_all+=nan_str(tp)
+        FP_all+=nan_str(fp)
+
         # If an element of fp + tp is 0,
         # the corresponding element of prec[l] is nan.
         prec[l] = tp / (fp + tp)
         # If n_pos[l] is 0, rec[l] is None.
         if class_count[l] > 0:
             rec[l] = tp / class_count[l]
-    return prec, rec, score_sort
+            FN_all+=class_count[l]
+    FN_all=FN_all-TP_all
+    return prec, rec, score_sort,TP_all,FP_all,FN_all
 
 def nan_str(p):
     if len(p.tolist())==0:

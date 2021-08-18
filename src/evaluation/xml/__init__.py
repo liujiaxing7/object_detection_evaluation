@@ -4,9 +4,9 @@ from datetime import datetime
 
 import numpy as np
 from pycocotools.coco import COCO
-
+from src.database.db import DBManager
 from .eval_detection import eval_detection_voc
-BATCH_SIZE=200
+BATCH_SIZE=10
 def nan_str(p, space=True):
     if np.isnan(p):
         return "{:<5}".format(str(p)) if space else 0
@@ -15,8 +15,9 @@ def nan_str(p, space=True):
 
 def print_csv(result, class_names):
     prefix, flag = "", ','
-    result_str = "\nmAP,recall,F1\n"
-    result_str += "{:.3f},{:.3f},{:.3f}\n".format(result["map"], np.nanmean(result['rec']), result['F1'])
+    result_str = "\nmAP,recall,F1,Prediction,tp,fp,fn\n"
+    result_str += "{:.3f},{:.3f},{:.3f},{:.3f},{:d},{:d},{:d}\n".format(result["map"], np.nanmean(result['rec']), result['F1']
+                                                                        ,np.nanmean(result['prec']),result['tp'],result['fp'],result['fn'])
 
     table_width = 12
     head_str = "{}{}".format("class_names".ljust(table_width), flag)
@@ -95,8 +96,8 @@ def print_log(result, class_names):
 
     return result_str, metrics
 
-
 def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
+
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -150,17 +151,16 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
     print(result_str)
 
     if iteration is not None:
-        result_path = os.path.join(output_dir, 'result/result_{:07d}.txt'.format(iteration))
+        result_path = output_dir+'/result_{:07d}.txt'.format(iteration)
     else:
-        result_path = os.path.join(output_dir, 'result/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
+    return result_csv
 
-
-    return dict(metrics=metrics), result["threshold"]
-def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
+def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -214,15 +214,15 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
     print(result_str)
 
     if iteration is not None:
-        result_path = os.path.join(output_dir, 'result/result_{:07d}.txt'.format(iteration))
+        result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = os.path.join(output_dir, 'result/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+        result_path = os.path.join(output_dir, '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return dict(metrics=metrics), result["threshold"]
+    return result_csv
 
 def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
@@ -280,12 +280,12 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     print(result_str)
 
     if iteration is not None:
-        result_path = os.path.join(output_dir, 'result/result_{:07d}.txt'.format(iteration))
+        result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = os.path.join(output_dir, 'result/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+        result_path = os.path.join(output_dir, '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return dict(metrics=metrics), result["threshold"]
+    return result_csv
