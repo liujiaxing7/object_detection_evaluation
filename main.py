@@ -29,7 +29,7 @@ class Main_Dialog(QMainWindow, Main_UI):
 
 
         # Default values
-        self.dir_annotations_gt = None
+        self.dir_model_gt = None
         self.dir_images_gt = None
         self.filepath_classes_gt = None
         self.dir_dets = None
@@ -113,9 +113,9 @@ class Main_Dialog(QMainWindow, Main_UI):
         file_path=directory[0]
         if os.path.isfile(file_path):
             self.txb_gt_dir.setText(file_path)
-            self.dir_annotations_gt = file_path
+            self.dir_model_gt = file_path
         else:
-            self.dir_annotations_gt = None
+            self.dir_model_gt = None
             self.txb_gt_dir.setText('')
 
     def btn_gt_classes_clicked(self):
@@ -212,7 +212,7 @@ class Main_Dialog(QMainWindow, Main_UI):
         if self.ret=='':
             print("no format select")
             exit(-1)
-        evaluation = onnx.ONNX(self.dir_annotations_gt, 64, self.dir_images_gt, self.filepath_classes_gt,self.ret,self.process_method)
+        evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt,self.ret,self.process_method)
         self.result_csv=evaluation.evaluate()
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
