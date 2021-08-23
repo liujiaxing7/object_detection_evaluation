@@ -40,10 +40,17 @@ class Ui_Dialog(object):
         # 设置表格头
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
-        self.model.setHeaderData(2, QtCore.Qt.Horizontal, 'Map')
-        self.model.setHeaderData(3, QtCore.Qt.Horizontal, 'Recall')
-        self.model.setHeaderData(4, QtCore.Qt.Horizontal, 'Precision')
-        self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'F1')
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
+        self.model.setHeaderData(3, QtCore.Qt.Horizontal, 'class')
+        self.model.setHeaderData(4, QtCore.Qt.Horizontal, 'TP')
+        self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'FP')
+        self.model.setHeaderData(6, QtCore.Qt.Horizontal, 'FN')
+        self.model.setHeaderData(7, QtCore.Qt.Horizontal, 'F1')
+        self.model.setHeaderData(8, QtCore.Qt.Horizontal, 'ap')
+        self.model.setHeaderData(9, QtCore.Qt.Horizontal, 'map')
+        self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'precision')
+        self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'recall')
+        self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
     # def center(self):  # 定义一个函数使得窗口居中显示
     #     # 获取屏幕坐标系
     #     screen = QDesktopWidget().screenGeometry()

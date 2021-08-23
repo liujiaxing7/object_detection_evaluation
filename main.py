@@ -1,11 +1,14 @@
 import os
 import sys
+
+import numpy as np
+
 import onnx
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 from PyQt5 import QtCore, QtGui
 from src.ui.main_ui import Ui_Dialog as Main_UI
-from src.ui import db_ui
+from src.ui import db_ui, visual_ui, visual_backend
 from src.datasets.draw import draw_all
 import matplotlib
 matplotlib.use("Qt5Agg")
@@ -25,10 +28,6 @@ class Main_Dialog(QMainWindow, Main_UI):
         self.current_directory = os.path.dirname(os.path.realpath(__file__))
         # Define error msg dialog
         self.msgBox = QMessageBox()
-        self.gridlayout = QtWidgets.QGridLayout(self.groupBox)
-        self.groupBox.setVisible(False)
-
-
 
         # Default values
         self.dir_model_gt = None
@@ -182,30 +181,47 @@ class Main_Dialog(QMainWindow, Main_UI):
         else:
             self.dir_save_results = None
 
-    def btn_draw_clicked(self):
-       self.process.setVisible(False)
-       self.groupBox.setVisible(True)
-       plt= DBManager().draw()
-       self.gridlayout.addWidget(plt, 0, 2)
+    # def btn_draw_clicked(self):
+    #    self.process.setVisible(False)
+    #    self.groupBox.setVisible(True)
+    #    plt= DBManager().draw()
+    #    self.gridlayout.addWidget(plt, 0, 2)
 
     def btn_save_clicked(self):
         if self.result_csv is None:
             print("error")
         else:
+            DB=DBManager()
             result_csv = self.result_csv.split("\n")
-            result_csv = result_csv[2].split(",")
-            map = float(result_csv[0])
-            recall = float(result_csv[1])
-            F1_ = float(result_csv[2])
-            Precision = float(result_csv[3])
-            tp = float(result_csv[4])
-            fp = float(result_csv[5])
-            fn = float(result_csv[6])
-            model_name=os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
+            #each class
+            class_name=result_csv[4].split(",")
+            model_name = os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
+            dataset_name = os.path.splitext(os.path.split(self.dir_images_gt)[1])[0]
+            AP_class,F1_class,prec_class,rec_class,threshold_class,TP_class,FP_class,FN_class=result_csv[6].split(","),result_csv[7].split(","),\
+                                                                   result_csv[8].split(","),result_csv[9].split(","),result_csv[10].split(",")\
+                ,result_csv[11].split(","),result_csv[12].split(","),result_csv[13].split(",")
 
-            dataset_name=os.path.splitext(os.split(self.dir_images_gt)[1])[0]
+            TP_all,FP_all,FN_all=0,0,0
 
-            DBManager().add_item(model_name,dataset_name, map, recall, Precision, F1_,tp,fp,fn)
+            #id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
+            for i,name_cl in enumerate(class_name):
+                if name_cl=='class_names 'or name_cl=='':
+                    continue
+                else:
+                    map_cl=0
+                    ap_cl,tp_cl,fp_cl,fn_cl,F1_cl,prec_cl,rec_cl,thre_cl=AP_class[i],TP_class[i],FP_class[i],\
+                                                                         FN_class[i],F1_class[i],prec_class[i],rec_class[i],threshold_class[i]
+                    TP_all+=int(tp_cl)
+                    FP_all+=int(fp_cl)
+                    FN_all+=int(fn_cl)
+
+                DB.add_item(model_name, dataset_name,name_cl,tp_cl,fp_cl,fn_cl,F1_cl,ap_cl,map_cl,prec_cl,rec_cl,thre_cl)
+
+            #save all classes metric
+            result_metric = result_csv[2].split(",")
+            map,recall,F1_,Precision = float(result_metric[0]),float(result_metric[1]),float(result_metric[2]),float(result_metric[3])
+
+            DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
     def btn_db(self):
         self.Dialog.hide()
 
@@ -218,6 +234,16 @@ class Main_Dialog(QMainWindow, Main_UI):
         # dialog1.show()
         # dialog1.exec_()
         self.Dialog.show()
+    def btn_visual(self):
+        # self.Dialog.hide()
+
+        a = visual_backend.Main_Dialog()
+        # personalPage.center()
+        a.Dialog.show()
+        # a.Dialog.exec_()
+        # dialog1.show()
+        # dialog1.exec_()
+        # self.Dialog.show()
     def btn_run_clicked(self):
         if self.rad_gt_format_coco_json.isChecked():
             self.ret = 'coco'
@@ -231,8 +257,6 @@ class Main_Dialog(QMainWindow, Main_UI):
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
         self.result_csv = evaluation.evaluate()
-
-
 
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
