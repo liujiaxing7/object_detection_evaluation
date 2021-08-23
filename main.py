@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 from PyQt5 import QtCore, QtGui
 from src.ui.main_ui import Ui_Dialog as Main_UI
+from src.ui import db_ui
 from src.datasets.draw import draw_all
 import matplotlib
 matplotlib.use("Qt5Agg")
@@ -26,6 +27,7 @@ class Main_Dialog(QMainWindow, Main_UI):
         self.msgBox = QMessageBox()
         self.gridlayout = QtWidgets.QGridLayout(self.groupBox)
         self.groupBox.setVisible(False)
+
 
 
         # Default values
@@ -199,24 +201,43 @@ class Main_Dialog(QMainWindow, Main_UI):
             tp = float(result_csv[4])
             fp = float(result_csv[5])
             fn = float(result_csv[6])
+            model_name=os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
 
-            DBManager().add_item(self.process_method, map, recall, Precision, F1_,tp,fp,fn)
+            dataset_name=os.path.splitext(os.split(self.dir_images_gt)[1])[0]
 
+            DBManager().add_item(model_name,dataset_name, map, recall, Precision, F1_,tp,fp,fn)
+    def btn_db(self):
+        self.Dialog.hide()
+
+        dialog1 = QtWidgets.QDialog()
+        personalPage = db_ui.Ui_Dialog()
+        personalPage.setupUi(dialog1)
+        # personalPage.center()
+        dialog1.show()
+        dialog1.exec_()
+        # dialog1.show()
+        # dialog1.exec_()
+        self.Dialog.show()
     def btn_run_clicked(self):
         if self.rad_gt_format_coco_json.isChecked():
-            self.ret='coco'
+            self.ret = 'coco'
         elif self.rad_gt_format_pascalvoc_xml.isChecked() or self.rad_gt_format_labelme_xml.isChecked():
-            self.ret='voc'
+            self.ret = 'voc'
         elif self.rad_gt_format_yolo_text.isChecked():
-            self.ret='darknet'
-        if self.ret=='':
+            self.ret = 'darknet'
+        if self.ret == '':
             print("no format select")
             exit(-1)
-        evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt,self.ret,self.process_method)
-        self.result_csv=evaluation.evaluate()
+        evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
+                               self.process_method)
+        self.result_csv = evaluation.evaluate()
+
+
+
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
 
     ui = Main_Dialog()
     ui.show()
+
     sys.exit(app.exec_())
