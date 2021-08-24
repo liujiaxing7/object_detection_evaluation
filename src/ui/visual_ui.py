@@ -13,24 +13,14 @@ from PyQt5 import QtGui,QtCore,QtWidgets,QtSql
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import *
 
-
-from src.database.db import DBManager
-
 import os
 import sys
-
-import numpy as np
 
 import onnx
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
 from PyQt5 import QtCore, QtGui
-# from src.ui.visual_ui import Ui_Dialog as Main_UI
-# from src.ui import db_ui, visual_ui, visual_backend
-from src.datasets.draw import draw_all
 import matplotlib
-
-from src.ui import db_ui, visual_backend
 
 matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
@@ -41,11 +31,11 @@ class Stream(QtCore.QObject):
 
     def write(self, text):
         self.newText.emit(str(text))
-class Ui_Dialog(QTabWidget):
-    def __init__(self,parent=None):
-        super(Ui_Dialog, self).__init__(parent)
-        # super(Ui_Dialog, self).__init__()
 
+class Ui_Window(QTabWidget):
+    def __init__(self,parent=None):
+        super(Ui_Window, self).__init__(parent)
+        # super(Ui_Dialog, self).__init__()
 
         self.current_directory = os.path.dirname(os.path.realpath(__file__))
         # Define error msg dialog
@@ -68,14 +58,13 @@ class Ui_Dialog(QTabWidget):
         self.tab1 = QtWidgets.QWidget()
         self.tab2 = QtWidgets.QWidget()
         self.tab3 = QtWidgets.QWidget()
-        self.addTab(self.tab1, "Tab 1")
-        self.addTab(self.tab2, "Tab 2")
-        self.addTab(self.tab3, "Tab 2")
+        self.addTab(self.tab1, "Detection Metrics")
+        self.addTab(self.tab2, "Visual Comparsion")
+        self.addTab(self.tab3, "Show Database")
         self.tab1UI()
         self.tab2UI()
         self.tab3UI()
         self.setWindowTitle("Object Detection Metrics")
-
 
     def tab1UI(self):
         layout = QFormLayout()
@@ -200,8 +189,8 @@ class Ui_Dialog(QTabWidget):
         btn_save.clicked.connect(self.btn_save_clicked)
         layout.addRow(h5)
 
-        text_edit=QTextEdit()
-        layout.addRow(text_edit)
+        self.process=QTextEdit()
+        layout.addRow(self.process)
 
         h6=QHBoxLayout()
         self.btn_run=QPushButton("RUN")
@@ -211,8 +200,9 @@ class Ui_Dialog(QTabWidget):
 
 
         self.tab1.setLayout(layout)
+
     def tab3UI(self):
-        layout=QFormLayout()
+        layout=QGridLayout()
         self.table_widget = QtWidgets.QTableView()
         self.table_widget.setGeometry(0, 0, 1214, 950)
         db_text = os.getcwd() + '/src/database/core'
@@ -245,6 +235,7 @@ class Ui_Dialog(QTabWidget):
         self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
         layout.addWidget(self.table_widget)
         self.tab3.setLayout(layout)
+
     def onUpdateText(self, text):
         """Write console output to text widget."""
         cursor = self.process.textCursor()
@@ -423,28 +414,7 @@ class Ui_Dialog(QTabWidget):
             map,recall,F1_,Precision = float(result_metric[0]),float(result_metric[1]),float(result_metric[2]),float(result_metric[3])
 
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
-    def btn_db(self):
-        self.Dialog.hide()
 
-        dialog1 = QtWidgets.QDialog()
-        personalPage = db_ui.Ui_Dialog()
-        personalPage.setupUi(dialog1)
-        # personalPage.center()
-        dialog1.show()
-        dialog1.exec_()
-        # dialog1.show()
-        # dialog1.exec_()
-        self.Dialog.show()
-    def btn_visual(self):
-        # self.Dialog.hide()
-
-        a = visual_backend.Main_Dialog()
-        # personalPage.center()
-        a.Dialog.show()
-        # a.Dialog.exec_()
-        # dialog1.show()
-        # dialog1.exec_()
-        # self.Dialog.show()
     def btn_run_clicked(self):
         if self.rad_gt_format_coco_json.isChecked():
             self.ret = 'coco'
@@ -459,10 +429,7 @@ class Ui_Dialog(QTabWidget):
                                self.process_method)
         self.result_csv = evaluation.evaluate()
 
-if __name__=='__main__':
-    app = QtWidgets.QApplication(sys.argv)
-
-    ui = Ui_Dialog()
-    ui.show()
-
-    sys.exit(app.exec_())
+    def btn_draw_by_model(self):
+        pass
+    def btn_draw_by_data(self):
+        pass

@@ -2,14 +2,12 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 import matplotlib
 matplotlib.use("Qt5Agg")
-from src.ui.visual_ui import Ui_Dialog
-
-
+from src.ui.visual_ui import Ui_Window
 
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
 
-    ui = Ui_Dialog()
+    ui = Ui_Window()
     ui.show()
 
     sys.exit(app.exec_())
