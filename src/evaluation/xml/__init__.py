@@ -12,12 +12,17 @@ def nan_str(p, space=True):
         return "{:<5}".format(str(p)) if space else 0
     else:
         return "{:.3f}".format(p)
+def nan_str_int(p, space=True):
+    if np.isnan(p):
+        return "{:<5}".format(str(p)) if space else 0
+    else:
+        return "{:d}".format(p)
 
 def print_csv(result, class_names):
     prefix, flag = "", ','
-    result_str = "\nmAP,recall,F1,Prediction,tp,fp,fn\n"
-    result_str += "{:.3f},{:.3f},{:.3f},{:.3f},{:d},{:d},{:d}\n".format(result["map"], np.nanmean(result['rec']), result['F1']
-                                                                        ,np.nanmean(result['prec']),result['tp'],result['fp'],result['fn'])
+    result_str = "\nmAP,recall,F1,Prediction\n"
+    result_str += "{:.3f},{:.3f},{:.3f},{:.3f}\n".format(result["map"], np.nanmean(result['rec']), result['F1']
+                                                                        ,np.nanmean(result['prec']))
 
     table_width = 12
     head_str = "{}{}".format("class_names".ljust(table_width), flag)
@@ -27,6 +32,9 @@ def print_csv(result, class_names):
     recall_str = "{}{}".format("recall".ljust(table_width), flag)
     F1_str = "{}{}".format("F1".ljust(table_width), flag)
     score_str = "{}{}".format("score".ljust(table_width), flag)
+    tp_str = "{}{}".format("TP".ljust(table_width), flag)
+    fp_str = "{}{}".format("FP".ljust(table_width), flag)
+    fn_str = "{}{}".format("FN".ljust(table_width), flag)
 
     metrics = {'mAP': result["map"]}
     for i, ap in enumerate(result["ap"]):
@@ -40,8 +48,11 @@ def print_csv(result, class_names):
         recall_str += "{}{}{}".format(prefix, nan_str(result['rec'][i], False), flag)
         F1_str += "{}{}{}".format(prefix, nan_str(result['f1'][i], False), flag)
         score_str += "{}{}{}".format(prefix, nan_str(result['threshold'][i], False), flag)
+        tp_str += "{}{}{}".format(prefix, nan_str_int(result['tp'][i], False), flag)
+        fp_str += "{}{}{}".format(prefix, nan_str_int(result['fp'][i], False), flag)
+        fn_str += "{}{}{}".format(prefix, nan_str_int(result['fn'][i], False), flag)
 
-    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str, recall_str, score_str)
+    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str, recall_str, score_str,tp_str,fp_str,fn_str)
 
     return result_str, metrics
 

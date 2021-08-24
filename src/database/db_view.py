@@ -18,7 +18,7 @@ class MainUi(QtWidgets.QMainWindow):
         # 设置窗口标题
         self.setWindowTitle("PyQt5查询数据库")
         # 设置窗口大小
-        self.resize(600,400)
+        self.resize(1900,400)
 
         # 创建一个窗口部件
         self.widget = QtWidgets.QWidget()
@@ -44,7 +44,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.b_add_row = QtWidgets.QPushButton("添加一行")
         self.b_delete_row = QtWidgets.QPushButton("删除一行")
         self.b_close = QtWidgets.QPushButton("退出")
-        # self.b_close.clicked.connect(self.close)
+
         # 添加按钮到按钮组中
         self.group_box_layout.addWidget(self.b_create_db)
         self.group_box_layout.addWidget(self.b_view_data)
@@ -55,6 +55,7 @@ class MainUi(QtWidgets.QMainWindow):
         # 设置UI界面的核心部件
         self.setCentralWidget(self.widget)
         self.b_view_data.clicked.connect(self.view_data)
+        self.b_delete_row.clicked.connect(self.del_row_data)
     def view_data(self):
         db_text='core'
 
@@ -69,15 +70,29 @@ class MainUi(QtWidgets.QMainWindow):
         self.table_widget.setModel(self.model)
 
         self.model.setTable('metric') # 设置数据模型的数据表
-        self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
+        # self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
         self.model.select() # 查询所有数据
         # 设置表格头
-        self.model.setHeaderData(0,QtCore.Qt.Horizontal,'ID')
+        self.model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
-        self.model.setHeaderData(2, QtCore.Qt.Horizontal, 'Map')
-        self.model.setHeaderData(3, QtCore.Qt.Horizontal, 'Recall')
-        self.model.setHeaderData(4, QtCore.Qt.Horizontal, 'Precision')
-        self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'F1')
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
+        self.model.setHeaderData(3, QtCore.Qt.Horizontal, 'class')
+        self.model.setHeaderData(4, QtCore.Qt.Horizontal, 'TP')
+        self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'FP')
+        self.model.setHeaderData(6, QtCore.Qt.Horizontal, 'FN')
+        self.model.setHeaderData(7, QtCore.Qt.Horizontal, 'F1')
+        self.model.setHeaderData(8, QtCore.Qt.Horizontal, 'ap')
+        self.model.setHeaderData(9, QtCore.Qt.Horizontal, 'map')
+        self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'precision')
+        self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'recall')
+        self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
+        # 添加一行数据行
+
+    def del_row_data(self):
+        if self.model:
+            self.model.removeRow(self.table_widget.currentIndex().row())
+        else:
+            self.create_db()
 
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)

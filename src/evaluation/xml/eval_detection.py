@@ -20,7 +20,6 @@ def get_box_num1(gt_labels, class_num):
     num = [0, ] * class_num
     for label in gt_labels:
             num[label] += 1
-
     return num
 def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_num,
                        threshold, gt_difficults=None, iou_thresh=0.5, use_07_metric=False):
@@ -198,10 +197,12 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
     n_fg_class = len(class_count)
     prec = [None] * n_fg_class
     rec = [None] * n_fg_class
+
+    tp_cl= [None] * n_fg_class
+    fp_cl= [None] * n_fg_class
+    fn_cl= [None] * n_fg_class
     score_sort = [None] * n_fg_class
-    TP_all=0
-    FP_all=0
-    FN_all=0
+
     for l in range(n_fg_class):
         score_l = np.array(score[l])
         match_l = np.array(match[l], dtype=np.int8)
@@ -213,8 +214,8 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         tp = np.cumsum(match_l == 1)
         fp = np.cumsum(match_l == 0)
 
-        TP_all+=nan_str(tp)
-        FP_all+=nan_str(fp)
+        tp_cl[l]=nan_str(tp)
+        fp_cl[l]=nan_str(fp)
 
         # If an element of fp + tp is 0,
         # the corresponding element of prec[l] is nan.
@@ -222,9 +223,10 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         # If n_pos[l] is 0, rec[l] is None.
         if class_count[l] > 0:
             rec[l] = tp / class_count[l]
-            FN_all+=class_count[l]
-    FN_all=FN_all-TP_all
-    return prec, rec, score_sort,TP_all,FP_all,FN_all
+            fn_cl[l]=class_count[l]-tp_cl[l]
+        else:
+            fn_cl[l]=0
+    return prec, rec, score_sort,tp_cl,fp_cl,fn_cl
 
 def nan_str(p):
     if len(p.tolist())==0:

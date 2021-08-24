@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtSql import QSqlQuery,QSqlDatabase,QSqlQueryModel
 import matplotlib
 matplotlib.use("Qt5Agg")  # 声明使用QT5
@@ -13,19 +15,24 @@ class MyFigure(FigureCanvas):
 class DBManager():
     def __init__(self):
         self.db = QSqlDatabase.addDatabase("QSQLITE") #select database type
-        self.db.setDatabaseName("/home/fandong/Code/object_detection_evaluation/src/database/core.db") # set database name
+        db_path= os.getcwd()+'/src/database/core.db'
+        self.db.setDatabaseName(db_path) # set database name
         self.db.open()  #connect to or create database
         self.query = QSqlQuery() #sql handler
         self.queryModel = QSqlQueryModel()
 
-    def add_item(self,model_name,map,recall,prec,F1,tp,fp,fn):
+#id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
+    def add_item(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
+        class_name = "\"" + class_name + "\""
         id=self.get_max_id()+1
         if self.db.open():
             query = QSqlQuery()
-            query.exec_("create table metric(id int primary key, model_name str ,  Map float ,Recall float ,Precision float ,F1 float,TP int,FP int,FN int )")
+            query.exec_("create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
+                        " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
 
-            query.exec_("insert into metric values("+str(id)+","+model_name+","+str(map)+","+str(recall)+","+str(prec)+","+str(F1)+","+str(tp)+","+str(fp)+","+str(fn)+")")
+            query.exec_("insert into metric values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(tp)+","+str(fp)+","+str(fn)+","+str(F1)+","+str(ap)+","+str(map)+","+str(prec)+","+str(recall)+","+str(thre)+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'
             # query.prepare(insert_sql)
