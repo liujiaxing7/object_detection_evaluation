@@ -36,6 +36,7 @@ class Ui_Window(QTabWidget):
     def __init__(self,parent=None):
         super(Ui_Window, self).__init__(parent)
         # super(Ui_Dialog, self).__init__()
+        self.setGeometry(300, 300, 1380, 800)
 
         self.current_directory = os.path.dirname(os.path.realpath(__file__))
         # Define error msg dialog
@@ -51,6 +52,7 @@ class Ui_Window(QTabWidget):
         self.ret = ''
         self.process_method=''
         self.result_csv=None
+        self.class_name_draw=None
 
         self.center_screen()
         sys.stdout = Stream(newText=self.onUpdateText)
@@ -72,53 +74,10 @@ class Ui_Window(QTabWidget):
         gt = QHBoxLayout()
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
-        gt_label = QLabel("Visual Comparsion")
-        gt.addWidget(gt_label)
-        gt_label.setFont(font)
-        layout.addRow(gt)
-
-        h1=QHBoxLayout()
-        h1.addWidget(QLabel("Datasets name："))
-        h1.addWidget(QLineEdit())
-        self.draw_by_data=QPushButton("Draw by Data")
-        h1.addWidget(self.draw_by_data)
-        self.draw_by_data.clicked.connect(self.btn_run_clicked)
-        h1.addWidget(QLabel("(*The different models on same dataset)"))
-        layout.addRow(h1)
-
-        h2 = QHBoxLayout()
-        h2.addWidget(QLabel("    Model name："))
-        h2.addWidget(QLineEdit())
-        self.draw_by_model=QPushButton("Draw by Model")
-        h2.addWidget(self.draw_by_model)
-        self.draw_by_model.clicked.connect(self.btn_run_clicked)
-        h2.addWidget(QLabel("(*The same model on different datasets)"))
-        layout.addRow(h2)
-
-        weight=QWidget()
-        groupBox=QGroupBox(weight)
-        gridlayout=QGridLayout(groupBox)
-        layout.addRow(gridlayout)
-
-        # self.widget = QtWidgets.QWidget()
-        # self.widget.setGeometry(QtCore.QRect(130, 380, 891, 451))
-        # self.widget.setObjectName("widget")
-        # self.groupBox = QtWidgets.QGroupBox(self.widget)
-        # self.groupBox.setGeometry(QtCore.QRect(0, 30, 891, 451))
-        # self.groupBox.setObjectName("groupBox")
-        # self.gridlayout = QtWidgets.QGridLayout(self.groupBox)
-        self.tab2.setLayout(layout)
-
-    def tab2UI(self):
-        layout = QFormLayout()
-
-        gt = QHBoxLayout()
-        font = QtGui.QFont()
-        font.setBold(True)
-        font.setWeight(75)
+        font.setPixelSize(25)
         gt_label=QLabel("Ground truth")
-        gt.addWidget(gt_label)
+        gt.addWidget(gt_label,1,Qt.AlignCenter)
+
         gt_label.setFont(font)
         layout.addRow(gt)
 
@@ -152,28 +111,37 @@ class Ui_Window(QTabWidget):
         self.load_class_dir.clicked.connect(self.btn_gt_classes_clicked)
         layout.addRow(h3)
         layout.addRow(QLabel("                     * required for yolo (.txt) format only."))
-
         layout.addRow(QLabel(''))
-        gt_format=QLabel("Coordinates format:")
+
+
+        h4 = QVBoxLayout()
+        format_w = QWidget()
+        frame = QFrame(format_w)
+        frame.setMinimumSize(2000,100)
+        frame.setStyleSheet("background-color: #feeeed")
+
+        h4_1=QHBoxLayout()
+        gt_format = QLabel("Coordinates format:")
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
         gt_format.setFont(font)
-        layout.addRow(gt_format)
-        # layout.addRow(QGraphicsLineItem())
-        # window = QWidget()
-        # frame = QFrame(window)
-        # frame.resize(300, 300)
-        # frame.setStyleSheet("background-color: rgb(200, 255, 255)")
-        h4 = QHBoxLayout()
+        h4_1.addWidget(gt_format)
+        h4.addLayout(h4_1)
+
+        h4_2=QHBoxLayout()
         self.rad_gt_format_coco_json= QRadioButton("COCO (.json)")
         self.rad_gt_format_pascalvoc_xml= QRadioButton("PASCAL VOC (.xml)")
         self.rad_gt_format_labelme_xml= QRadioButton("Label Me (.xml)")
         self.rad_gt_format_yolo_text= QRadioButton("(*) YOLO (.txt)")
-        h4.addWidget(self.rad_gt_format_coco_json)
-        h4.addWidget(self.rad_gt_format_pascalvoc_xml)
-        h4.addWidget(self.rad_gt_format_labelme_xml)
-        h4.addWidget(self.rad_gt_format_yolo_text)
+        h4_2.addWidget(self.rad_gt_format_coco_json)
+        h4_2.addWidget(self.rad_gt_format_pascalvoc_xml)
+        h4_2.addWidget(self.rad_gt_format_labelme_xml)
+        h4_2.addWidget(self.rad_gt_format_yolo_text)
+        h4.addLayout(h4_2)
 
-        # h4.addWidget(QTableView)
-        layout.addItem(h4)
+        format_w.setLayout(h4)
+        layout.addWidget(format_w)
         layout.addRow(QLabel(' '))
 
         h5=QHBoxLayout()
@@ -192,14 +160,72 @@ class Ui_Window(QTabWidget):
         self.process=QTextEdit()
         layout.addRow(self.process)
 
+        [layout.addRow(QLabel('')) for i in range(10)]
+
         h6=QHBoxLayout()
         self.btn_run=QPushButton("RUN")
         self.btn_run.clicked.connect(self.btn_run_clicked)
         h6.addWidget(self.btn_run)
+        self.btn_run.setStyleSheet(
+            '''QPushButton{background:#afb4db;border-radius:5px;}QPushButton:hover{background:#9b95c9;}''')
+
         layout.addRow(h6)
 
 
         self.tab1.setLayout(layout)
+
+    def tab2UI(self):
+        layout = QFormLayout()
+
+        gt = QHBoxLayout()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setPixelSize(25)
+        gt_label = QLabel("Visual Comparsion")
+        gt.addWidget(gt_label,1,Qt.AlignCenter)
+        gt_label.setFont(font)
+        layout.addRow(gt)
+        layout.addRow(QLabel(''))
+
+        h1=QHBoxLayout()
+        h1.addWidget(QLabel("Datasets name："))
+        self.data_line=QLineEdit()
+        h1.addWidget( self.data_line)
+        self.draw_by_data=QPushButton("Draw by Data")
+        h1.addWidget(self.draw_by_data)
+        self.draw_by_data.clicked.connect(self.btn_draw_by_data)
+        h1.addWidget(QLabel("(*The different models on same dataset)"))
+        layout.addRow(h1)
+
+        h2 = QHBoxLayout()
+        h2.addWidget(QLabel("    Model name："))
+        self.model_line=QLineEdit()
+        h2.addWidget(self.model_line)
+        self.draw_by_model=QPushButton("Draw by Model")
+        h2.addWidget(self.draw_by_model)
+        self.draw_by_model.clicked.connect(self.btn_draw_by_model)
+        h2.addWidget(QLabel("(*The same model on different datasets)"))
+        layout.addRow(h2)
+
+        w = QWidget()
+        groupBox = QGroupBox(w)
+        self.gridlayout = QGridLayout(groupBox)
+        w.setLayout(self.gridlayout)
+        layout.addWidget(w)
+
+        h3 = QHBoxLayout()
+        h3.addWidget(QLabel("Load classes:"),1,Qt.AlignLeft)
+        self.combobox_classes=QComboBox()
+        self.combobox_classes.setMinimumSize(200,27)
+        self.combobox_classes.currentIndexChanged.connect(self.comboSelectionChanged1)
+        h3.addWidget(self.combobox_classes,5,Qt.AlignLeft)
+        self.load_class_dir = QPushButton("Load ...")
+        self.load_class_dir.setMinimumSize(60,27)
+        h3.addWidget(self.load_class_dir,1,Qt.AlignRight)
+        self.load_class_dir.clicked.connect(self.btn_show_classes_clicked)
+        layout.addRow(h3)
+
+        self.tab2.setLayout(layout)
 
     def tab3UI(self):
         layout=QGridLayout()
@@ -214,7 +240,9 @@ class Ui_Window(QTabWidget):
         db.open()
         # 实例化一个可编辑数据模型
         self.model = QtSql.QSqlTableModel()
+
         self.table_widget.setModel(self.model)
+        self.table_widget.setSortingEnabled(True)
 
         self.model.setTable('metric')  # 设置数据模型的数据表
         # self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
@@ -279,6 +307,13 @@ class Ui_Window(QTabWidget):
         elif text=='yolov5':
             self.process_method='yolov5'
 
+    def comboSelectionChanged1(self, index):
+        text = self.combobox_classes.itemText(index)
+        if text == '':
+            print(1)
+        else:
+            self.class_name_draw = text
+
     def load_annotations_gt(self):
 
         if self.rad_gt_format_coco_json.isChecked():
@@ -321,6 +356,19 @@ class Ui_Window(QTabWidget):
             self.filepath_classes_gt = filepath
         else:
             self.filepath_classes_gt = None
+
+    def btn_show_classes_clicked(self):
+        name=None
+        if not self.data_line.text()=='':
+            name=self.data_line.text()
+        elif not self.model_line.text()=='':
+            name=self.model_line.text()
+        else:
+            print(1)
+
+        class_names=DBManager().search_classes(name)
+
+        self.combobox_classes.addItems(class_names)
 
     def btn_gt_images_dir_clicked(self):
         if self.txb_gt_images_dir.text() == '':
@@ -373,11 +421,11 @@ class Ui_Window(QTabWidget):
         else:
             self.dir_save_results = None
 
-    # def btn_draw_clicked(self):
-    #    self.process.setVisible(False)
-    #    self.groupBox.setVisible(True)
-    #    plt= DBManager().draw()
-    #    self.gridlayout.addWidget(plt, 0, 2)
+    def btn_draw_clicked(self):
+       # self.process.setVisible(False)
+       # self.groupBox.setVisible(True)
+       plt= DBManager().draw()
+       self.gridlayout.addWidget(plt, 0, 2)
 
     def btn_save_clicked(self):
         if self.result_csv is None:
@@ -430,6 +478,23 @@ class Ui_Window(QTabWidget):
         self.result_csv = evaluation.evaluate()
 
     def btn_draw_by_model(self):
-        pass
+        model_name = None
+        if self.model_line.text() == '':
+            print(1)
+        else:
+            model_name = self.model_line.text()
+
+        plt = DBManager().draw_by_model(model_name, self.class_name_draw)
+        self.gridlayout.addWidget(plt, 0, 2)
+
     def btn_draw_by_data(self):
-        pass
+        dataset_name=None
+        if self.data_line.text()=='':
+            print(1)
+        else:
+            dataset_name=self.data_line.text()
+
+        plt = DBManager().draw_by_data(dataset_name,self.class_name_draw)
+        self.gridlayout.addWidget(plt, 0, 2)
+
+
