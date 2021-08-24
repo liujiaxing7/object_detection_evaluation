@@ -207,12 +207,6 @@ class Ui_Window(QTabWidget):
         h2.addWidget(QLabel("(*The same model on different datasets)"))
         layout.addRow(h2)
 
-        w = QWidget()
-        groupBox = QGroupBox(w)
-        self.gridlayout = QGridLayout(groupBox)
-        w.setLayout(self.gridlayout)
-        layout.addWidget(w)
-
         h3 = QHBoxLayout()
         h3.addWidget(QLabel("Load classes:"),1,Qt.AlignLeft)
         self.combobox_classes=QComboBox()
@@ -225,12 +219,51 @@ class Ui_Window(QTabWidget):
         self.load_class_dir.clicked.connect(self.btn_show_classes_clicked)
         layout.addRow(h3)
 
+        w = QWidget()
+        groupBox = QGroupBox(w)
+        self.gridlayout = QGridLayout(groupBox)
+        w.setLayout(self.gridlayout)
+        layout.addWidget(w)
+
         self.tab2.setLayout(layout)
 
     def tab3UI(self):
-        layout=QGridLayout()
+
+        layout = QFormLayout()
+        gt = QHBoxLayout()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setPixelSize(25)
+        gt_label = QLabel("Show Database")
+        gt.addWidget(gt_label, 1, Qt.AlignCenter)
+        gt_label.setFont(font)
+        layout.addRow(gt)
+        layout.addRow(QLabel(''))
+
+        h1=QHBoxLayout()
+        h1.addWidget(QLabel("Datasets name："))
+        self.data_line_ui2=QLineEdit()
+        h1.addWidget( self.data_line_ui2)
+        self.search_by_data=QPushButton("Search by Data")
+        h1.addWidget(self.search_by_data)
+        self.search_by_data.clicked.connect(self.btn_search_by_data)
+        h1.addWidget(QLabel(" Models name："))
+        self.model_line_ui2 = QLineEdit()
+        h1.addWidget(self.model_line_ui2)
+        self.search_by_model = QPushButton("Search by Model")
+        h1.addWidget(self.search_by_model)
+        self.search_by_model.clicked.connect(self.btn_search_by_model)
+        h1.addWidget(QLabel(" Filter condition："))
+        self.filter_line = QLineEdit()
+        h1.addWidget(self.filter_line)
+        self.search_by_filter = QPushButton("Search by condition")
+        h1.addWidget(self.search_by_filter)
+        self.search_by_filter.clicked.connect(self.btn_search_by_filter)
+        layout.addRow(h1)
+
+        h3=QGridLayout()
         self.table_widget = QtWidgets.QTableView()
-        self.table_widget.setGeometry(0, 0, 1214, 950)
+        self.table_widget.setFixedSize(1340, 600)
         db_text = os.getcwd() + '/src/database/core'
 
         self.db_name = db_text
@@ -256,12 +289,14 @@ class Ui_Window(QTabWidget):
         self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'FP')
         self.model.setHeaderData(6, QtCore.Qt.Horizontal, 'FN')
         self.model.setHeaderData(7, QtCore.Qt.Horizontal, 'F1')
-        self.model.setHeaderData(8, QtCore.Qt.Horizontal, 'ap')
-        self.model.setHeaderData(9, QtCore.Qt.Horizontal, 'map')
-        self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'precision')
-        self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'recall')
-        self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
-        layout.addWidget(self.table_widget)
+        self.model.setHeaderData(8, QtCore.Qt.Horizontal, 'Ap')
+        self.model.setHeaderData(9, QtCore.Qt.Horizontal, 'Map')
+        self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'Precision')
+        self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'Recall')
+        self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'Threshold')
+        h3.addWidget(self.table_widget)
+        layout.addRow(h3)
+
         self.tab3.setLayout(layout)
 
     def onUpdateText(self, text):
@@ -497,4 +532,19 @@ class Ui_Window(QTabWidget):
         plt = DBManager().draw_by_data(dataset_name,self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
+    def btn_search_by_model(self):
+        text=self.model_line_ui2.text()
+        text="\""+text+"\""
+        print('model_name='+str(text))
+        self.model.setFilter('model_name='+str(text))
+
+    def btn_search_by_data(self):
+        text = self.data_line_ui2.text()
+        text = "\"" + text + "\""
+        print('dataset_name=' + str(text))
+        self.model.setFilter('dataset_name=' + str(text))
+
+    def btn_search_by_filter(self):
+        text = self.filter_line.text()
+        self.model.setFilter(str(text))
 
