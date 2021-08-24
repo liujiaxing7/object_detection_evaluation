@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'main_ui.ui'
-#
-# Created by: PyQt5 UI code generator 5.12.3
-#
-# WARNING! All changes made in this file will be lost!
-import os
-import sys
-
+'''
+@author: 刘家兴
+@contact: ljx0ml@163.com
+@file: model.py
+@time: 2021/8/24 18.46
+@desc:
+'''
 
 from PyQt5 import QtGui,QtCore,QtWidgets,QtSql
 from PyQt5.QtCore import Qt, QRect
@@ -15,7 +13,6 @@ from PyQt5.QtWidgets import *
 
 import os
 import sys
-
 import onnx
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
@@ -35,7 +32,7 @@ class Stream(QtCore.QObject):
 class Ui_Window(QTabWidget):
     def __init__(self,parent=None):
         super(Ui_Window, self).__init__(parent)
-        # super(Ui_Dialog, self).__init__()
+        #set window size
         self.setGeometry(300, 300, 1380, 800)
 
         self.current_directory = os.path.dirname(os.path.realpath(__file__))
@@ -60,12 +57,15 @@ class Ui_Window(QTabWidget):
         self.tab1 = QtWidgets.QWidget()
         self.tab2 = QtWidgets.QWidget()
         self.tab3 = QtWidgets.QWidget()
+        self.tab4 = QtWidgets.QWidget()
         self.addTab(self.tab1, "Detection Metrics")
         self.addTab(self.tab2, "Visual Comparsion")
         self.addTab(self.tab3, "Show Database")
+        self.addTab(self.tab4, "Error File Preview")
         self.tab1UI()
         self.tab2UI()
         self.tab3UI()
+        self.tab4UI()
         self.setWindowTitle("Object Detection Metrics")
 
     def tab1UI(self):
@@ -298,6 +298,9 @@ class Ui_Window(QTabWidget):
         layout.addRow(h3)
 
         self.tab3.setLayout(layout)
+
+    def tab4UI(self):
+        pass
 
     def onUpdateText(self, text):
         """Write console output to text widget."""
