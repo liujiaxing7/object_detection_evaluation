@@ -79,10 +79,10 @@ class ONNX(object):
             self.forward(image)
 
         if self.format=='voc':
-            result_csv=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None)
+            result_csv,result=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None)
         if self.format=='coco':
-            result_csv=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None)
+            result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None)
         if self.format=='darknet':
-            result_csv=xml.evaluation_darknet(self.datasets, self.predictions,output_dir,False, None, None)
-        return result_csv
+            result_csv,result=xml.evaluation_darknet(self.datasets, self.predictions,output_dir,False, None, None)
+        return result_csv,result
 

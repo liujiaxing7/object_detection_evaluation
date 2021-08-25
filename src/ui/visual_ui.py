@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import *
 import os
 import sys
 import onnx
+import numpy as np
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
 from PyQt5 import QtCore, QtGui
@@ -28,6 +29,14 @@ class Stream(QtCore.QObject):
 
     def write(self, text):
         self.newText.emit(str(text))
+
+
+def nanstr(a):
+    if a is None:
+        return 0.0
+    else:
+        return a
+
 
 class Ui_Window(QTabWidget):
     def __init__(self,parent=None):
@@ -49,6 +58,7 @@ class Ui_Window(QTabWidget):
         self.ret = ''
         self.process_method=''
         self.result_csv=None
+        self.result=None
         self.class_name_draw=None
 
         self.center_screen()
@@ -259,6 +269,9 @@ class Ui_Window(QTabWidget):
         self.search_by_filter = QPushButton("Search by condition")
         h1.addWidget(self.search_by_filter)
         self.search_by_filter.clicked.connect(self.btn_search_by_filter)
+        self.refresh=QPushButton("Refresh")
+        h1.addWidget(self.refresh)
+        self.refresh.clicked.connect(self.btn_refresh)
         layout.addRow(h1)
 
         h3=QGridLayout()
@@ -300,7 +313,14 @@ class Ui_Window(QTabWidget):
         self.tab3.setLayout(layout)
 
     def tab4UI(self):
-        pass
+        layout=QVBoxLayout()
+        listView = QListView()
+        slm = QtCore.QStringListModel();
+        self.qList = ['Item 1', 'Item 2', 'Item 3', 'Item 4']
+        slm.setStringList(self.qList)
+        listView.setModel(slm)
+        layout.addWidget(listView)
+        self.tab4.setLayout(layout)
 
     def onUpdateText(self, text):
         """Write console output to text widget."""
@@ -482,6 +502,7 @@ class Ui_Window(QTabWidget):
             TP_all,FP_all,FN_all=0,0,0
 
             #id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
+
             for i,name_cl in enumerate(class_name):
                 if name_cl=='class_names 'or name_cl=='':
                     continue
@@ -497,9 +518,26 @@ class Ui_Window(QTabWidget):
 
             #save all classes metric
             result_metric = result_csv[2].split(",")
-            map,recall,F1_,Precision = float(result_metric[0]),float(result_metric[1]),float(result_metric[2]),float(result_metric[3])
 
+            # map,recall,F1_,Precision = float(result_metric[0]),float(result_metric[1]),float(result_metric[2]),float(result_metric[3])
+            map = float(result_metric[0])
+            Precision,recall,F1_=self.get_metric(TP_all,FP_all,FN_all)
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
+
+            for m in range(len(self.result['tp_'])):
+                for i in range(len(self.result['tp_'][m])):
+                    DB.add_item(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
+                                self.result['f1_'][m][i+1], AP_class[m+1], 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
+                                self.result['score_'][m][i])
+                    print(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], self.result['fn_'][m][i],
+                                np.nan_to_num(self.result['f1_'][m][i+1]), AP_class[m+1], 0, self.result['prec_'][m][i], self.result['rec_'][m][i],
+                                self.result['score_'][m][i])
+
+    def get_metric(self,tp, fp, fn):
+        prec = tp / (tp + fp)
+        rec = tp/(tp + fn)
+        f1 = 2 / (1 / prec + 1 / rec)
+        return prec, rec, f1
 
     def btn_run_clicked(self):
         if self.rad_gt_format_coco_json.isChecked():
@@ -513,7 +551,7 @@ class Ui_Window(QTabWidget):
             exit(-1)
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
-        self.result_csv = evaluation.evaluate()
+        self.result_csv,self.result = evaluation.evaluate()
 
     def btn_draw_by_model(self):
         model_name = None
@@ -550,4 +588,7 @@ class Ui_Window(QTabWidget):
     def btn_search_by_filter(self):
         text = self.filter_line.text()
         self.model.setFilter(str(text))
+
+    def btn_refresh(self):
+        self.model.setFilter('')
 

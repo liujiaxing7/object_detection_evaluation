@@ -16,7 +16,7 @@ def nan_str_int(p, space=True):
     if np.isnan(p):
         return "{:<5}".format(str(p)) if space else 0
     else:
-        return "{:d}".format(p)
+        return "{:d}".format(int(p))
 
 def print_csv(result, class_names):
     prefix, flag = "", ','
@@ -139,7 +139,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
                                 pred_scores=pred_scores_list,
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
-                                class_num=len(class_names),
+                                class_names=class_names,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
                                 threshold=threshold)
@@ -169,7 +169,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
-    return result_csv
+    return result_csv,result
 
 def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
@@ -202,7 +202,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
                                 pred_scores=pred_scores_list,
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
-                                class_num=len(class_names),
+                                class_names=class_names,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
                                 threshold=threshold)
@@ -233,7 +233,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return result_csv
+    return result_csv,result
 
 def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
@@ -268,7 +268,7 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
                                 pred_scores=pred_scores_list,
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
-                                class_num=len(class_names),
+                                class_names=class_names,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
                                 threshold=threshold)
@@ -299,4 +299,4 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return result_csv
+    return result_csv,result
