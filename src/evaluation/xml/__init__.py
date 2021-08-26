@@ -117,9 +117,12 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
     gt_boxes_list = []
     gt_labels_list = []
     gt_difficults = []
+    image_id_list=[]
 
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file(i)
+        image_id_list.append(image_id)
+
         if not os.path.exists(annotation):
             continue
         gt_boxes, gt_labels = dataset.get_annotation(annotation)
@@ -140,9 +143,11 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
                                 class_names=class_names,
+                                image_id_list=image_id_list,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
-                                threshold=threshold)
+                                threshold=threshold,
+                                )
     if save_anno:
         print("writing xml")
         dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))

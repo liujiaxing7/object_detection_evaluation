@@ -13,6 +13,9 @@ from PyQt5.QtWidgets import *
 
 import os
 import sys
+
+from cv2 import cv2
+
 import onnx
 import numpy as np
 from PyQt5 import QtCore, QtWidgets
@@ -315,10 +318,11 @@ class Ui_Window(QTabWidget):
     def tab4UI(self):
         layout=QVBoxLayout()
         listView = QListView()
-        slm = QtCore.QStringListModel();
-        self.qList = ['Item 1', 'Item 2', 'Item 3', 'Item 4']
-        slm.setStringList(self.qList)
-        listView.setModel(slm)
+        self.slm = QtCore.QStringListModel();
+        self.qList = []
+        self.slm.setStringList(self.qList)
+        listView.setModel(self.slm)
+        listView.doubleClicked.connect(self.listview_selecd)
         layout.addWidget(listView)
         self.tab4.setLayout(layout)
 
@@ -533,6 +537,8 @@ class Ui_Window(QTabWidget):
                                 np.nan_to_num(self.result['f1_'][m][i+1]), AP_class[m+1], 0, self.result['prec_'][m][i], self.result['rec_'][m][i],
                                 self.result['score_'][m][i])
 
+            self.slm.setStringList(self.result['error'])
+
     def get_metric(self,tp, fp, fn):
         prec = tp / (tp + fp)
         rec = tp/(tp + fn)
@@ -591,4 +597,11 @@ class Ui_Window(QTabWidget):
 
     def btn_refresh(self):
         self.model.setFilter('')
+
+    def listview_selecd(self,qModelIndex):
+        text=self.result['error'][qModelIndex.row()]
+        image_path=text.split('---')[0]
+        img = cv2.imread(image_path)
+        cv2.imshow("Image", img)
+
 

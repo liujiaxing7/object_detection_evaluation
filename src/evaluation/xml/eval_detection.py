@@ -20,7 +20,7 @@ def get_box_num1(gt_labels, class_num):
             num[label] += 1
     return num
 
-def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names,
+def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names,image_id_list,
                        threshold, gt_difficults=None, iou_thresh=0.5, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
 
@@ -30,24 +30,25 @@ def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labe
 
     # fpr, tpr, thresholds = metrics.roc_curve(gt_labels, pred_labels, y_type == "multiclass", pos_label=16)
     class_count = get_box_num(gt_labels, len(class_names))
-    prec, rec, score,tp,fp,fn = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names, gt_difficults, iou_thresh=iou_thresh)
+    prec, rec, score,tp,fp,fn,error_image = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names,image_id_list, gt_difficults, iou_thresh=iou_thresh)
 
     ap = voc_ap(prec, rec, use_07_metric=use_07_metric)
     tp1, fp1, precision, recalls, f1, score1 ,f1_= voc_F1(tp,fp,prec, rec, score, threshold)
 
-    return {'ap': ap, 'prec':precision, 'rec':recalls, 'num': class_count, 'f1': f1, 'threshold':score1,'tp':tp1,'fp':fp1,'fn':class_count-tp1,'prec_':prec,'rec_':rec,'score_':score,'tp_':tp,'fp_':fp,'fn_':fn,'f1_':f1_}
+    return {'ap': ap, 'prec':precision, 'rec':recalls, 'num': class_count, 'f1': f1, 'threshold':score1,'tp':tp1,'fp':fp1,'fn':class_count-tp1,'prec_':prec,'rec_':rec,'score_':score,'tp_':tp,'fp_':fp,'fn_':fn,'f1_':f1_,'error':error_image}
 
-def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,class_names,
+def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,class_names,image_id_list,
                          gt_difficults=None, iou_thresh=0.5):
     """Calculate precision and recall based on evaluation code of PASCAL VOC.
     """
-    pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels = \
-        iter(pred_bboxes), iter(pred_labels), iter(pred_scores), iter(gt_bboxes), iter(gt_labels)
-    gt_difficults = itertools.repeat(None) if gt_difficults is None else iter(gt_difficults)
-    all_data = six.moves.zip(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults)
-    score, match, class_count_l = defaultdict(list), defaultdict(list), defaultdict(list)
+    pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels,image_id = \
+        iter(pred_bboxes), iter(pred_labels), iter(pred_scores), iter(gt_bboxes), iter(gt_labels),iter(image_id_list)
 
-    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult in all_data:
+    gt_difficults = itertools.repeat(None) if gt_difficults is None else iter(gt_difficults)
+    all_data = six.moves.zip(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults,image_id)
+    score, match, class_count_l = defaultdict(list), defaultdict(list), defaultdict(list)
+    error_image_id=[]
+    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult ,eval_image_id in all_data:
         score_iter, match_iter,iou_iter = defaultdict(list), defaultdict(list),defaultdict(list)
         class_count1=get_box_num1(gt_label, len(class_count))
         if gt_difficult is None:
@@ -172,7 +173,8 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             print("class_id = %d, name = %s, count = %s, (TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2"
                   "f%%, avg_iou = %f) "% (l,class_names[l],str(len(class_count_l[l]))+"/"+str(class_count[l]),nan_str(tp[l]),nan_str(fp[l]),class_count1[l]-nan_str(tp[l]),precision[l],recalls[l],f1[l],isnan(avg_iou)))
 
-
+            if nan_str(fp[l]) > 0 or class_count1[l]-nan_str(tp[l]) > 0:
+                error_image_id.append(eval_image_id +"---"+class_names[l]+ "+FP:" + str(nan_str(fp[l])) + "+FN:" + str(class_count1[l]-nan_str(tp[l])))
             if isnan(avg_iou) !=0:
                  iou_one.append(avg_iou)
 
@@ -224,7 +226,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             #     fn_cl[l] = class_count[l]
 
 
-    return prec, rec, score_sort,tp_cl,fp_cl,fn_cl
+    return prec, rec, score_sort,tp_cl,fp_cl,fn_cl,error_image_id
 
 def nan_str(p):
     if p==np.nan:
