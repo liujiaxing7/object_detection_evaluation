@@ -655,8 +655,11 @@ class Ui_Window(QTabWidget):
     def btn_refresh(self):
 
         id_max,class_name,datasets=DBManager().search_id()
+        a=id_max.keys()
+        print(a[1])
         for o in range(len(self.value)):
-            if self.value[o][1]
+            if self.value[o][1]:
+                pass
 
         for j in range(len(id_max)):
             id_max[j]-=2
