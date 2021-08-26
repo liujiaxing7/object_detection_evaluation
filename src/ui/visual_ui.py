@@ -6,9 +6,12 @@
 @time: 2021/8/24 18.46
 @desc:
 '''
+import bisect
+from decimal import Decimal
 
 from PyQt5 import QtGui,QtCore,QtWidgets,QtSql
 from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import *
 
 import os
@@ -289,29 +292,29 @@ class Ui_Window(QTabWidget):
         db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         db.setDatabaseName('{}.db'.format(db_text))
         db.open()
+
+        query = QSqlQuery()
+        self.value=[]
+        if query.exec(
+                'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric_'):
+            while query.next():
+                value_ = [query.value(i) for i in range(13)]
+                self.value.append(value_)
         # 实例化一个可编辑数据模型
-        self.model = QtSql.QSqlTableModel()
+        self.model = QtGui.QStandardItemModel(1000000, 13)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class','TP','FP'
+                                                 ,'FN','F1','Ap','Map','Precision','Recall','Threshold'])
+        # self.model = QtSql.QSqlTableModel()
 
         self.table_widget.setModel(self.model)
+        self.table_widget.setColumnWidth(0, 50)
         self.table_widget.setSortingEnabled(True)
+        self.btn_refresh()
+        # self.table_widget.itemc.connect(self.btn_refresh)
+        self.model.itemChanged.connect(self.btn_refresh1)
+        self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
-        self.model.setTable('metric')  # 设置数据模型的数据表
-        # self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
-        self.model.select()  # 查询所有数据
-        # 设置表格头
-        self.model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
-        self.model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
-        self.model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
-        self.model.setHeaderData(3, QtCore.Qt.Horizontal, 'class')
-        self.model.setHeaderData(4, QtCore.Qt.Horizontal, 'TP')
-        self.model.setHeaderData(5, QtCore.Qt.Horizontal, 'FP')
-        self.model.setHeaderData(6, QtCore.Qt.Horizontal, 'FN')
-        self.model.setHeaderData(7, QtCore.Qt.Horizontal, 'F1')
-        self.model.setHeaderData(8, QtCore.Qt.Horizontal, 'Ap')
-        self.model.setHeaderData(9, QtCore.Qt.Horizontal, 'Map')
-        self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'Precision')
-        self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'Recall')
-        self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'Threshold')
+
         h3.addWidget(self.table_widget)
         layout.addRow(h3)
 
@@ -351,7 +354,7 @@ class Ui_Window(QTabWidget):
         search_by_filter.clicked.connect(self.btn_search_by_filter_error)
         refresh = QPushButton("Refresh")
         h1.addWidget(refresh)
-        refresh.clicked.connect(self.btn_refresh)
+        refresh.clicked.connect(self.btn_refresh_error)
         layout.addRow(h1)
 
         h2=QGridLayout()
@@ -560,6 +563,7 @@ class Ui_Window(QTabWidget):
                     FN_all+=int(fn_cl)
 
                 DB.add_item(model_name, dataset_name,name_cl,tp_cl,fp_cl,fn_cl,F1_cl,ap_cl,map_cl,prec_cl,rec_cl,thre_cl)
+                DB.add_item_(model_name, dataset_name,name_cl,tp_cl,fp_cl,fn_cl,F1_cl,ap_cl,map_cl,prec_cl,rec_cl,thre_cl)
 
             #save all classes metric
             result_metric = result_csv[2].split(",")
@@ -568,18 +572,18 @@ class Ui_Window(QTabWidget):
             map = float(result_metric[0])
             Precision,recall,F1_=self.get_metric(TP_all,FP_all,FN_all)
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
+            DB.add_item_(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
 
             for m in range(len(self.result['tp_'])):
+                DB.add_item_id(model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m]))
                 for i in range(len(self.result['tp_'][m])):
-                    DB.add_item(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
+                    DB.add_item_(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
                                 self.result['f1_'][m][i+1], AP_class[m+1], 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
                                 self.result['score_'][m][i])
-                    # print(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], self.result['fn_'][m][i],
-                    #             np.nan_to_num(self.result['f1_'][m][i+1]), AP_class[m+1], 0, self.result['prec_'][m][i], self.result['rec_'][m][i],
-                    #             self.result['score_'][m][i])
 
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
+
             # self.slm.setStringList(self.result['error'])
 
     def get_metric(self,tp, fp, fn):
@@ -649,7 +653,67 @@ class Ui_Window(QTabWidget):
         self.model.setFilter(str(text))
 
     def btn_refresh(self):
-        self.model.setFilter('')
+        id_max,class_name=DBManager().search_id()
+        for j in range(len(id_max)):
+            id_max[j]-=2
+            if id_max[j]<0:
+                id_max[j]=0
+
+        class_num=len(class_name)
+        list=[[]]*class_num
+        for i in range(len(self.value)):
+            for l in range(class_num):
+                if self.value[i][3]==class_name[l]:
+                    if len(list[l])==0:
+                        list[l]=[self.value[i]]
+                    else:
+                        list[l].append(self.value[i])
+
+        for m in range(class_num):
+            for n in range(13):
+                # item=QtGui.QStandardItem()
+                a=list[m]
+                self.model.setItem(m, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+        self.model.itemChanged.connect(self.btn_refresh1)
+
+
+    def index_number(self,li, defaultnumber):
+        select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
+        index = 0
+        for i in range(1, len(li) - 1):
+            select2 = Decimal(str(defaultnumber)) - Decimal(str(li[i]))
+            if (abs(select) > abs(select2)):
+                select = select2
+                index = i
+        return index
+
+    def btn_refresh1(self,item):
+        self.model.itemChanged.disconnect(self.btn_refresh1)
+        a=[]
+        b=[]
+        r = self.table_widget.currentIndex().row()  # 获取行号
+        c = self.table_widget.currentIndex().column()
+
+        model=self.model.item(r,1).text()
+        data=self.model.item(r,2).text()
+        class_=self.model.item(r,3).text()
+        thre=self.model.item(r,12).text()
+
+        for i in range(len(self.value)):
+            if self.value[i][1]==model and self.value[i][2]==data and self.value[i][3]==class_:
+                a.append(self.value[i][12])
+                b.append(self.value[i])
+        # b=a[:,13]
+        index=self.index_number(a,float(thre))
+
+        for j in range(13):
+            if j ==0:
+                self.model.itemChanged.disconnect(self.btn_refresh1)
+            self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
+        self.model.itemChanged.connect(self.btn_refresh1)
+        self.model.itemChanged.connect(self.btn_refresh1)
+        self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
+
 
     def btn_search_by_model_error(self):
         text=self.model_line_ui4.text()

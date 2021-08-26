@@ -42,6 +42,43 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
+    def add_item_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
+        class_name = "\"" + class_name + "\""
+        id=self.get_max_id_()+1
+        if self.db.open():
+            query = QSqlQuery()
+            query.exec_("create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
+                        " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
+
+            query.exec_("insert into metric_ values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(tp)+","+str(fp)+","+str(fn)+","+str(F1)+","+str(ap)+","+str(map)+","+str(prec)+","+str(recall)+","+str(thre)+")")
+
+            # insert_sql = 'insert into student metric (?,?,?)'
+            # query.prepare(insert_sql)
+            # query.addBindValue(4)
+            # query.addBindValue('test3')
+            # query.addBindValue(1)
+            self.db.close()
+
+    def add_item_id(self,model_name,dataset_name,class_name,id_):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
+        class_name = "\"" + class_name + "\""
+        id=self.get_max_id_id()+1
+        if self.db.open():
+            query = QSqlQuery()
+            query.exec_("create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
+
+            query.exec_("insert into id_max values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(id_)+")")
+
+            # insert_sql = 'insert into student metric (?,?,?)'
+            # query.prepare(insert_sql)
+            # query.addBindValue(4)
+            # query.addBindValue('test3')
+            # query.addBindValue(1)
+            self.db.close()
+
     def add_erro_file(self,model_name,dataset_name,error_file):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
@@ -100,11 +137,52 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return models,datasets
 
+    def search_id(self):
+        id_list=[]
+        class_num=[]
+        self.db.open()
+        query = QSqlQuery()
+        if query.exec(
+                'select id ,model_name,dataset_name,class_name,ID_max from id_max'):
+            while query.next():
+                value = [query.value(i) for i in range(5)]
+                id, model_name, dataset_name, class_name, id1 = value
+                id_list.append(id1)
+                if not class_name in class_num:
+                    class_num.append(class_name)
+                # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
+        return id_list,class_num
+
+
     def get_max_id(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery()
         if query.exec('select id from metric'):
+            while query.next():
+                id = query.value(0)
+                id_all.append(id)
+        if len(id_all)==0:
+            return 0
+        return max(id_all)
+
+    def get_max_id_(self):
+        self.db.open()
+        id_all=[]
+        query = QSqlQuery()
+        if query.exec('select id from metric_'):
+            while query.next():
+                id = query.value(0)
+                id_all.append(id)
+        if len(id_all)==0:
+            return 0
+        return max(id_all)
+
+    def get_max_id_id(self):
+        self.db.open()
+        id_all=[]
+        query = QSqlQuery()
+        if query.exec('select id from id_max'):
             while query.next():
                 id = query.value(0)
                 id_all.append(id)
