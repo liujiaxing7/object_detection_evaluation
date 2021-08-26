@@ -2,9 +2,10 @@ import os
 
 from PyQt5.QtSql import QSqlQuery,QSqlDatabase,QSqlQueryModel
 import matplotlib
-matplotlib.use("Qt5Agg")  # 声明使用QT5
+matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
 class MyFigure(FigureCanvas):
     def __init__(self,width=10, height=8, dpi=100):
 
@@ -40,6 +41,25 @@ class DBManager():
             # query.addBindValue('test3')
             # query.addBindValue(1)
             self.db.close()
+
+    def add_erro_file(self,model_name,dataset_name,error_file):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
+        error_file = "\"" + error_file + "\""
+        id=self.get_max_id_error()+1
+        if self.db.open():
+            query = QSqlQuery()
+            query.exec_("create table error(id int primary key, model_name str , dataset_name str,error_file str)")
+
+            query.exec_("insert into error values("+str(id)+","+model_name+","+dataset_name+","+error_file+")")
+
+            # insert_sql = 'insert into student metric (?,?,?)'
+            # query.prepare(insert_sql)
+            # query.addBindValue(4)
+            # query.addBindValue('test3')
+            # query.addBindValue(1)
+            self.db.close()
+
     def search_classes(self,name):
         classes=[]
         self.db.open()
@@ -54,8 +74,32 @@ class DBManager():
                         continue
                     else:
                         classes.append(class_name)
-                print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
+                # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return classes
+
+    def search_model_datasets(self):
+        models=[]
+        datasets=[]
+        self.db.open()
+        query = QSqlQuery()
+        if query.exec(
+                'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
+            while query.next():
+                value = [query.value(i) for i in range(13)]
+                id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
+
+                if not model_name in models:
+                    models.append(model_name)
+                elif not dataset_name in datasets:
+                    datasets.append(dataset_name)
+                else:
+                  continue
+
+
+
+                # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
+        return models,datasets
+
     def get_max_id(self):
         self.db.open()
         id_all=[]
@@ -67,7 +111,20 @@ class DBManager():
         if len(id_all)==0:
             return 0
         return max(id_all)
-    def draw_by_data(self,datasets,classses):
+
+    def get_max_id_error(self):
+        self.db.open()
+        id_all=[]
+        query = QSqlQuery()
+        if query.exec('select id from error'):
+            while query.next():
+                id = query.value(0)
+                id_all.append(id)
+        if len(id_all)==0:
+            return 0
+        return max(id_all)
+
+    def draw_by_model(self,models,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()
@@ -76,7 +133,7 @@ class DBManager():
             while query.next():
                 value=[query.value(i) for i in range(13)]
                 id,model_name,dataset_name,class_name,tp,fp,fn,f1,Ap,Map,prec,rec,Threshold = value
-                if dataset_name==datasets and class_name==classses:
+                if model_name in models and class_name==classses:
 
                     index.append(model_name)
                     map.append(float(Map))
@@ -126,7 +183,7 @@ class DBManager():
 
         return F1
 
-    def draw_by_model(self,models,classses):
+    def draw_by_data(self,datasets,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()
@@ -135,7 +192,7 @@ class DBManager():
             while query.next():
                 value=[query.value(i) for i in range(13)]
                 id,model_name,dataset_name,class_name,tp,fp,fn,f1,Ap,Map,prec,rec,Threshold = value
-                if model_name==models and class_name==classses:
+                if dataset_name in datasets and class_name==classses:
 
                     index.append(dataset_name)
                     map.append(float(Map))

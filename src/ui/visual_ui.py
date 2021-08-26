@@ -33,13 +33,11 @@ class Stream(QtCore.QObject):
     def write(self, text):
         self.newText.emit(str(text))
 
-
 def nanstr(a):
     if a is None:
         return 0.0
     else:
         return a
-
 
 class Ui_Window(QTabWidget):
     def __init__(self,parent=None):
@@ -188,7 +186,8 @@ class Ui_Window(QTabWidget):
         self.tab1.setLayout(layout)
 
     def tab2UI(self):
-        layout = QFormLayout()
+        layout=QFormLayout()
+
 
         gt = QHBoxLayout()
         font = QtGui.QFont()
@@ -197,46 +196,49 @@ class Ui_Window(QTabWidget):
         gt_label = QLabel("Visual Comparsion")
         gt.addWidget(gt_label,1,Qt.AlignCenter)
         gt_label.setFont(font)
-        layout.addRow(gt)
+        layout.addRow(gt,)
         layout.addRow(QLabel(''))
 
-        h1=QHBoxLayout()
-        h1.addWidget(QLabel("Datasets name："))
-        self.data_line=QLineEdit()
-        h1.addWidget( self.data_line)
-        self.draw_by_data=QPushButton("Draw by Data")
-        h1.addWidget(self.draw_by_data)
-        self.draw_by_data.clicked.connect(self.btn_draw_by_data)
-        h1.addWidget(QLabel("(*The different models on same dataset)"))
-        layout.addRow(h1)
-
         h2 = QHBoxLayout()
-        h2.addWidget(QLabel("    Model name："))
-        self.model_line=QLineEdit()
-        h2.addWidget(self.model_line)
-        self.draw_by_model=QPushButton("Draw by Model")
-        h2.addWidget(self.draw_by_model)
-        self.draw_by_model.clicked.connect(self.btn_draw_by_model)
-        h2.addWidget(QLabel("(*The same model on different datasets)"))
-        layout.addRow(h2)
-
-        h3 = QHBoxLayout()
-        h3.addWidget(QLabel("Load classes:"),1,Qt.AlignLeft)
+        h2.addWidget(QLabel("Load classes:"),1,Qt.AlignLeft)
         self.combobox_classes=QComboBox()
         self.combobox_classes.setMinimumSize(200,27)
         self.combobox_classes.currentIndexChanged.connect(self.comboSelectionChanged1)
-        h3.addWidget(self.combobox_classes,5,Qt.AlignLeft)
+        h2.addWidget(self.combobox_classes,5,Qt.AlignLeft)
         self.load_class_dir = QPushButton("Load ...")
         self.load_class_dir.setMinimumSize(60,27)
-        h3.addWidget(self.load_class_dir,1,Qt.AlignRight)
+        h2.addWidget(self.load_class_dir,1,Qt.AlignRight)
         self.load_class_dir.clicked.connect(self.btn_show_classes_clicked)
-        layout.addRow(h3)
+        self.btn_draw = QPushButton("Draw")
+        self.btn_draw.setMinimumSize(80, 27)
+        h2.addWidget(self.btn_draw, 1, Qt.AlignRight)
+        self.btn_draw.clicked.connect(self.btn_draw_clicked)
+        layout.addRow(h2)
 
-        w = QWidget()
-        groupBox = QGroupBox(w)
+        h1 = QGridLayout()
+        group_box = QtWidgets.QGroupBox('Model')
+        self.group_box_layout = QtWidgets.QHBoxLayout()
+        group_box.setLayout(self.group_box_layout)
+
+        group_box.setMinimumSize(100,10)
+        h1.addWidget(group_box,0,1)
+
+        group_box1 = QtWidgets.QGroupBox('Datasets')
+        self.group_box_layout1 = QtWidgets.QVBoxLayout()
+        group_box1.setLayout(self.group_box_layout1)
+
+        group_box1.setMaximumSize(130, 1000)
+        # layout.addChildLayout(h1)
+        h1.addWidget(group_box1, 1, 0)
+        self.btn_load_md()
+
+        self.draw_grid = QWidget()
+        groupBox = QGroupBox(self.draw_grid)
         self.gridlayout = QGridLayout(groupBox)
-        w.setLayout(self.gridlayout)
-        layout.addWidget(w)
+        self.draw_grid.setLayout(self.gridlayout)
+        self.draw_grid.setVisible(False)
+        h1.addWidget(self.draw_grid,1,1)
+        layout.addRow(h1)
 
         self.tab2.setLayout(layout)
 
@@ -255,26 +257,26 @@ class Ui_Window(QTabWidget):
 
         h1=QHBoxLayout()
         h1.addWidget(QLabel("Datasets name："))
-        self.data_line_ui2=QLineEdit()
-        h1.addWidget( self.data_line_ui2)
-        self.search_by_data=QPushButton("Search by Data")
-        h1.addWidget(self.search_by_data)
-        self.search_by_data.clicked.connect(self.btn_search_by_data)
+        self.data_line_ui3=QLineEdit()
+        h1.addWidget( self.data_line_ui3)
+        search_by_data=QPushButton("Search by Data")
+        h1.addWidget(search_by_data)
+        search_by_data.clicked.connect(self.btn_search_by_data)
         h1.addWidget(QLabel(" Models name："))
-        self.model_line_ui2 = QLineEdit()
-        h1.addWidget(self.model_line_ui2)
-        self.search_by_model = QPushButton("Search by Model")
-        h1.addWidget(self.search_by_model)
-        self.search_by_model.clicked.connect(self.btn_search_by_model)
+        self.model_line_ui3 = QLineEdit()
+        h1.addWidget(self.model_line_ui3)
+        search_by_model = QPushButton("Search by Model")
+        h1.addWidget(search_by_model)
+        search_by_model.clicked.connect(self.btn_search_by_model)
         h1.addWidget(QLabel(" Filter condition："))
-        self.filter_line = QLineEdit()
-        h1.addWidget(self.filter_line)
-        self.search_by_filter = QPushButton("Search by condition")
-        h1.addWidget(self.search_by_filter)
-        self.search_by_filter.clicked.connect(self.btn_search_by_filter)
-        self.refresh=QPushButton("Refresh")
-        h1.addWidget(self.refresh)
-        self.refresh.clicked.connect(self.btn_refresh)
+        self.filter_line_ui3 = QLineEdit()
+        h1.addWidget(self.filter_line_ui3)
+        search_by_filter = QPushButton("Search by condition")
+        h1.addWidget(search_by_filter)
+        search_by_filter.clicked.connect(self.btn_search_by_filter)
+        refresh=QPushButton("Refresh")
+        h1.addWidget(refresh)
+        refresh.clicked.connect(self.btn_refresh)
         layout.addRow(h1)
 
         h3=QGridLayout()
@@ -316,14 +318,72 @@ class Ui_Window(QTabWidget):
         self.tab3.setLayout(layout)
 
     def tab4UI(self):
-        layout=QVBoxLayout()
-        listView = QListView()
-        self.slm = QtCore.QStringListModel();
-        self.qList = []
-        self.slm.setStringList(self.qList)
-        listView.setModel(self.slm)
-        listView.doubleClicked.connect(self.listview_selecd)
-        layout.addWidget(listView)
+
+        layout = QFormLayout()
+        gt = QHBoxLayout()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setPixelSize(25)
+        gt_label = QLabel("Error File")
+        gt.addWidget(gt_label, 1, Qt.AlignCenter)
+        gt_label.setFont(font)
+        layout.addRow(gt)
+        layout.addRow(QLabel(''))
+
+        h1 = QHBoxLayout()
+        h1.addWidget(QLabel("Datasets name："))
+        self.data_line_ui4 = QLineEdit()
+        h1.addWidget(self.data_line_ui4)
+        search_by_data = QPushButton("Search by Data")
+        h1.addWidget(search_by_data)
+        search_by_data.clicked.connect(self.btn_search_by_data_error)
+        h1.addWidget(QLabel(" Models name："))
+        self.model_line_ui4 = QLineEdit()
+        h1.addWidget(self.model_line_ui4)
+        search_by_model = QPushButton("Search by Model")
+        h1.addWidget(search_by_model)
+        search_by_model.clicked.connect(self.btn_search_by_model_error)
+        h1.addWidget(QLabel(" Filter condition："))
+        self.filter_line_ui4 = QLineEdit()
+        h1.addWidget(self.filter_line_ui4)
+        search_by_filter = QPushButton("Search by condition")
+        h1.addWidget(search_by_filter)
+        search_by_filter.clicked.connect(self.btn_search_by_filter_error)
+        refresh = QPushButton("Refresh")
+        h1.addWidget(refresh)
+        refresh.clicked.connect(self.btn_refresh)
+        layout.addRow(h1)
+
+        h2=QGridLayout()
+        self.table_widget1 = QtWidgets.QTableView()
+        self.table_widget1.setFixedSize(1360, 600)
+        db_text = os.getcwd() + '/src/database/core'
+
+        self.db_name1 = db_text
+        # 添加一个sqlite数据库连接并打开
+        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        db.setDatabaseName('{}.db'.format(db_text))
+        db.open()
+        # 实例化一个可编辑数据模型
+        self.model1 = QtSql.QSqlTableModel()
+
+        self.table_widget1.setModel(self.model1)
+        self.table_widget1.setSortingEnabled(True)
+        self.table_widget1.doubleClicked.connect(self.show_error_file)
+
+
+        self.model1.setTable('error')  # 设置数据模型的数据表
+        self.model1.setEditStrategy(False) # 允许字段更改
+        self.model1.select()  # 查询所有数据
+        # 设置表格头
+        self.model1.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
+        self.model1.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
+        self.model1.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
+        self.model1.setHeaderData(3, QtCore.Qt.Horizontal,'Error file')
+        self.table_widget1.setColumnWidth(3,1035)
+        h2.addWidget(self.table_widget1)
+        layout.addRow(h2)
+
         self.tab4.setLayout(layout)
 
     def onUpdateText(self, text):
@@ -419,19 +479,6 @@ class Ui_Window(QTabWidget):
         else:
             self.filepath_classes_gt = None
 
-    def btn_show_classes_clicked(self):
-        name=None
-        if not self.data_line.text()=='':
-            name=self.data_line.text()
-        elif not self.model_line.text()=='':
-            name=self.model_line.text()
-        else:
-            print(1)
-
-        class_names=DBManager().search_classes(name)
-
-        self.combobox_classes.addItems(class_names)
-
     def btn_gt_images_dir_clicked(self):
         if self.txb_gt_images_dir.text() == '':
             txt = self.current_directory
@@ -483,12 +530,6 @@ class Ui_Window(QTabWidget):
         else:
             self.dir_save_results = None
 
-    def btn_draw_clicked(self):
-       # self.process.setVisible(False)
-       # self.groupBox.setVisible(True)
-       plt= DBManager().draw()
-       self.gridlayout.addWidget(plt, 0, 2)
-
     def btn_save_clicked(self):
         if self.result_csv is None:
             print("error")
@@ -533,11 +574,13 @@ class Ui_Window(QTabWidget):
                     DB.add_item(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
                                 self.result['f1_'][m][i+1], AP_class[m+1], 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
                                 self.result['score_'][m][i])
-                    print(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], self.result['fn_'][m][i],
-                                np.nan_to_num(self.result['f1_'][m][i+1]), AP_class[m+1], 0, self.result['prec_'][m][i], self.result['rec_'][m][i],
-                                self.result['score_'][m][i])
+                    # print(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], self.result['fn_'][m][i],
+                    #             np.nan_to_num(self.result['f1_'][m][i+1]), AP_class[m+1], 0, self.result['prec_'][m][i], self.result['rec_'][m][i],
+                    #             self.result['score_'][m][i])
 
-            self.slm.setStringList(self.result['error'])
+            for j in range(len(self.result['error'])):
+                DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
+            # self.slm.setStringList(self.result['error'])
 
     def get_metric(self,tp, fp, fn):
         prec = tp / (tp + fp)
@@ -559,49 +602,107 @@ class Ui_Window(QTabWidget):
                                self.process_method)
         self.result_csv,self.result = evaluation.evaluate()
 
-    def btn_draw_by_model(self):
-        model_name = None
-        if self.model_line.text() == '':
-            print(1)
-        else:
-            model_name = self.model_line.text()
+    def btn_draw_by_model(self,model):
+        self.draw_grid.setVisible(True)
 
-        plt = DBManager().draw_by_model(model_name, self.class_name_draw)
+
+        plt = DBManager().draw_by_model(model, self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
-    def btn_draw_by_data(self):
-        dataset_name=None
-        if self.data_line.text()=='':
-            print(1)
-        else:
-            dataset_name=self.data_line.text()
+    def btn_draw_by_data(self,data):
+        self.draw_grid.setVisible(True)
 
-        plt = DBManager().draw_by_data(dataset_name,self.class_name_draw)
+        plt = DBManager().draw_by_data(data,self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
+
+    def btn_draw_clicked(self):
+        data=[]
+        for i in range(len(self.checkdatasets)):
+            if self.checkdatasets[i].isChecked():
+                data.append(self.datasets[i])
+        model=[]
+        for j in range(len(self.checkmodels)):
+            if self.checkmodels[j].isChecked():
+                model.append(self.models[j])
+
+        if len(data)==1:
+            self.btn_draw_by_model(model)
+        elif len(model)==1:
+            self.btn_draw_by_data(data)
+        else:
+            print("ui2 erroe")
 
     def btn_search_by_model(self):
-        text=self.model_line_ui2.text()
+        text=self.model_line_ui3.text()
         text="\""+text+"\""
         print('model_name='+str(text))
         self.model.setFilter('model_name='+str(text))
 
     def btn_search_by_data(self):
-        text = self.data_line_ui2.text()
+        text = self.data_line_ui3.text()
         text = "\"" + text + "\""
         print('dataset_name=' + str(text))
         self.model.setFilter('dataset_name=' + str(text))
 
     def btn_search_by_filter(self):
-        text = self.filter_line.text()
+        text = self.filter_line_ui3.text()
         self.model.setFilter(str(text))
 
     def btn_refresh(self):
         self.model.setFilter('')
 
-    def listview_selecd(self,qModelIndex):
-        text=self.result['error'][qModelIndex.row()]
+    def btn_search_by_model_error(self):
+        text=self.model_line_ui4.text()
+        text="\""+text+"\""
+        print('model_name='+str(text))
+        self.model1.setFilter('model_name='+str(text))
+
+    def btn_search_by_data_error(self):
+        text = self.data_line_ui4.text()
+        text = "\"" + text + "\""
+        print('dataset_name=' + str(text))
+        self.model1.setFilter('dataset_name=' + str(text))
+
+    def btn_search_by_filter_error(self):
+        text = self.filter_line_ui4.text()
+        self.model1.setFilter(str(text))
+
+    def btn_refresh_error(self):
+        self.model1.setFilter('')
+
+    def show_error_file(self,index):
+        row = index.row()
+        text = self.model1.data(self.model.index(row, 3))
+        # text=self.result['error'][qModelIndex.row()]
         image_path=text.split('---')[0]
         img = cv2.imread(image_path)
         cv2.imshow("Image", img)
 
+    def btn_load_md(self):
+        db_text = os.getcwd() + '/src/database/core'
 
+        # 添加一个sqlite数据库连接并打开
+        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        db.setDatabaseName('{}.db'.format(db_text))
+        db.open()
+        models,datasets=DBManager().search_model_datasets()
+        self.models,self.datasets=models,datasets
+
+        self.checkmodels=models.copy()
+        self.checkdatasets=datasets.copy()
+        for i in range(len(models)):
+
+            self.checkmodels[i]=QCheckBox(str(models[i]))
+            self.group_box_layout.addWidget(self.checkmodels[i])
+        for i in range(len(datasets)):
+            self.checkdatasets[i]=QCheckBox(str(datasets[i]))
+            self.group_box_layout1.addWidget(self.checkdatasets[i])
+
+    def btn_show_classes_clicked(self):
+        name=None
+        for i in range(len(self.checkdatasets)):
+            if self.checkdatasets[i].isChecked():
+                name=self.datasets[i]
+        class_names=DBManager().search_classes(name)
+        self.combobox_classes.clear()
+        self.combobox_classes.addItems(class_names)
