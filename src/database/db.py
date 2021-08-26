@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 
 from PyQt5.QtSql import QSqlQuery,QSqlDatabase,QSqlQueryModel
 import matplotlib
@@ -138,8 +139,9 @@ class DBManager():
         return models,datasets
 
     def search_id(self):
-        id_list=[]
-        class_num=[]
+        id_list=defaultdict(list)
+        class_num=defaultdict(list)
+        datasets=[]
         self.db.open()
         query = QSqlQuery()
         if query.exec(
@@ -147,11 +149,13 @@ class DBManager():
             while query.next():
                 value = [query.value(i) for i in range(5)]
                 id, model_name, dataset_name, class_name, id1 = value
-                id_list.append(id1)
+                id_list[model_name].append(id1)
                 if not class_name in class_num:
-                    class_num.append(class_name)
+                    class_num[model_name].append(class_name)
+                if not dataset_name in datasets:
+                    datasets.append(dataset_name)
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
-        return id_list,class_num
+        return id_list,class_num,dataset_name
 
 
     def get_max_id(self):

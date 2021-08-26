@@ -653,7 +653,11 @@ class Ui_Window(QTabWidget):
         self.model.setFilter(str(text))
 
     def btn_refresh(self):
-        id_max,class_name=DBManager().search_id()
+
+        id_max,class_name,datasets=DBManager().search_id()
+        for o in range(len(self.value)):
+            if self.value[o][1]
+
         for j in range(len(id_max)):
             id_max[j]-=2
             if id_max[j]<0:
