@@ -149,9 +149,9 @@ class DBManager():
             while query.next():
                 value = [query.value(i) for i in range(5)]
                 id, model_name, dataset_name, class_name, id1 = value
-                id_list[model_name].append(id1)
+                id_list[model_name+'_'+dataset_name].append(id1)
                 if not class_name in class_num:
-                    class_num[model_name].append(class_name)
+                    class_num[model_name+'_'+dataset_name].append(class_name)
                 if not dataset_name in datasets:
                     datasets.append(dataset_name)
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
@@ -206,7 +206,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def draw_by_model(self,models,classses):
+    def draw_by_model(self,models,datasets,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()
@@ -215,7 +215,7 @@ class DBManager():
             while query.next():
                 value=[query.value(i) for i in range(13)]
                 id,model_name,dataset_name,class_name,tp,fp,fn,f1,Ap,Map,prec,rec,Threshold = value
-                if model_name in models and class_name==classses:
+                if model_name in models and class_name==classses and dataset_name==datasets:
 
                     index.append(model_name)
                     map.append(float(Map))
@@ -265,7 +265,7 @@ class DBManager():
 
         return F1
 
-    def draw_by_data(self,datasets,classses):
+    def draw_by_data(self,models,datasets,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()
@@ -274,7 +274,7 @@ class DBManager():
             while query.next():
                 value=[query.value(i) for i in range(13)]
                 id,model_name,dataset_name,class_name,tp,fp,fn,f1,Ap,Map,prec,rec,Threshold = value
-                if dataset_name in datasets and class_name==classses:
+                if dataset_name in datasets and class_name==classses and model_name==models:
 
                     index.append(dataset_name)
                     map.append(float(Map))

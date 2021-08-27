@@ -288,7 +288,7 @@ class Ui_Window(QTabWidget):
         db_text = os.getcwd() + '/src/database/core'
 
         self.db_name = db_text
-        # 添加一个sqlite数据库连接并打开
+
         db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         db.setDatabaseName('{}.db'.format(db_text))
         db.open()
@@ -300,20 +300,18 @@ class Ui_Window(QTabWidget):
             while query.next():
                 value_ = [query.value(i) for i in range(13)]
                 self.value.append(value_)
-        # 实例化一个可编辑数据模型
-        self.model = QtGui.QStandardItemModel(1000000, 13)
+
+        self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class','TP','FP'
                                                  ,'FN','F1','Ap','Map','Precision','Recall','Threshold'])
-        # self.model = QtSql.QSqlTableModel()
 
         self.table_widget.setModel(self.model)
-        self.table_widget.setColumnWidth(0, 50)
+        # self.table_widget.setColumnWidth(0, 50)
         self.table_widget.setSortingEnabled(True)
-        self.btn_refresh()
-        # self.table_widget.itemc.connect(self.btn_refresh)
-        self.model.itemChanged.connect(self.btn_refresh1)
-        self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
+        self.model.itemChanged.connect(self.btn_refresh1)
+        self.btn_refresh()
+        self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
         h3.addWidget(self.table_widget)
         layout.addRow(h3)
@@ -606,17 +604,16 @@ class Ui_Window(QTabWidget):
                                self.process_method)
         self.result_csv,self.result = evaluation.evaluate()
 
-    def btn_draw_by_model(self,model):
+    def btn_draw_by_model(self,model,datasets):
         self.draw_grid.setVisible(True)
 
-
-        plt = DBManager().draw_by_model(model, self.class_name_draw)
+        plt = DBManager().draw_by_model(model,datasets, self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
-    def btn_draw_by_data(self,data):
+    def btn_draw_by_data(self,model,data):
         self.draw_grid.setVisible(True)
 
-        plt = DBManager().draw_by_data(data,self.class_name_draw)
+        plt = DBManager().draw_by_data(model,data,self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
     def btn_draw_clicked(self):
@@ -630,9 +627,9 @@ class Ui_Window(QTabWidget):
                 model.append(self.models[j])
 
         if len(data)==1:
-            self.btn_draw_by_model(model)
+            self.btn_draw_by_model(model,data[0])
         elif len(model)==1:
-            self.btn_draw_by_data(data)
+            self.btn_draw_by_data(model[0],data)
         else:
             print("ui2 erroe")
 
@@ -653,36 +650,42 @@ class Ui_Window(QTabWidget):
         self.model.setFilter(str(text))
 
     def btn_refresh(self):
+        self.model.itemChanged.disconnect(self.btn_refresh1)
 
-        id_max,class_name,datasets=DBManager().search_id()
-        a=id_max.keys()
-        print(a[1])
-        for o in range(len(self.value)):
-            if self.value[o][1]:
-                pass
+        id_max1,class_name1,datasets=DBManager().search_id()
 
-        for j in range(len(id_max)):
-            id_max[j]-=2
-            if id_max[j]<0:
-                id_max[j]=0
+        for key,value in id_max1.items():
+            model_n=key.split('_')[0]
+            data_name=key.split('_')[1]
+            id_max=value
+            class_name=class_name1[key]
+            data=[]
+            for i in range(len(self.value)):
+                if self.value[i][1]==model_n and self.value[i][2]==data_name:
+                    data.append(self.value[i])
 
-        class_num=len(class_name)
-        list=[[]]*class_num
-        for i in range(len(self.value)):
-            for l in range(class_num):
-                if self.value[i][3]==class_name[l]:
-                    if len(list[l])==0:
-                        list[l]=[self.value[i]]
-                    else:
-                        list[l].append(self.value[i])
+            # for j in range(len(id_max)):
+            #     id_max[j]-=1
+            #     if id_max[j]<0:
+            #         id_max[j]=0
 
-        for m in range(class_num):
-            for n in range(13):
-                # item=QtGui.QStandardItem()
-                a=list[m]
-                self.model.setItem(m, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+            class_num=len(class_name)
+            list=[[]]*class_num
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3]==class_name[l]:
+                        if len(list[l])==0:
+                            list[l]=[data[i]]
+                        else:
+                            list[l].append(data[i])
+            row_=self.model.rowCount()
+            for m in range(class_num):
+                row=row_+m
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a=list[m]
+                    self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
         self.model.itemChanged.connect(self.btn_refresh1)
-
 
     def index_number(self,li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -715,12 +718,14 @@ class Ui_Window(QTabWidget):
 
         for j in range(13):
             if j ==0:
-                self.model.itemChanged.disconnect(self.btn_refresh1)
+                try:
+                    self.model.itemChanged.disconnect(self.btn_refresh1)
+                except:
+                    continue
             self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
         self.model.itemChanged.connect(self.btn_refresh1)
         self.model.itemChanged.connect(self.btn_refresh1)
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
-
 
     def btn_search_by_model_error(self):
         text=self.model_line_ui4.text()
@@ -743,7 +748,7 @@ class Ui_Window(QTabWidget):
 
     def show_error_file(self,index):
         row = index.row()
-        text = self.model1.data(self.model.index(row, 3))
+        text = self.model1.data(self.model1.index(row, 3))
         # text=self.result['error'][qModelIndex.row()]
         image_path=text.split('---')[0]
         img = cv2.imread(image_path)
