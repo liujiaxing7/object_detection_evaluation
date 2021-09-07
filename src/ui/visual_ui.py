@@ -788,9 +788,6 @@ class Ui_Window(QTabWidget):
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
-        try:
-            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
-        except:pass
 
         id_max1,class_name1,datasets=DBManager().search_id()
 
@@ -821,11 +818,9 @@ class Ui_Window(QTabWidget):
             for m in range(class_num):
                 row=row_+m
                 for n in range(13):
-                    # item=QtGui.QStandardItem()
-                    a=list[m]
                     if n>5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
-                    else:self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])[0:5]))
+                    else:self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
@@ -859,7 +854,6 @@ class Ui_Window(QTabWidget):
         index=self.index_number(a,float(thre))
 
         for j in range(13):
-
             if j > 5:
                 self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])[0:5]))
             else:
