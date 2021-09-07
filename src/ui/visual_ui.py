@@ -30,6 +30,13 @@ class Stream(QtCore.QObject):
     def write(self, text):
         self.newText.emit(str(text))
 
+class EmptyDelegate(QItemDelegate):
+    def __init__(self, parent):
+        super(EmptyDelegate, self).__init__(parent)
+
+    def createEditor(self, QWidget, QStyleOptionViewItem, QModelIndex):
+        return None
+
 def nanstr(a):
     if a is None:
         return 0.0
@@ -302,11 +309,12 @@ class Ui_Window(QTabWidget):
         self.table_widget.setSortingEnabled(True)
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.table_widget.doubleClicked.connect(self.doubleClicked)
         if len(self.value)!=0:
            self.btn_refresh()
+        for i in range(12):
+            self.table_widget.setItemDelegateForColumn(i,EmptyDelegate(self))
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
-        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
-                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
         h3.addWidget(self.table_widget)
         layout.addRow(h3)
@@ -352,7 +360,7 @@ class Ui_Window(QTabWidget):
 
         h2=QGridLayout()
         self.table_widget1 = QtWidgets.QTableView()
-        self.table_widget1.setFixedSize(1360, 600)
+        self.table_widget1.setFixedSize(1370, 600)
         db_text = os.getcwd() + '/src/database/core'
 
         self.db_name1 = db_text
@@ -367,7 +375,6 @@ class Ui_Window(QTabWidget):
         self.table_widget1.setSortingEnabled(True)
         self.table_widget1.doubleClicked.connect(self.show_error_file)
 
-
         self.model1.setTable('error')  # 设置数据模型的数据表
         self.model1.setEditStrategy(False) # 允许字段更改
         self.model1.select()  # 查询所有数据
@@ -381,6 +388,9 @@ class Ui_Window(QTabWidget):
         layout.addRow(h2)
 
         self.tab4.setLayout(layout)
+
+    def doubleClicked(self,index):
+        self.table_widget.openPersistentEditor(index)
 
     def onUpdateText(self, text):
         """Write console output to text widget."""
@@ -775,6 +785,8 @@ class Ui_Window(QTabWidget):
 
     def btn_refresh(self):
         self.model.clear()
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
         try:
             self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
@@ -816,8 +828,6 @@ class Ui_Window(QTabWidget):
                     else:self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
-        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
-                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
     def index_number(self,li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -830,12 +840,12 @@ class Ui_Window(QTabWidget):
         return index
 
     def QStandardModelItemChanged(self,item):
+
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
 
         a=[]
         b=[]
         r = self.table_widget.currentIndex().row()  # 获取行号
-        c = self.table_widget.currentIndex().column()
 
         model=self.model.item(r,1).text()
         data=self.model.item(r,2).text()
@@ -846,22 +856,16 @@ class Ui_Window(QTabWidget):
             if self.value[i][1]==model and self.value[i][2]==data and self.value[i][3]==class_:
                 a.append(self.value[i][12])
                 b.append(self.value[i])
-        # b=a[:,13]
         index=self.index_number(a,float(thre))
 
         for j in range(13):
-            if j ==0:
-                try:
-                    self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
-                except:
-                    continue
 
             if j > 5:
                 self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])[0:5]))
             else:
                 self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
+
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
-        self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
     def btn_search_by_model_error(self):
         text=self.model_line_ui4.text()

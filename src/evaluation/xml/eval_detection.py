@@ -171,10 +171,10 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
 
 
             print("class_id = %d, name = %s, count = %s, (TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2"
-                  "f%%, avg_iou = %f) "% (l,class_names[l],str(len(class_count_l[l]))+"/"+str(class_count[l]),nan_str(tp[l]),nan_str(fp[l]),class_count1[l]-nan_str(tp[l]),precision[l],recalls[l],f1[l],isnan(avg_iou)))
+                  "f%%, avg_iou = %f) "% (l,class_names[l],str(len(class_count_l[l]))+"/"+str(class_count[l]),np.nan_to_num(tp[l]),np.nan_to_num(fp[l]),class_count1[l]-np.nan_to_num(tp[l]),precision[l],recalls[l],f1[l],isnan(avg_iou)))
 
-            if nan_str(fp[l]) > 0 or class_count1[l]-nan_str(tp[l]) > 0:
-                error_image_id.append(eval_image_id +"---"+class_names[l]+ "+FP:" + str(nan_str(fp[l])) + "+FN:" + str(class_count1[l]-nan_str(tp[l])))
+            if np.nan_to_num(fp[l]) > 0 or class_count1[l]-np.nan_to_num(tp[l]) > 0:
+                error_image_id.append(eval_image_id +"---"+class_names[l]+ "+FP:" + str(np.nan_to_num(fp[l])) + "+FN:" + str(class_count1[l]-np.nan_to_num(tp[l])))
             if isnan(avg_iou) !=0:
                  iou_one.append(avg_iou)
 
@@ -222,12 +222,6 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             fn_cl[l]=class_count[l]-tp_cl[l]
 
     return prec, rec, score_sort,tp_cl,fp_cl,fn_cl,error_image_id
-
-def nan_str(p):
-    if p==np.nan:
-        return 0
-    else:
-        return np.nan_to_num(p)
 
 def isnan(p):
     if p is None:
