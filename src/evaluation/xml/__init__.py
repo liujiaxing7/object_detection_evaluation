@@ -37,9 +37,10 @@ def print_csv(result, class_names):
     fn_str = "{}{}".format("FN".ljust(table_width), flag)
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(result["ap"]):
+    for i, ap in enumerate(ap_tolist(result["ap"])):
         # if i == 0:  # skip background
         #     continue
+
         metrics[class_names[i]] = ap
         head_str += "{}{}{}".format(prefix, class_names[i], flag)
         count_str += "{}{}{}".format(prefix, result['num'][i], flag)
@@ -71,7 +72,7 @@ def print_markdown(result, class_names):
     score_str = "|{}|".format("score".ljust(table_width))
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(result["ap"]):
+    for i, ap in enumerate(ap_tolist(result["ap"])):
         # if i == 0:  # skip background
         #     continue
         metrics[class_names[i]] = ap
@@ -97,7 +98,7 @@ def print_log(result, class_names):
     result_str += "{:<16}: {:<8} {:<6} {:<6} {:<6} {:<6}\n".format("class_names", "count", "ap", 'F1', "prediction", 'recall')
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(result["ap"]):
+    for i, ap in enumerate(ap_tolist(result["ap"])):
         # if i == 0:  # skip background
         #     continue
         metrics[class_names[i]] = ap
@@ -131,7 +132,6 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
 
         img_info = dataset.get_img_info(i)
         prediction = predictions[i]
-        # prediction = prediction.resize((img_info['width'], img_info['height'])).numpy()
         boxes, labels, scores = prediction['boxes'], prediction['labels'], prediction['scores']
 
         pred_boxes_list.append(boxes)
@@ -176,6 +176,18 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
         f.write(result_csv)
     return result_csv,result
 
+
+def ap_tolist(ap):
+    ap_list=[]
+    for v in ap:
+        if type(v) == float:
+            ap_list.append(np.nan)
+        elif len(v)>0:
+            ap_list.append(v[0])
+        else:ap_list.append(0)
+    return ap_list
+
+
 def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
 
@@ -198,7 +210,6 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
 
         img_info = dataset.get_img_info(i)
         prediction = predictions[i]
-        # prediction = prediction.resize((img_info['width'], img_info['height'])).numpy()
         boxes, labels, scores = prediction['boxes'], prediction['labels'], prediction['scores']
 
         pred_boxes_list.append(boxes)
@@ -224,7 +235,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(result['ap'])
+    result['map'] = np.nanmean(ap_tolist(result['ap']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -269,7 +280,6 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
 
         img_info = dataset.get_img_info(i)
         prediction = predictions[i]
-        # prediction = prediction.resize((img_info['width'], img_info['height'])).numpy()
         boxes, labels, scores = prediction['boxes'], prediction['labels'], prediction['scores']
 
         pred_boxes_list.append(boxes)

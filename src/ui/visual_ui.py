@@ -302,7 +302,8 @@ class Ui_Window(QTabWidget):
         self.table_widget.setSortingEnabled(True)
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
-        self.btn_refresh()
+        if len(self.value)!=0:
+           self.btn_refresh()
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
@@ -568,7 +569,7 @@ class Ui_Window(QTabWidget):
                 DB.add_item_id(model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m]))
                 for i in range(len(self.result['tp_'][m])):
                     DB.add_item_(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
-                                self.result['f1_'][m][i+1], AP_class[m+1], 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
+                                self.result['f1_'][m][i+1], nanstr(self.result['ap'][m][i]), 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
                                 self.result['score_'][m][i])
 
             for j in range(len(self.result['error'])):
@@ -815,6 +816,8 @@ class Ui_Window(QTabWidget):
                     else:self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
     def index_number(self,li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -859,7 +862,6 @@ class Ui_Window(QTabWidget):
                 self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
-
 
     def btn_search_by_model_error(self):
         text=self.model_line_ui4.text()

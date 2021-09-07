@@ -238,39 +238,45 @@ def isnan(p):
 def voc_ap(prec, rec, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
     """
-
     n_fg_class = len(prec)
-    ap = np.empty(n_fg_class)
+    ap = defaultdict(list)
     for l in six.moves.range(n_fg_class):
         if prec[l] is None or rec[l] is None:
             ap[l] = np.nan
             continue
+        for i in range(len(prec[l])):
+            prec1=prec[l][:len(prec[l])-i]
+            rec1=rec[l][:len(prec[l])-i]
 
-        if use_07_metric:
-            # 11 point metric
-            ap[l] = 0
-            for t in np.arange(0., 1.1, 0.1):
-                if np.sum(rec[l] >= t) == 0:
-                    p = 0
-                else:
-                    p = np.max(np.nan_to_num(prec[l])[rec[l] >= t])
-                ap[l] += p / 11
-        else:
-            # correct AP calculation
-            # first append sentinel values at the end
-            mpre = np.concatenate(([0], np.nan_to_num(prec[l]), [0]))
-            mrec = np.concatenate(([0], rec[l], [1]))
+            if use_07_metric:
+                # 11 point metric
+                ap[l] = 0
+                for t in np.arange(0., 1.1, 0.1):
+                    if np.sum(rec[l] >= t) == 0:
+                        p = 0
+                    else:
+                        p = np.max(np.nan_to_num(prec[l])[rec[l] >= t])
+                    ap[l] += p / 11
+            else:
+                # correct AP calculation
+                # first append sentinel values at the end
+                mpre = np.concatenate(([0], np.nan_to_num(prec1), [0]))
+                mrec = np.concatenate(([0], rec1, [1]))
 
-            mpre = np.maximum.accumulate(mpre[::-1])[::-1]
+                mpre = np.maximum.accumulate(mpre[::-1])[::-1]
 
-            # to calculate area under PR curve, look for points
-            # where X axis (recall) changes value
-            i = np.where(mrec[1:] != mrec[:-1])[0]
+                # to calculate area under PR curve, look for points
+                # where X axis (recall) changes value
+                i = np.where(mrec[1:] != mrec[:-1])[0]
 
-            # and sum (\Delta recall) * prec
-            ap[l] = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+                # and sum (\Delta recall) * prec
+                ap[l].append(np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1]))
+        ap[l] = ap[l][::-1]
 
-    return ap
+    ap_f=[None]*n_fg_class
+    for m in range(n_fg_class):
+        ap_f[m]=ap[m]
+    return ap_f
 
 def voc_F1(tp_,fp_,prec, rec, score, threshold):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
