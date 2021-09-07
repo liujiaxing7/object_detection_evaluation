@@ -1,0 +1,20 @@
+
+| mAP   | recall | F1 | precision |
+| 0.493 | 0.500 | 0.489 | 0.479 |
+
+|class_names |person |person_dummy   |person_model   |escalator_handrails|escalator      |
+|count       | 23    |     1         |     0         |     0         |     0         |
+|AP          | 0.986 |     0.000     |     nan       |     nan       |     nan       |
+|F1          | 0.979 |     0.000     |     nan       |     nan       |     nan       |
+|Prediction  | 0.958 |     0.000     |     nan       |     nan       |     nan       |
+|recall      | 1.000 |     0.000     |     nan       |     nan       |     nan       |
+|score       | 0.554 |     0.000     |     nan       |     nan       |     nan       |
+
+
+mAP 0.493 recall 0.500 F1: 0.489 
+class_names     : count    ap     F1     prediction recall
+person          : 23       0.986  0.979  0.958  1.000
+person_dummy    : 1        0.000  0.000  0.000  0.000
+person_model    : 0        nan    nan    nan    nan  
+escalator_handrails: 0        nan    nan    nan    nan  
+escalator       : 0        nan    nan    nan    nan  

@@ -6,7 +6,6 @@
 @time: 2021/8/24 18.46
 @desc:
 '''
-import bisect
 from decimal import Decimal
 
 from PyQt5 import QtGui,QtCore,QtWidgets,QtSql
@@ -16,14 +15,9 @@ from PyQt5.QtWidgets import *
 
 import os
 import sys
-
 from cv2 import cv2
-
 import onnx
 import numpy as np
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
-from PyQt5 import QtCore, QtGui
 import matplotlib
 
 matplotlib.use("Qt5Agg")
@@ -224,7 +218,7 @@ class Ui_Window(QTabWidget):
         group_box.setLayout(self.group_box_layout)
 
         group_box.setMinimumSize(100,10)
-        h1.addWidget(group_box,0,1)
+        h1.addWidget(group_box,0,0,1,2)
 
         group_box1 = QtWidgets.QGroupBox('Datasets')
         self.group_box_layout1 = QtWidgets.QVBoxLayout()
@@ -302,16 +296,16 @@ class Ui_Window(QTabWidget):
                 self.value.append(value_)
 
         self.model = QtGui.QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class','TP','FP'
-                                                 ,'FN','F1','Ap','Map','Precision','Recall','Threshold'])
 
         self.table_widget.setModel(self.model)
         # self.table_widget.setColumnWidth(0, 50)
         self.table_widget.setSortingEnabled(True)
 
-        self.model.itemChanged.connect(self.btn_refresh1)
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.btn_refresh()
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
         h3.addWidget(self.table_widget)
         layout.addRow(h3)
@@ -537,6 +531,7 @@ class Ui_Window(QTabWidget):
         else:
             DB=DBManager()
             result_csv = self.result_csv.split("\n")
+
             #each class
             class_name=result_csv[4].split(",")
             model_name = os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
@@ -546,8 +541,6 @@ class Ui_Window(QTabWidget):
                 ,result_csv[11].split(","),result_csv[12].split(","),result_csv[13].split(",")
 
             TP_all,FP_all,FN_all=0,0,0
-
-            #id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
 
             for i,name_cl in enumerate(class_name):
                 if name_cl=='class_names 'or name_cl=='':
@@ -566,7 +559,6 @@ class Ui_Window(QTabWidget):
             #save all classes metric
             result_metric = result_csv[2].split(",")
 
-            # map,recall,F1_,Precision = float(result_metric[0]),float(result_metric[1]),float(result_metric[2]),float(result_metric[3])
             map = float(result_metric[0])
             Precision,recall,F1_=self.get_metric(TP_all,FP_all,FN_all)
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
@@ -581,8 +573,6 @@ class Ui_Window(QTabWidget):
 
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
-
-            # self.slm.setStringList(self.result['error'])
 
     def get_metric(self,tp, fp, fn):
         prec = tp / (tp + fp)
@@ -635,22 +625,159 @@ class Ui_Window(QTabWidget):
 
     def btn_search_by_model(self):
         text=self.model_line_ui3.text()
-        text="\""+text+"\""
-        print('model_name='+str(text))
-        self.model.setFilter('model_name='+str(text))
+        self.model.clear()
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = DBManager().search_id()
+
+        for key, value in id_max1.items():
+            model_n = key.split('_')[0]
+            if not model_n==text:
+                continue
+            data_name = key.split('_')[1]
+            id_max = value
+            class_name = class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
+            data = []
+            for i in range(len(self.value)):
+                if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                    data.append(self.value[i])
+
+            class_num = len(class_name)
+            list = [[]] * class_num
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3] == class_name[l]:
+                        if len(list[l]) == 0:
+                            list[l] = [data[i]]
+                        else:
+                            list[l].append(data[i])
+
+            row_ = self.model.rowCount()
+            for m in range(class_num):
+                row = row_ + m
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a = list[m]
+                    if n > 5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                    else:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def btn_search_by_data(self):
         text = self.data_line_ui3.text()
-        text = "\"" + text + "\""
-        print('dataset_name=' + str(text))
-        self.model.setFilter('dataset_name=' + str(text))
+        self.model.clear()
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = DBManager().search_id()
+
+        for key, value in id_max1.items():
+            model_n = key.split('_')[0]
+            data_name = key.split('_')[1]
+            if not data_name == text:
+                continue
+            id_max = value
+            class_name = class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
+            data = []
+            for i in range(len(self.value)):
+                if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                    data.append(self.value[i])
+
+            class_num = len(class_name)
+            list = [[]] * class_num
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3] == class_name[l]:
+                        if len(list[l]) == 0:
+                            list[l] = [data[i]]
+                        else:
+                            list[l].append(data[i])
+
+            row_ = self.model.rowCount()
+            for m in range(class_num):
+                row = row_ + m
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a = list[m]
+                    if n > 5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                    else:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def btn_search_by_filter(self):
         text = self.filter_line_ui3.text()
-        self.model.setFilter(str(text))
+        text_model=text.split('_')[0]
+        text_datasets=text.split('_')[1]
+        self.model.clear()
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = DBManager().search_id()
+
+        for key, value in id_max1.items():
+            model_n = key.split('_')[0]
+            data_name = key.split('_')[1]
+            if model_n == text_model and data_name==text_datasets:
+
+                id_max = value
+                class_name = class_name1[key]
+                id_max.append(0)
+                class_name.append('all')
+
+                data = []
+                for i in range(len(self.value)):
+                    if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                        data.append(self.value[i])
+
+                class_num = len(class_name)
+                list = [[]] * class_num
+                for i in range(len(data)):
+                    for l in range(class_num):
+                        if data[i][3] == class_name[l]:
+                            if len(list[l]) == 0:
+                                list[l] = [data[i]]
+                            else:
+                                list[l].append(data[i])
+
+                row_ = self.model.rowCount()
+                for m in range(class_num):
+                    row = row_ + m
+                    for n in range(13):
+                        # item=QtGui.QStandardItem()
+                        a = list[m]
+                        if n > 5:
+                            self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                        else:
+                            self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def btn_refresh(self):
-        self.model.itemChanged.disconnect(self.btn_refresh1)
+        self.model.clear()
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:pass
 
         id_max1,class_name1,datasets=DBManager().search_id()
 
@@ -659,15 +786,13 @@ class Ui_Window(QTabWidget):
             data_name=key.split('_')[1]
             id_max=value
             class_name=class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
             data=[]
             for i in range(len(self.value)):
                 if self.value[i][1]==model_n and self.value[i][2]==data_name:
                     data.append(self.value[i])
-
-            # for j in range(len(id_max)):
-            #     id_max[j]-=1
-            #     if id_max[j]<0:
-            #         id_max[j]=0
 
             class_num=len(class_name)
             list=[[]]*class_num
@@ -678,14 +803,18 @@ class Ui_Window(QTabWidget):
                             list[l]=[data[i]]
                         else:
                             list[l].append(data[i])
+
             row_=self.model.rowCount()
             for m in range(class_num):
                 row=row_+m
                 for n in range(13):
                     # item=QtGui.QStandardItem()
                     a=list[m]
-                    self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
-        self.model.itemChanged.connect(self.btn_refresh1)
+                    if n>5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                    else:self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def index_number(self,li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -697,8 +826,9 @@ class Ui_Window(QTabWidget):
                 index = i
         return index
 
-    def btn_refresh1(self,item):
-        self.model.itemChanged.disconnect(self.btn_refresh1)
+    def QStandardModelItemChanged(self,item):
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+
         a=[]
         b=[]
         r = self.table_widget.currentIndex().row()  # 获取行号
@@ -719,12 +849,16 @@ class Ui_Window(QTabWidget):
         for j in range(13):
             if j ==0:
                 try:
-                    self.model.itemChanged.disconnect(self.btn_refresh1)
+                    self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
                 except:
                     continue
-            self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
-        self.model.itemChanged.connect(self.btn_refresh1)
-        self.model.itemChanged.connect(self.btn_refresh1)
+
+            if j > 5:
+                self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])[0:5]))
+            else:
+                self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
     def btn_search_by_model_error(self):

@@ -185,9 +185,11 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
     gt_boxes_list = []
     gt_labels_list = []
     gt_difficults = []
+    image_id_list = []
 
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_darknet(i)
+        image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
         gt_boxes, gt_labels = dataset.get_darknet_labels(annotation)
@@ -208,9 +210,11 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
                                 class_names=class_names,
+                                image_id_list=image_id_list,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
-                                threshold=threshold)
+                                threshold=threshold
+                                )
     if save_anno:
         print("writing xml")
         dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
@@ -232,7 +236,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
     if iteration is not None:
         result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = os.path.join(output_dir, '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+        result_path = output_dir+ '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
@@ -249,10 +253,13 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     gt_boxes_list = []
     gt_labels_list = []
     gt_difficults = []
+    image_id_list = []
+
     annotation_file=dataset.get_file_json()
     ann_file=COCO(annotation_file=annotation_file)
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_darknet(i)
+        image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
         gt_boxes, gt_labels = dataset.get_coco_labels(ann_file,image_id)
@@ -274,6 +281,7 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
                                 gt_bboxes=gt_boxes_list,
                                 gt_labels=gt_labels_list,
                                 class_names=class_names,
+                                image_id_list=image_id_list,
                                 iou_thresh=0.5,
                                 use_07_metric=False,
                                 threshold=threshold)
@@ -298,7 +306,7 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     if iteration is not None:
         result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = os.path.join(output_dir, '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
