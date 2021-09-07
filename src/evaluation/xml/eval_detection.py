@@ -220,11 +220,6 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         if class_count[l] > 0:
             rec[l] = tp_cl[l] / class_count[l]
             fn_cl[l]=class_count[l]-tp_cl[l]
-            # if len(tp_cl[l])==0:
-            #     tp_cl[l]=[0]
-            #     fp_cl[l]=[0]
-            #     fn_cl[l] = class_count[l]
-
 
     return prec, rec, score_sort,tp_cl,fp_cl,fn_cl,error_image_id
 

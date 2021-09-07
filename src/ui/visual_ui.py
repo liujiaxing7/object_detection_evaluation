@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 '''
 @author: 刘家兴
@@ -859,8 +858,8 @@ class Ui_Window(QTabWidget):
             else:
                 self.model.setItem(r,j,QtGui.QStandardItem(str(b[index][j])))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
-        self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.setEditTriggers(QAbstractItemView.AllEditTriggers)
+
 
     def btn_search_by_model_error(self):
         text=self.model_line_ui4.text()

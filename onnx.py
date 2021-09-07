@@ -61,8 +61,6 @@ class ONNX(object):
             self.predictions.append(prediction)
 
 
-
-
     def evaluate(self):
         self.classes=load_class_names(self.classes_path)
         create_list.voctodark(self.data_dir,self.classes)
@@ -73,9 +71,7 @@ class ONNX(object):
         for i in range(10):
             image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))
-            # size = image.size()
-            # s = image.bits().asstring(size.width() * size.height() * image.depth() // 8)  # format 0xffRRGGBB
-            # image = np.fromstring(s, dtype=np.uint8).reshape((size.height(), size.width(), image.depth() // 8))
+
             self.forward(image)
 
         if self.format=='voc':
