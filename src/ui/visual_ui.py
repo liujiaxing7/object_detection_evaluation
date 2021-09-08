@@ -578,7 +578,8 @@ class Ui_Window(QTabWidget):
             for m in range(len(self.result['tp_'])):
                 DB.add_item_id(model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m]))
                 for i in range(len(self.result['tp_'][m])):
-                    DB.add_item_(model_name, dataset_name,class_name[m+1] , self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
+
+                    DB.add_item_(model_name, dataset_name,class_name[m+1], self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
                                 self.result['f1_'][m][i+1], nanstr(self.result['ap'][m][i]), 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
                                 self.result['score_'][m][i])
 

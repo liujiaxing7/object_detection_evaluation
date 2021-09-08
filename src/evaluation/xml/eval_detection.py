@@ -220,7 +220,8 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         if class_count[l] > 0:
             rec[l] = tp_cl[l] / class_count[l]
             fn_cl[l]=class_count[l]-tp_cl[l]
-
+        else:
+            fn_cl[l]=np.nan
     return prec, rec, score_sort,tp_cl,fp_cl,fn_cl,error_image_id
 
 def isnan(p):

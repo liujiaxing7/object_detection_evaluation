@@ -17,6 +17,15 @@ def nan_str_int(p, space=True):
         return "{:<5}".format(str(p)) if space else 0
     else:
         return "{:d}".format(int(p))
+def ap_tolist(ap):
+    ap_list=[]
+    for v in ap:
+        if type(v) == float:
+            ap_list.append(np.nan)
+        elif len(v)>0:
+            ap_list.append(v[0])
+        else:ap_list.append(0)
+    return ap_list
 
 def print_csv(result, class_names):
     prefix, flag = "", ','
@@ -157,7 +166,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(result['ap'])
+    result['map'] = np.nanmean(ap_tolist(result['ap']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -175,18 +184,6 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
     return result_csv,result
-
-
-def ap_tolist(ap):
-    ap_list=[]
-    for v in ap:
-        if type(v) == float:
-            ap_list.append(np.nan)
-        elif len(v)>0:
-            ap_list.append(v[0])
-        else:ap_list.append(0)
-    return ap_list
-
 
 def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=None, threshold=None):
     class_names = dataset.get_classes()
@@ -304,7 +301,7 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(result['ap'])
+    result['map'] = np.nanmean(ap_tolist(result['ap']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
