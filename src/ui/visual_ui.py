@@ -37,11 +37,15 @@ class EmptyDelegate(QItemDelegate):
     def createEditor(self, QWidget, QStyleOptionViewItem, QModelIndex):
         return None
 
-def nanstr(a):
+def nanstr(a,i):
     if a is None:
         return 0.0
+    elif type(a)==float:
+        return np.nan_to_num(a)
+    elif a[i] is None:
+        return 0.0
     else:
-        return a
+        return a[i]
 
 class Ui_Window(QTabWidget):
     def __init__(self,parent=None):
@@ -579,9 +583,9 @@ class Ui_Window(QTabWidget):
                 DB.add_item_id(model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m]))
                 for i in range(len(self.result['tp_'][m])):
 
-                    DB.add_item_(model_name, dataset_name,class_name[m+1], self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m][i])),
-                                self.result['f1_'][m][i+1], nanstr(self.result['ap'][m][i]), 0, self.result['prec_'][m][i], nanstr(self.result['rec_'][m][i]),
-                                self.result['score_'][m][i])
+                    DB.add_item_(model_name, dataset_name,class_name[m+1], self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m],i)),
+                                nanstr(self.result['f1_'][m],i), nanstr(self.result['ap'][m],i), 0, nanstr(self.result['prec_'][m],i), nanstr(self.result['rec_'][m],i),
+                                nanstr(self.result['score_'][m],i))
 
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
