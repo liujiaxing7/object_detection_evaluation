@@ -23,7 +23,7 @@ def ap_tolist(ap):
         if type(v) == float:
             ap_list.append(np.nan)
         elif len(v)>0:
-            ap_list.append(v[0])
+            ap_list.append(v[-1])
         else:ap_list.append(0)
     return ap_list
 
@@ -201,7 +201,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
         image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
-        gt_boxes, gt_labels = dataset.get_darknet_labels(annotation)
+        gt_boxes, gt_labels = dataset.get_darknet_labels(image_id,annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
 

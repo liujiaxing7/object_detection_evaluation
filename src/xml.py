@@ -244,26 +244,29 @@ class XML(torch.utils.data.Dataset):
 
         return (boxes, labels)
 
-    def get_darknet_labels(self,ann_file):
-        box_label=np.loadtxt(ann_file)
+    def get_darknet_labels(self,img_file,ann_file):
+        box_label=np.loadtxt(ann_file).tolist()
+
         boxes = []
         labels = []
+        img=cv2.imread(img_file)
+        width = np.array(img).shape[1]
+        height=np.array(img).shape[0]
 
-        for i in box_label.tolist():
-            if type(i)!=list:
-                labels.append(int(i))
-                xmin = box_label[1] * 640 - box_label[3] * 320
-                xmax = xmin + box_label[3] * 640
-                ymin = box_label[2] * 400 - box_label[4] * 200
-                ymax = ymin + box_label[4] * 400
-                boxes.append([int(xmin), int(ymin), int(xmax), int(ymax)])
-
-            else:
+        if type(box_label[0])==float:
+            labels.append(int(box_label[0]))
+            xmin = box_label[1] * width - box_label[3] * width/2
+            xmax = xmin + box_label[3] * width
+            ymin = box_label[2] * height - box_label[4] * height/2
+            ymax = ymin + box_label[4] * height
+            boxes.append([int(xmin), int(ymin), int(xmax), int(ymax)])
+        else:
+            for i in box_label:
                 labels.append(int(i[0]))
-                xmin=i[1]*640-i[3]*320
-                xmax=xmin+i[3]*640
-                ymin=i[2]*400-i[4]*200
-                ymax=ymin+i[4]*400
+                xmin=i[1]*width-i[3]*width/2
+                xmax=xmin+i[3]*width
+                ymin=i[2]*height-i[4]*height/2
+                ymax=ymin+i[4]*height
                 boxes.append([int(xmin),int(ymin),int(xmax),int(ymax)])
         boxes = np.array(boxes, dtype=np.float32)
         labels = np.array(labels, dtype=np.int64)

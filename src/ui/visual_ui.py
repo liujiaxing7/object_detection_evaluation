@@ -379,6 +379,7 @@ class Ui_Window(QTabWidget):
         self.table_widget1.setSortingEnabled(True)
         self.table_widget1.doubleClicked.connect(self.show_error_file)
 
+
         self.model1.setTable('error')  # 设置数据模型的数据表
         self.model1.setEditStrategy(False) # 允许字段更改
         self.model1.select()  # 查询所有数据
@@ -388,6 +389,8 @@ class Ui_Window(QTabWidget):
         self.model1.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
         self.model1.setHeaderData(3, QtCore.Qt.Horizontal,'Error file')
         self.table_widget1.setColumnWidth(3,1035)
+        for i in range(4):
+            self.table_widget.setItemDelegateForColumn(i,EmptyDelegate(self))
         h2.addWidget(self.table_widget1)
         layout.addRow(h2)
 
