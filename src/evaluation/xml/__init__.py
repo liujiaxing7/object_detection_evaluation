@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 import numpy as np
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 from src.database.db import DBManager
 from .eval_detection import eval_detection_voc
 

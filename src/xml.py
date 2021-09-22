@@ -1,7 +1,7 @@
 import json
 import os
 from collections import defaultdict
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 
 import torch.utils.data
 import numpy as np

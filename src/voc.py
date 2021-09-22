@@ -37,10 +37,10 @@ class VOCDataset(XML):
 
     def get_file_darknet(self, index):
         image_id = self.file_list[index]
-        image_file = os.path.join(self.data_dir, "JPEGImages", "%s.png" % image_id)
+        image_file = self.data_dir+ "/JPEGImages"+ "%s.png" % image_id
         if not os.path.isfile(image_file):
-            image_file = os.path.join(self.data_dir, "JPEGImages", "%s.jpg" % image_id)
-        annotation_file = os.path.join(self.data_dir, "labels", "%s.txt" % image_id)
+            image_file = self.data_dir+ "/JPEGImages"+ "%s.jpg" % image_id
+        annotation_file = self.data_dir+ "/labels"+ "%s.txt" % image_id
         return image_file, annotation_file
 
     def get_classes(self):

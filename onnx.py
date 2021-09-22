@@ -8,6 +8,9 @@
 @desc:
 '''
 import os
+
+from tqdm import tqdm
+
 from src.utils.process.yolov3.preprocess_yolov3 import pre_process as yoloPreProcess_yolov3
 from src.utils.process.yolov5.preprocess_yolov5 import pre_process as yoloPreProcess_yolov5
 from src.utils.process.yolov3.postprocess_yolov3 import  THRESHOLD_YOLOV3, post_processing,\
@@ -69,7 +72,7 @@ class ONNX(object):
                                           None, None, None, True)
         output_dir='./result/'+self.process_method
         batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "trainval.txt" )).readlines())
-        for i in range(batch_size):
+        for i in tqdm(range(batch_size)):
             image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))
 

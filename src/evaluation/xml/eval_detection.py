@@ -4,6 +4,8 @@ from collections import defaultdict
 import itertools
 import numpy as np
 import six
+from tqdm import tqdm
+
 from src.utils.utils import bbox_iou
 
 def get_box_num(gt_labels, class_num):
@@ -48,7 +50,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
     all_data = six.moves.zip(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults,image_id)
     score, match, class_count_l = defaultdict(list), defaultdict(list), defaultdict(list)
     error_image_id=[]
-    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult ,eval_image_id in all_data:
+    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult ,eval_image_id in tqdm(all_data):
         score_iter, match_iter,iou_iter = defaultdict(list), defaultdict(list),defaultdict(list)
         class_count1=get_box_num1(gt_label, len(class_count))
         if gt_difficult is None:
