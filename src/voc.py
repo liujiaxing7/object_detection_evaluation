@@ -30,8 +30,8 @@ class VOCDataset(XML):
         image_id = self.file_list[index]
         image_file = self.data_dir+ "/JPEGImages"+ "%s.png" % image_id
         annotation_file = self.data_dir+ "/Annotations"+ "%s.xml" % image_id
-        # if not os.path.isfile(image_file):
-        #     image_file = os.path.join(self.data_dir, "JPEGImages", "%s.jpg" % image_id)
+        if not os.path.isfile(image_file):
+            image_file = self.data_dir+ "/JPEGImages"+ "%s.jpg" % image_id
         # annotation_file = os.path.join(self.data_dir, "Annotations", "%s.xml" % image_id)
         return image_file, annotation_file
 
