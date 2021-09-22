@@ -309,11 +309,10 @@ def voc_F1(tp_,fp_,prec, rec, score, threshold):
     return tp,fp,precision, recall, f1, score_threshold,F1_,id_
 
 def get_metric(tp,fp,fn):
-    if tp+fp==0:
-        prec=0
-        f1=0
-    else:
-        prec=tp/(tp+fp)
+    if tp+fp==0 or tp+fn==0:
+        return 0,0,0
+
+    prec=tp/(tp+fp)
     rec=tp/(tp+fn)
     f1=2/(1/prec+1/rec)
     return prec,rec,f1
