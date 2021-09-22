@@ -593,9 +593,12 @@ class Ui_Window(QTabWidget):
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
 
-    def get_metric(self,tp, fp, fn):
+    def get_metric(tp, fp, fn):
+        if tp + fp == 0 or tp + fn == 0:
+            return 0, 0, 0
+
         prec = tp / (tp + fp)
-        rec = tp/(tp + fn)
+        rec = tp / (tp + fn)
         f1 = 2 / (1 / prec + 1 / rec)
         return prec, rec, f1
 
@@ -612,6 +615,7 @@ class Ui_Window(QTabWidget):
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
         self.result_csv,self.result = evaluation.evaluate()
+        self.btn_save_clicked()
 
     def btn_draw_by_model(self,model,datasets):
         self.draw_grid.setVisible(True)
