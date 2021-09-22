@@ -68,17 +68,18 @@ class ONNX(object):
         self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir,
                                           None, None, None, True)
         output_dir='./result/'+self.process_method
-        for i in range(10):
+        batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "trainval.txt" )).readlines())
+        for i in range(batch_size):
             image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))
 
             self.forward(image)
 
         if self.format=='voc':
-            result_csv,result=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None)
+            result_csv,result=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
         if self.format=='coco':
-            result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None)
+            result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
         if self.format=='darknet':
-            result_csv,result=xml.evaluation_darknet(self.datasets, self.predictions,output_dir,False, None, None)
+            result_csv,result=xml.evaluation_darknet(self.datasets, self.predictions,output_dir,False, None, None,batch_size)
         return result_csv,result
 

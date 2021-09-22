@@ -6,7 +6,7 @@ import numpy as np
 from pycocotools.coco import COCO
 from src.database.db import DBManager
 from .eval_detection import eval_detection_voc
-BATCH_SIZE=10
+
 def nan_str(p, space=True):
     if np.isnan(p):
         return "{:<5}".format(str(p)) if space else 0
@@ -117,7 +117,7 @@ def print_log(result, class_names):
 
     return result_str, metrics
 
-def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
+def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
 
     class_names = dataset.get_classes()
 
@@ -185,7 +185,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
         f.write(result_csv)
     return result_csv,result
 
-def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=None, threshold=None):
+def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -252,7 +252,7 @@ def evaluation_darknet(dataset, predictions, output_dir,save_anno, iteration=Non
 
     return result_csv,result
 
-def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None):
+def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
