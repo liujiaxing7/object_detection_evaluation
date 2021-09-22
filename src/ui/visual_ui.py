@@ -593,7 +593,7 @@ class Ui_Window(QTabWidget):
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
 
-    def get_metric(tp, fp, fn):
+    def get_metric(self,tp, fp, fn):
         if tp + fp == 0 or tp + fn == 0:
             return 0, 0, 0
 
