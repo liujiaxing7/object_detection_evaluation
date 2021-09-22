@@ -5,21 +5,32 @@ import os
 from os import listdir, getcwd
 from os.path import join
 
+def get_img(input_dir):
+    xml_path_list = []
+    for (root_path, dirname, filenames) in os.walk(input_dir):
+        for filename in filenames:
+            if filename.endswith('.jpg') or filename.endswith('.png'):
+                xml_path = root_path + "/" + filename
+                xml_path_list.append(xml_path)
+    return xml_path_list
 
 def create_txt(file_path):
-    xmlfilepath = os.path.join(file_path,"JPEGImages/")
+    xmlfilepath = os.path.join(file_path,"JPEGImages")
     output_path=os.path.join(file_path,"ImageSets/Main")
-    total_xml = os.listdir(xmlfilepath)
+    total_xml = get_img(xmlfilepath)
+
     num = len(total_xml)
     # total_xml.sort()
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
+
     trainval = open(output_path+'/trainval.txt', 'w')
 
     count1= 0
     for i in range(num):
-        name = total_xml[i][:-4] + '\n'
+        name1 = total_xml[i][:-4] + '\n'
+        name=name1.split('JPEGImages')[1]
         if i in range(num):
             trainval.write(name)
             count1 += 1
