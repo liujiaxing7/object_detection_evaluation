@@ -815,7 +815,7 @@ class Ui_Window(QTabWidget):
 
             data=[]
             for i in range(len(self.value)):
-                if self.value[i][1]==model_n and self.value[i][2]==data_name:
+                if self.value[i][1]==model_n and str(self.value[i][2])==data_name:
                     data.append(self.value[i])
 
             class_num=len(class_name)
@@ -864,7 +864,7 @@ class Ui_Window(QTabWidget):
         thre=self.model.item(r,12).text()
 
         for i in range(len(self.value)):
-            if self.value[i][1]==model and self.value[i][2]==data and self.value[i][3]==class_:
+            if self.value[i][1]==model and str(self.value[i][2])==data and self.value[i][3]==class_:
                 a.append(self.value[i][12])
                 b.append(self.value[i])
         index=self.index_number(a,float(thre))
