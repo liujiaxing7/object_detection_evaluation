@@ -579,6 +579,7 @@ class Ui_Window(QTabWidget):
 
             map = float(result_metric[0])
             Precision,recall,F1_=self.get_metric(TP_all,FP_all,FN_all)
+            print(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
             DB.add_item_(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
 
@@ -831,7 +832,9 @@ class Ui_Window(QTabWidget):
             for m in range(class_num):
                 row=row_+m
                 for n in range(13):
+
                     if n>5:
+
                         self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])[0:5]))
                     else:self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])))
 

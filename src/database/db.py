@@ -155,7 +155,7 @@ class DBManager():
                 if not dataset_name in datasets:
                     datasets.append(dataset_name)
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
-        return id_list,class_num,dataset_name
+        return id_list,class_num,datasets
 
 
     def get_max_id(self):
