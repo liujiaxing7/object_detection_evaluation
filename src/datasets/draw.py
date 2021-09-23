@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn
 import numpy as np
 import matplotlib
-matplotlib.use("Qt5Agg")  # 声明使用QT5
+# matplotlib.use("Qt5Agg")  # 声明使用QT5
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt

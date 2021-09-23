@@ -66,12 +66,14 @@ class ONNX(object):
 
     def evaluate(self):
         self.classes=load_class_names(self.classes_path)
-        create_list.voctodark(self.data_dir,self.classes)
 
+        # create_list.voctodark(self.data_dir,self.classes)
+        print('begin')
         self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir,
                                           None, None, None, True)
+
         output_dir='./result/'+self.process_method
-        batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "trainval.txt" )).readlines())
+        batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "test.txt" )).readlines())
         for i in tqdm(range(batch_size)):
             image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))

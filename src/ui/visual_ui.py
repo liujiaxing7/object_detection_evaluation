@@ -20,15 +20,15 @@ import onnx
 import numpy as np
 import matplotlib
 
-matplotlib.use("Qt5Agg")
+# matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
 
-class Stream(QtCore.QObject):
-    """Redirects console output to text widget."""
-    newText = QtCore.pyqtSignal(str)
-
-    def write(self, text):
-        self.newText.emit(str(text))
+# class Stream(QtCore.QObject):
+#     """Redirects console output to text widget."""
+#     newText = QtCore.pyqtSignal(str)
+#
+#     def write(self, text):
+#         self.newText.emit(str(text))
 
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
@@ -71,7 +71,7 @@ class Ui_Window(QTabWidget):
         self.class_name_draw=None
 
         self.center_screen()
-        sys.stdout = Stream(newText=self.onUpdateText)
+        # sys.stdout = Stream(newText=self.onUpdateText)
 
         self.tab1 = QtWidgets.QWidget()
         self.tab2 = QtWidgets.QWidget()
@@ -616,6 +616,7 @@ class Ui_Window(QTabWidget):
                                self.process_method)
         self.result_csv,self.result = evaluation.evaluate()
         self.btn_save_clicked()
+        print("保存成功")
 
     def btn_draw_by_model(self,model,datasets):
         self.draw_grid.setVisible(True)
