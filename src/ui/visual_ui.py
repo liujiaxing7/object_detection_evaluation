@@ -983,9 +983,11 @@ class Ui_Window(QTabWidget):
         for i in range(len(models)):
 
             self.checkmodels[i]=QCheckBox(str(models[i]))
+            self.checkmodels[i].stateChanged.connect(self.btn_draw_clicked)
             self.group_box_layout.addWidget(self.checkmodels[i])
         for i in range(len(datasets)):
             self.checkdatasets[i]=QCheckBox(str(datasets[i]))
+            self.checkdatasets[i].stateChanged.connect(self.btn_draw_clicked)
             self.group_box_layout1.addWidget(self.checkdatasets[i])
 
     def btn_show_classes_clicked(self):
