@@ -583,13 +583,79 @@ class Ui_Window(QTabWidget):
             DB.add_item(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
             DB.add_item_(model_name,dataset_name, "all",TP_all,FP_all,FN_all,F1_,0,map, Precision,recall,thre_cl)
 
+
+            id_max=[]
             for m in range(len(self.result['tp_'])):
-                DB.add_item_id(model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m]))
+                value = []
+                id_max.append([model_name,dataset_name,class_name[m+1],np.nan_to_num(self.result['id'][m])])
                 for i in range(len(self.result['tp_'][m])):
 
-                    DB.add_item_(model_name, dataset_name,class_name[m+1], self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m],i)),
+                    value.append([model_name, dataset_name,class_name[m+1], self.result['tp_'][m][i], self.result['fp_'][m][i], int(nanstr(self.result['fn_'][m],i)),
                                 nanstr(self.result['f1_'][m],i), nanstr(self.result['ap'][m],i), 0, nanstr(self.result['prec_'][m],i), nanstr(self.result['rec_'][m],i),
-                                nanstr(self.result['score_'][m],i))
+                                nanstr(self.result['score_'][m],i)])
+
+                if len(self.result['tp_'][m])>0:
+                    a=[x[11] for x in value]
+                    b=[y[3] for y in id_max]
+
+                    value_save=[]
+                    fff1=[v[7] for v in value_save]
+                    fff_t=False
+                    fff_t1=0
+                    for ik in fff1:
+                        fff_t1+=ik
+                    if fff_t1==0:
+                        fff_t=True
+
+                    for t in np.arange(-1., 0.001, 0.001):
+                        t=abs(t)
+                        index=self.index_number(a,float(t))
+                        if value[index] not in value_save:
+                            value_save.append(value[index])
+                    a_s=[z[11] for z in value_save]
+
+                    if int(b[m])==len(value):
+                        index_max=int(b[m])-1
+                    else:index_max=int(b[m])
+
+                    index1 = self.index_number(a_s, float(value[index_max][11]))
+
+                    if value[index_max] not in value_save:
+                        if float(value[index_max][11]) > a_s[index1]:
+                            value_save.insert(index1 + 1, value[index_max])
+                            id_max[m][3] = index1 + 2
+                        else:
+                            value_save.insert(index1, value[index_max])
+                            id_max[m][3] = index1 + 1
+                    elif fff_t:
+                        pass
+                    else:
+                        id_max[m][3] = index1+1
+
+                    DB.add_item_id(id_max[m][0], id_max[m][1], id_max[m][2], id_max[m][3])
+                    for i in range(len(value_save)):
+                        DB.add_item_(value_save[i][0], value_save[i][1], value_save[i][2], value_save[i][3],
+                                    value_save[i][4], value_save[i][5], value_save[i][6], value_save[i][7],
+                                    value_save[i][8],
+                                    value_save[i][9], value_save[i][10], value_save[i][11])
+                else:DB.add_item_id(id_max[m][0], id_max[m][1], id_max[m][2], id_max[m][3])
+
+                    # for i1,b1 in enumerate(b):
+                    #     index1=self.index_number(a_s,float(b1))
+                    #     if value[int(b[int(i1)])] not in value_save:
+                    #         value_save.insert(index1+1,value[int(b[int(i1)])])
+                    #         id_max[i1][3]=index1+1
+                    #     else:
+                    #         id_max[i1][3]=index1
+
+
+
+            # for m in range(len(self.result['tp_'])):
+            #     DB.add_item_id(id_max[m][0],id_max[m][1],id_max[m][2],id_max[m][3])
+            #     for i in range(len(self.result['tp_'][m])):
+            #
+            #         DB.add_item_(value_save[i][0],value_save[i][1],value_save[i][2],value_save[i][3],value_save[i][4],value_save[i][5],value_save[i][6],value_save[i][7],value_save[i][8],
+            #                      value_save[i][9],value_save[i][10],value_save[i][11])
 
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name,dataset_name,self.result['error'][j])
@@ -832,9 +898,7 @@ class Ui_Window(QTabWidget):
             for m in range(class_num):
                 row=row_+m
                 for n in range(13):
-
                     if n>5:
-
                         self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])[0:5]))
                     else:self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])))
 
