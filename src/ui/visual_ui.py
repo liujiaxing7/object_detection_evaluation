@@ -449,6 +449,7 @@ class Ui_Window(QTabWidget):
             print(1)
         else:
             self.class_name_draw = text
+            self.btn_draw_clicked()
 
     def load_annotations_gt(self):
 
