@@ -19,6 +19,7 @@ from cv2 import cv2
 import onnx
 import numpy as np
 import matplotlib
+from tqdm import tqdm
 
 # matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
@@ -281,7 +282,7 @@ class Ui_Window(QTabWidget):
         h1.addWidget(self.filter_line_ui3)
         search_by_filter = QPushButton("Search by condition")
         h1.addWidget(search_by_filter)
-        search_by_filter.clicked.connect(self.btn_search_by_filter)
+        search_by_filter.clicked.connect(self.btn_search_by_filter1)
         refresh=QPushButton("Refresh")
         h1.addWidget(refresh)
         refresh.clicked.connect(self.btn_refresh)
@@ -595,33 +596,39 @@ class Ui_Window(QTabWidget):
                                 nanstr(self.result['score_'][m],i)])
 
                 if len(self.result['tp_'][m])>0:
-                    a=[x[11] for x in value]
-                    b=[y[3] for y in id_max]
+                    a=np.array(value)[:,11]
+                    a=a.tolist()
+                    # a=[x[11] for x in value]
+                    b=np.array(id_max)[:,3]
+                    b=b.tolist()
+                    # b=[y[3] for y in id_max]
 
                     value_save=[]
-                    fff1=[v[7] for v in value_save]
-                    fff_t=False
-                    fff_t1=0
-                    for ik in fff1:
-                        fff_t1+=ik
-                    if fff_t1==0:
-                        fff_t=True
-
-                    for t in np.arange(-1., 0.001, 0.001):
+                    for t in tqdm(np.arange(-1., 0.001, 0.001)):
                         t=abs(t)
                         index=self.index_number(a,float(t))
                         if value[index] not in value_save:
                             value_save.append(value[index])
-                    a_s=[z[11] for z in value_save]
 
-                    if int(b[m])==len(value):
-                        index_max=int(b[m])-1
-                    else:index_max=int(b[m])
+
+                    a_s=np.array(value_save)[:,11]
+                    a_s=a_s.tolist()
+                    fff1=np.array(value_save)[:,7]
+                    fff1=fff1.tolist()
+                    fff1.sort()
+
+                    fff_t = False
+                    if float(fff1[-1]) == 0.0:
+                        fff_t = True
+
+                    if int(float(b[m]))==len(value):
+                        index_max=int(float(b[m]))-1
+                    else:index_max=int(float(b[m]))
 
                     index1 = self.index_number(a_s, float(value[index_max][11]))
 
                     if value[index_max] not in value_save:
-                        if float(value[index_max][11]) > a_s[index1]:
+                        if float(value[index_max][11]) > float(a_s[index1]):
                             value_save.insert(index1 + 1, value[index_max])
                             id_max[m][3] = index1 + 2
                         else:
@@ -632,13 +639,13 @@ class Ui_Window(QTabWidget):
                     else:
                         id_max[m][3] = index1+1
 
-                    DB.add_item_id(id_max[m][0], id_max[m][1], id_max[m][2], id_max[m][3])
+                    DB.add_item_id(str(id_max[m][0]), str(id_max[m][1]), str(id_max[m][2]),int( id_max[m][3]))
                     for i in range(len(value_save)):
-                        DB.add_item_(value_save[i][0], value_save[i][1], value_save[i][2], value_save[i][3],
-                                    value_save[i][4], value_save[i][5], value_save[i][6], value_save[i][7],
-                                    value_save[i][8],
-                                    value_save[i][9], value_save[i][10], value_save[i][11])
-                else:DB.add_item_id(id_max[m][0], id_max[m][1], id_max[m][2], id_max[m][3])
+                        DB.add_item_(str(value_save[i][0]), str(value_save[i][1]), str(value_save[i][2]), int(value_save[i][3]),
+                                    int(value_save[i][4]), int(value_save[i][5]), float(value_save[i][6]), float(value_save[i][7]),
+                                    float(value_save[i][8]),
+                                    float(value_save[i][9]), float(value_save[i][10]), float(value_save[i][11]))
+                else:DB.add_item_id(str(id_max[m][0]), str(id_max[m][1]), str(id_max[m][2]), int(id_max[m][3]))
 
                     # for i1,b1 in enumerate(b):
                     #     index1=self.index_number(a_s,float(b1))
@@ -851,7 +858,7 @@ class Ui_Window(QTabWidget):
                                 list[l].append(data[i])
 
                 row_ = self.model.rowCount()
-                for m in range(class_num):
+                for m in range(1):
                     row = row_ + m
                     for n in range(13):
                         # item=QtGui.QStandardItem()
@@ -860,6 +867,63 @@ class Ui_Window(QTabWidget):
                             self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
                         else:
                             self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
+
+    def btn_search_by_filter1(self):
+        text = self.filter_line_ui3.text()
+
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = DBManager().search_id()
+
+        for key, value in id_max1.items():
+            model_n = key.split('_')[0]
+            data_name = key.split('_')[1]
+
+
+            id_max = value
+            class_name = class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
+            data = []
+            for i in range(len(self.value)):
+                if self.value[i][1] == model_n and str(self.value[i][2]) == data_name and self.value[i][3]==text:
+                    data.append(self.value[i])
+
+            class_num = len(class_name)
+            list = [[]] * class_num
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3] == class_name[l]:
+                        if len(list[l]) == 0:
+                            list[l] = [data[i]]
+                        else:
+                            list[l].append(data[i])
+
+            # row_ = self.model.rowCount()
+            # m=class_name.index(text)
+            # row = row_ + m
+            if len(list[class_name.index(text)])>0:
+                row_ = self.model.rowCount()
+
+                row = row_ + 0
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a = list[class_name.index(text)]
+                    if n > 5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(text)]][n])[0:5]))
+                    else:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(text)]][n])))
+            else:pass
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
@@ -996,3 +1060,4 @@ class Ui_Window(QTabWidget):
         class_names=DBManager().search_classes(name)
         self.combobox_classes.clear()
         self.combobox_classes.addItems(class_names)
+
