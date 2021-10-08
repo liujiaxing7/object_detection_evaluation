@@ -80,7 +80,6 @@ class ONNX(object):
 
         output_dir='./result/'+self.process_method
         batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "test.txt" )).readlines())
-        batch_size=200
         for i in tqdm(range(batch_size)):
             image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))
