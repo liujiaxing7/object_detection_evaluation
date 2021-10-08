@@ -25,30 +25,6 @@ from tqdm import tqdm
 # matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
 
-
-# class Stream(QtCore.QObject):
-#     """Redirects console output to text widget."""
-#     newText = QtCore.pyqtSignal(str)
-#
-#     def write(self, text):
-#         self.newText.emit(str(text))
-
-class Example(QThread):
-    signal = pyqtSignal()  # 括号里填写信号传递的参数
-
-    def __init__(self):
-        super().__init__()
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        time.sleep(0.1)
-        self.signal.emit()
-        # 进行任务操作
-        # self.signal.emit()    # 发射信号
-
-
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
         super(EmptyDelegate, self).__init__(parent)
@@ -93,6 +69,14 @@ class Ui_Window(QTabWidget):
 
         self.center_screen()
         # sys.stdout = Stream(newText=self.onUpdateText)
+        
+        db_text = os.getcwd() + '/src/database/core'
+
+        # 添加一个sqlite数据库连接并打开
+        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        db.setDatabaseName('{}.db'.format(db_text))
+        db.open()
+        self.DBManager = DBManager()
 
         self.tab1 = QtWidgets.QWidget()
         self.tab2 = QtWidgets.QWidget()
@@ -308,13 +292,6 @@ class Ui_Window(QTabWidget):
         h3 = QGridLayout()
         self.table_widget = QtWidgets.QTableView()
         self.table_widget.setFixedSize(1340, 600)
-        db_text = os.getcwd() + '/src/database/core'
-
-        self.db_name = db_text
-
-        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('{}.db'.format(db_text))
-        db.open()
 
         query = QSqlQuery()
         self.value = []
@@ -385,11 +362,6 @@ class Ui_Window(QTabWidget):
         self.table_widget1.setFixedSize(1370, 600)
         db_text = os.getcwd() + '/src/database/core'
 
-        self.db_name1 = db_text
-        # 添加一个sqlite数据库连接并打开
-        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('{}.db'.format(db_text))
-        db.open()
         # 实例化一个可编辑数据模型
         self.model1 = QtSql.QSqlTableModel()
 
@@ -715,6 +687,8 @@ class Ui_Window(QTabWidget):
         self.thead1 = threading.Thread(target=self.btn_run_real)
         self.thead1.start()
 
+
+
     def btn_run_real(self):
         if self.rad_gt_format_coco_json.isChecked():
             self.ret = 'coco'
@@ -729,19 +703,20 @@ class Ui_Window(QTabWidget):
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
         self.result_csv, self.result = evaluation.evaluate()
+        # threading.Thread._Thread__stop(self.thead1)
         self.btn_save_clicked()
         print("保存成功")
 
     def btn_draw_by_model(self, model, datasets):
         self.draw_grid.setVisible(True)
 
-        plt = DBManager().draw_by_model(model, datasets, self.class_name_draw)
+        plt = self.DBManager.draw_by_model(model, datasets, self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
     def btn_draw_by_data(self, model, data):
         self.draw_grid.setVisible(True)
 
-        plt = DBManager().draw_by_data(model, data, self.class_name_draw)
+        plt = self.DBManager.draw_by_data(model, data, self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
 
     def btn_draw_clicked(self):
@@ -770,7 +745,7 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
-        id_max1, class_name1, datasets = DBManager().search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
             model_n = key.split('_')[0]
@@ -819,7 +794,7 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
-        id_max1, class_name1, datasets = DBManager().search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
             model_n = key.split('_')[0]
@@ -870,7 +845,7 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
-        id_max1, class_name1, datasets = DBManager().search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
             model_n = key.split('_')[0]
@@ -922,7 +897,7 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
-        id_max1, class_name1, datasets = DBManager().search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
             model_n = key.split('_')[0]
@@ -973,7 +948,7 @@ class Ui_Window(QTabWidget):
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
 
-        id_max1, class_name1, datasets = DBManager().search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
             model_n = key.split('_')[0]
@@ -1074,13 +1049,8 @@ class Ui_Window(QTabWidget):
         cv2.imshow("Image", img)
 
     def btn_load_md(self):
-        db_text = os.getcwd() + '/src/database/core'
 
-        # 添加一个sqlite数据库连接并打开
-        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('{}.db'.format(db_text))
-        db.open()
-        models, datasets = DBManager().search_model_datasets()
+        models, datasets = self.DBManager.search_model_datasets()
         self.models, self.datasets = models, datasets
 
         self.checkmodels = models.copy()
@@ -1099,6 +1069,6 @@ class Ui_Window(QTabWidget):
         for i in range(len(self.checkdatasets)):
             if self.checkdatasets[i].isChecked():
                 name = self.datasets[i]
-        class_names = DBManager().search_classes(name)
+        class_names = self.DBManager.search_classes(name)
         self.combobox_classes.clear()
         self.combobox_classes.addItems(class_names)
