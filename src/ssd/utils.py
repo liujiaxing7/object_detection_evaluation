@@ -7,26 +7,25 @@
 @time: 2020/9/30 下午5:53
 @desc: 
 '''
-import torch
 import os
 from time import time
 from functools import wraps
 
-def SetRange(param, low, high, value):
-    full = torch.full_like(param.data, value)
-    index = torch.logical_and(param.data < high, param.data > low)
-    param.data = torch.where(index, full, param.data)
-
-
-def ClipPrecision(modules):
-    for m in modules:
-        for param in m.parameters():
-            param.data = torch.div(torch.mul(param.data, 100).int().float(), 100)
-
-        # print param
-        # for param in m.parameters():
-        #     p = param.data.cpu().numpy()
-        #     print(p)
+# def SetRange(param, low, high, value):
+#     full = torch.full_like(param.data, value)
+#     index = torch.logical_and(param.data < high, param.data > low)
+#     param.data = torch.where(index, full, param.data)
+#
+#
+# def ClipPrecision(modules):
+#     for m in modules:
+#         for param in m.parameters():
+#             param.data = torch.div(torch.mul(param.data, 100).int().float(), 100)
+#
+#         # print param
+#         # for param in m.parameters():
+#         #     p = param.data.cpu().numpy()
+#         #     print(p)
 
 
 def Walk(path, suffix:list, depth=None):

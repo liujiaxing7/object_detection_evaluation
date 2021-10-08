@@ -307,7 +307,7 @@ def voc_F1(tp_,fp_,prec, rec, score, threshold):
 
         id = id_max_f1 if threshold is None else np.sum(mscore > threshold[l])
         tp[l],fp[l],f1[l], precision[l], recall[l], score_threshold[l] = mtp[id],mfp[id],F1_l[id], mpre[id], mrec[id], mscore[id]
-        id_[l]=id
+        id_[l]=id-1
     return tp,fp,precision, recall, f1, score_threshold,F1_,id_
 
 def get_metric(tp,fp,fn):

@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 # from pycocotools.coco import COCO
 
-import torch.utils.data
+
 import numpy as np
 import xml.etree.ElementTree as ET
 from PIL import Image
@@ -19,7 +19,7 @@ from random import randint, choice, uniform
 from src.utils.image_process import have_color, transparent, augment, to_transparent, Gray
 from src.ssd.utils import Walk
 
-class XML(torch.utils.data.Dataset):
+class XML():
     __metaclass__ = abc.ABCMeta
     class_names = []
 
