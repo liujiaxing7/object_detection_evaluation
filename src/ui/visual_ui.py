@@ -43,6 +43,7 @@ class Example(QThread):
         self.wait()
 
     def run(self):
+        time.sleep(0.1)
         self.signal.emit()
         # 进行任务操作
         # self.signal.emit()    # 发射信号
@@ -710,9 +711,9 @@ class Ui_Window(QTabWidget):
         return prec, rec, f1
 
     def btn_run_clicked(self):
-        self.thread = Example()
-        self.thread.signal.connect(self.btn_run_real)
-        self.thread.start()
+
+        self.thead1 = threading.Thread(target=self.btn_run_real)
+        self.thead1.start()
 
     def btn_run_real(self):
         if self.rad_gt_format_coco_json.isChecked():
