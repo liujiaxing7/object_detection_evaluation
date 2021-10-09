@@ -683,9 +683,10 @@ class Ui_Window(QTabWidget):
         return prec, rec, f1
 
     def btn_run_clicked(self):
+        self.btn_run_real()
 
-        self.thead1 = threading.Thread(target=self.btn_run_real)
-        self.thead1.start()
+        # self.thead1 = threading.Thread(target=self.btn_run_real)
+        # self.thead1.start()
 
 
 
