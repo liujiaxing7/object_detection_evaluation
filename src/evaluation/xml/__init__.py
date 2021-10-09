@@ -188,6 +188,74 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
         f.write(result_csv)
     return result_csv,result
 
+def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
+
+    class_names = dataset.get_classes()
+
+    pred_boxes_list = []
+    pred_labels_list = []
+    pred_scores_list = []
+    gt_boxes_list = []
+    gt_labels_list = []
+    gt_difficults = []
+    image_id_list=[]
+
+    for i in range(BATCH_SIZE):
+        image_id, annotation = dataset.get_file(i)
+        image_id_list.append(image_id)
+
+        if not os.path.exists(annotation):
+            continue
+        gt_boxes, gt_labels = dataset.get_annotation(annotation)
+        gt_boxes_list.append(gt_boxes)
+        gt_labels_list.append(gt_labels)
+
+        img_info = dataset.get_img_info(i)
+        prediction = predictions[i]
+        boxes, labels, scores = prediction['boxes'], prediction['labels'], prediction['scores']
+
+        pred_boxes_list.append(boxes)
+        pred_labels_list.append(labels)
+        pred_scores_list.append(scores)
+    result = eval_detection_voc(pred_bboxes=pred_boxes_list,
+                                pred_labels=pred_labels_list,
+                                pred_scores=pred_scores_list,
+                                gt_bboxes=gt_boxes_list,
+                                gt_labels=gt_labels_list,
+                                class_names=class_names,
+                                image_id_list=image_id_list,
+                                iou_thresh=0.5,
+                                use_07_metric=False,
+                                threshold=threshold,
+                                )
+    if save_anno:
+        print("writing xml")
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+    for l in dataset.ignore:
+        id = dataset.class_dict[l]
+        for key in result.keys():
+            if key != 'num':
+                result[key][id] = np.nan
+    result['F1'] = np.nanmean(result['f1'])
+    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
+    logger = logging.getLogger("SSD.inference")
+    result_markdown, metrics = print_markdown(result, class_names)
+    result_log, metrics = print_log(result, class_names)
+    result_csv, _ = print_csv(result, class_names)
+    result_str = result_markdown + '\n' + result_log
+    logger.info(result_markdown)
+    print(result_str)
+
+    if iteration is not None:
+        result_path = output_dir+'/result_{:07d}.txt'.format(iteration)
+    else:
+        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    with open(result_path, "w") as f:
+        f.write(result_str)
+    with open(result_path.replace(".txt", ".csv"), "w") as f:
+        f.write(result_csv)
+    return result_csv,result
+
 def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
@@ -200,7 +268,7 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
     image_id_list = []
 
     for i in range(BATCH_SIZE):
-        image_id, annotation = dataset.get_file_darknet(i)
+        image_id, annotation = dataset.get_file_txt_darknet(i)
         image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
@@ -208,7 +276,7 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
 
-        img_info = dataset.get_img_info(i)
+        # img_info = dataset.get_img_info(i)
         prediction = predictions[i]
         boxes, labels, scores = prediction['boxes'], prediction['labels'], prediction['scores']
 
@@ -235,7 +303,7 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(ap_tolist(result['ap']))
+    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)

@@ -56,6 +56,8 @@ class MainUi(QtWidgets.QMainWindow):
         self.setCentralWidget(self.widget)
         self.b_view_data.clicked.connect(self.view_data)
         self.b_delete_row.clicked.connect(self.del_row_data)
+        self.b_add_row.clicked.connect(self.add_row_data)
+        # self.b_delete_row.clicked.connect(self.del_row_data)
     def view_data(self):
         db_text='core'
 
@@ -69,8 +71,8 @@ class MainUi(QtWidgets.QMainWindow):
         self.model = QtSql.QSqlTableModel()
         self.table_widget.setModel(self.model)
 
-        self.model.setTable('id_max') # 设置数据模型的数据表
-        # self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
+        self.model.setTable('metric') # 设置数据模型的数据表
+        self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
         self.model.select() # 查询所有数据
         # 设置表格头
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
@@ -86,8 +88,16 @@ class MainUi(QtWidgets.QMainWindow):
         self.model.setHeaderData(10, QtCore.Qt.Horizontal, 'precision')
         self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'recall')
         self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
+
+
         # 添加一行数据行
 
+    def add_row_data(self):
+        # 如果存在实例化的数据模型对象
+        if self.model:
+            self.model.insertRows(self.model.rowCount(), 1)
+        else:
+            self.create_db()
     def del_row_data(self):
         if self.model:
             self.model.removeRow(self.table_widget.currentIndex().row())

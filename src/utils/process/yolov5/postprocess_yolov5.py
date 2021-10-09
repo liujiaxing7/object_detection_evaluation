@@ -192,6 +192,36 @@ def PostProcessor_YOLOV5(x):
     pred = non_max_suppression(output, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
+
+def PostProcessor_YOLOV5x(x):
+
+    grid = [np.zeros(1)] * 3  # init grid
+    z = []  # inference output
+    stride = [8, 16, 32]
+
+    for i in range(3):
+        bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
+
+        if grid[i].shape[2:4] != x[i].shape[2:4]:
+            grid[i] = _make_grid(nx, ny)
+
+        y = sigmoid(x[i])       # sigmoid is defined above with NumPy
+
+        y[..., 0:2] = (y[..., 0:2] * 2. - 0.5 + grid[i]) * stride[i]  # xy
+
+        anchors = [[10, 13, 16, 30, 33, 23],            # P3/8
+                    [30, 61, 62, 45, 59, 119],          # P4/16
+                    [116, 90, 156, 198, 373, 326]]      # P5/32
+
+        anchors = np.array(anchors)
+        anchor_grid = anchors.copy().reshape(len(anchors), 1, -1, 1, 1, 2)
+        y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * anchor_grid[i]  # wh
+        z.append(y.reshape(bs, -1, 11))
+
+    output = np.concatenate(z, 1)
+    pred = non_max_suppression(output, 0.25, 0.45, classes=None, agnostic=False)
+
+    return pred
 def get_prediction_yolov5(boxes,oriX,oriY):
     box_es = []
     labels = []

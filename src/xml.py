@@ -12,6 +12,8 @@ from tqdm import tqdm
 from src.ssd.structures.container import Container
 import sys
 import abc
+
+from src.utils.process.yolov3.preprocess_yolov3 import letterbox
 from src.utils.utils import Empty
 from src.utils.xml import WriteXML
 import cv2
@@ -23,7 +25,7 @@ class XML():
     __metaclass__ = abc.ABCMeta
     class_names = []
 
-    def __init__(self, data_dir,classes, image_sets_file, target, transform=None, target_transform=None, keep_difficult=False, train=False):
+    def __init__(self, data_dir,classes, image_sets_file, target, transform=None, target_transform=None, keep_difficult=False, train=False,format=None):
         self.data_dir = data_dir
         self.transform = transform
         self.target_transform = target_transform
@@ -245,7 +247,12 @@ class XML():
         return (boxes, labels)
 
     def get_darknet_labels(self,img_file,ann_file):
+
         box_label=np.loadtxt(ann_file).tolist()
+        if len(box_label)==0:
+            return np.array([]),np.array([])
+        if type(box_label[0]) == float:
+            box_label = np.expand_dims(box_label, axis=0)
 
         boxes = []
         labels = []
@@ -253,25 +260,41 @@ class XML():
         width = np.array(img).shape[1]
         height=np.array(img).shape[0]
 
-        if type(box_label[0])==float:
-            labels.append(int(box_label[0]))
-            xmin = box_label[1] * width - box_label[3] * width/2
-            xmax = xmin + box_label[3] * width
-            ymin = box_label[2] * height - box_label[4] * height/2
-            ymax = ymin + box_label[4] * height
-            boxes.append([int(xmin), int(ymin), int(xmax), int(ymax)])
-        else:
-            for i in box_label:
-                labels.append(int(i[0]))
-                xmin=i[1]*width-i[3]*width/2
-                xmax=xmin+i[3]*width
-                ymin=i[2]*height-i[4]*height/2
-                ymax=ymin+i[4]*height
-                boxes.append([int(xmin),int(ymin),int(xmax),int(ymax)])
+        box_label = self.padding(box_label, img)
+        # box_label=box_label.tolist()
+
+        for i in box_label:
+            labels.append(int(i[0]))
+            # xmin=i[1]*width-i[3]*width/2
+            # xmax=xmin+i[3]*width
+            # ymin=i[2]*height-i[4]*height/2
+            # ymax=ymin+i[4]*height
+            boxes.append([int(i[1]),int(i[2]),int(i[3]),int(i[4])])
+
         boxes = np.array(boxes, dtype=np.float32)
+
         labels = np.array(labels, dtype=np.int64)
         return boxes,labels
+    def padding(self,boxes,img):
 
+        # Load labels
+        labels = []
+        # if not os.path.isfile(label_path):
+        #     print()
+        # with open(label_path, 'r') as f:
+        #     x = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+        w = np.array(img).shape[1]
+        h = np.array(img).shape[0]
+        img, ratio, padw, padh = letterbox(img, new_shape=416, mode='square')
+        x=np.array(boxes).astype("float32")
+        if x.size > 0:
+        # Normalized xywh to pixel xyxy format
+            labels = x.copy()
+            labels[:, 1] = ratio[0] * w * (x[:, 1] - x[:, 3] / 2) + padw
+            labels[:, 2] = ratio[1] * h * (x[:, 2] - x[:, 4] / 2) + padh
+            labels[:, 3] = ratio[0] * w * (x[:, 1] + x[:, 3] / 2) + padw
+            labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
+        return labels
     def get_coco_labels(self,ann_file,index1):
         # boxes_coco = []
         # labels_coco = []

@@ -16,7 +16,8 @@ from src.utils.process.yolov5.preprocess_yolov5 import pre_process as yoloPrePro
 from src.utils.process.yolov3.postprocess_yolov3 import  THRESHOLD_YOLOV3, post_processing,\
     load_class_names,get_prediction_yolov3
 from src.utils.process.yolov3_tiny3.postprocess_yolov3_tiny3 import post_processing_tiny3
-from src.utils.process.yolov5.postprocess_yolov5 import PostProcessor_YOLOV5,IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5,get_prediction_yolov5
+from src.utils.process.yolov5.postprocess_yolov5 import PostProcessor_YOLOV5, IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5, \
+    get_prediction_yolov5, PostProcessor_YOLOV5x
 import cv2
 import onnxruntime
 from src.evaluation import *
@@ -48,7 +49,7 @@ class ONNX(object):
 
         if self.process_method=='yolov3' or self.process_method=='yolov3_tiny3':
             image = yoloPreProcess_yolov3(image)
-        elif self.process_method=='yolov5':
+        elif self.process_method=='yolov5'or self.process_method=='yolov5x':
             image = yoloPreProcess_yolov5(image)
 
 
@@ -57,11 +58,16 @@ class ONNX(object):
 
         if self.process_method=='yolov3':
             boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
-            prediction=get_prediction_yolov3(boxes,oriX,oriY)
+            prediction=get_prediction_yolov3(boxes,416,416)
             self.predictions.append(prediction)
 
         elif self.process_method=='yolov5':
             boxes = PostProcessor_YOLOV5(outputs)
+            prediction=get_prediction_yolov5(boxes,oriX,oriY)
+            self.predictions.append(prediction)
+
+        elif self.process_method=='yolov5x':
+            boxes = PostProcessor_YOLOV5x(outputs)
             prediction=get_prediction_yolov5(boxes,oriX,oriY)
             self.predictions.append(prediction)
 
@@ -75,19 +81,27 @@ class ONNX(object):
 
         # create_list.voctodark(self.data_dir,self.classes)
         print('begin')
-        self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir,
+        self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir,self.format,
                                           None, None, None, True)
 
         output_dir='./result/'+self.process_method
-        batch_size=len(open(os.path.join(self.data_dir, "ImageSets", "Main", "test.txt" )).readlines())
+        if self.format == 'darknet':
+            batch_size=len(open(os.path.join(self.data_dir,  "val_images.txt" )).readlines())
+        else:
+            batch_size=len(open(os.path.join(self.data_dir,  "ImageSets","Main","test.txt" )).readlines())
         for i in tqdm(range(batch_size)):
-            image_id, annotation = self.datasets.get_file(i)
+            if self.format == 'darknet':
+                image_id, annotation = self.datasets.get_file_txt_darknet(i)
+            else:
+                image_id, annotation = self.datasets.get_file(i)
             image = np.array(Image.open(image_id))
 
             self.forward(image)
 
         if self.format=='voc':
             result_csv,result=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
+        if self.format=='xml':
+            result_csv,result=xml.evaluation_xml(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
         if self.format=='coco':
             result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
         if self.format=='darknet':

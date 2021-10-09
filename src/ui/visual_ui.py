@@ -171,7 +171,7 @@ class Ui_Window(QTabWidget):
         h5.addWidget(QLabel("Onnx Model Type:"), 1, Qt.AlignLeft)
         self.combobox_process = QComboBox()
         h5.addWidget(self.combobox_process, 5, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3', 'yolov5', 'yolov3_tiny3'])
+        self.combobox_process.addItems(['', 'yolov3', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChanged)
         btn_save = QPushButton("save")
@@ -430,8 +430,11 @@ class Ui_Window(QTabWidget):
             self.process_method = 'yolov3'
         elif text == 'yolov5':
             self.process_method = 'yolov5'
+        elif text == 'yolov5x':
+            self.process_method = 'yolov5x'
         elif text == 'yolov3_tiny3':
             self.process_method = 'yolov3_tiny3'
+
 
     def comboSelectionChanged1(self, index):
         text = self.combobox_classes.itemText(index)
@@ -688,13 +691,13 @@ class Ui_Window(QTabWidget):
         # self.thead1 = threading.Thread(target=self.btn_run_real)
         # self.thead1.start()
 
-
-
     def btn_run_real(self):
         if self.rad_gt_format_coco_json.isChecked():
             self.ret = 'coco'
-        elif self.rad_gt_format_pascalvoc_xml.isChecked() or self.rad_gt_format_labelme_xml.isChecked():
+        elif self.rad_gt_format_pascalvoc_xml.isChecked():
             self.ret = 'voc'
+        elif self.rad_gt_format_labelme_xml.isChecked():
+            self.ret='xml'
         elif self.rad_gt_format_yolo_text.isChecked():
             self.ret = 'darknet'
         if self.ret == '':
@@ -952,8 +955,9 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            model_n = key.split('_')[0]
-            data_name = key.split('_')[1]
+
+            data_name = key.split('_')[-1]
+            model_n = key.split('_'+data_name)[0]
             id_max = value
             class_name = class_name1[key]
             id_max.append(0)
@@ -978,6 +982,7 @@ class Ui_Window(QTabWidget):
             for m in range(class_num):
                 row = row_ + m
                 for n in range(13):
+
                     if n > 5:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])[0:5]))
                     else:

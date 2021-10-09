@@ -7,7 +7,7 @@ _DATASETS = {
 }
 
 
-def get_args(root_dir,classes, target, transform, target_transform, is_train, factory):
+def get_args(root_dir,classes, target, transform, target_transform, is_train, factory,format):
     args = {'data_dir': root_dir, }
     args['classes'] = classes
     args['transform'] = transform
@@ -17,13 +17,14 @@ def get_args(root_dir,classes, target, transform, target_transform, is_train, fa
 
         args['train'] = is_train
         args['target'] = target
+        args['format']=format
 
     return  args
 
-def build_dataset(classes, dataset_type, root_dir, target, transform=None, target_transform=None, is_train=True):
+def build_dataset(classes, dataset_type, root_dir,format, target, transform=None, target_transform=None, is_train=True):
 
     factory = _DATASETS[dataset_type]
-    args = get_args(root_dir,classes,  target, transform, target_transform, is_train, factory)
+    args = get_args(root_dir,classes,  target, transform, target_transform, is_train, factory,format)
 
     dataset = factory(**args)
 
