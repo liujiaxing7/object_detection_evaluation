@@ -17,7 +17,7 @@ import itertools
 import struct  # get_image_size
 import imghdr  # get_image_size
 IMAGE_SIZE_YOLOV3=416
-THRESHOLD_YOLOV3=0.5
+THRESHOLD_YOLOV3=0.25
 
 def sigmoid(x):
     return 1.0 / (np.exp(-x) + 1.)

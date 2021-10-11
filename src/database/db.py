@@ -105,8 +105,12 @@ class DBManager():
         if query.exec(
                 'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
             while query.next():
+                if model_name=='yolov3_prune' or model_name=='yolov3':
+                    continue
                 value = [query.value(i) for i in range(13)]
                 id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
+                if model_name=='yolov3_prune' or model_name=='yolov3':
+                    continue
                 if dataset_name==name or model_name==name:
                     if class_name in classes:
                         continue
@@ -123,9 +127,11 @@ class DBManager():
         if query.exec(
                 'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
             while query.next():
+
                 value = [query.value(i) for i in range(13)]
                 id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
-
+                if model_name=='yolov3_prune' or model_name=='yolov3':
+                    continue
                 if not model_name in models:
                     models.append(model_name)
                 elif not dataset_name in datasets:
@@ -149,11 +155,13 @@ class DBManager():
             while query.next():
                 value = [query.value(i) for i in range(5)]
                 id, model_name, dataset_name, class_name, id1 = value
-                id_list[model_name+'_'+str(dataset_name)].append(id1)
+                if model_name=='yolov3_prune' or model_name=='yolov3':
+                    continue
+                id_list[str(model_name)+'_'+str(dataset_name)].append(id1)
                 if not class_name in class_num:
-                    class_num[model_name+'_'+str(dataset_name)].append(class_name)
+                    class_num[str(model_name)+'_'+str(dataset_name)].append(class_name)
                 if not dataset_name in datasets:
-                    datasets.append(dataset_name)
+                    datasets.append(str(dataset_name))
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list,class_num,datasets
 

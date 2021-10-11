@@ -25,12 +25,14 @@ from tqdm import tqdm
 # matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
 
+
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
         super(EmptyDelegate, self).__init__(parent)
 
     def createEditor(self, QWidget, QStyleOptionViewItem, QModelIndex):
         return None
+
 
 def nanstr(a, i):
     if a is None:
@@ -41,6 +43,7 @@ def nanstr(a, i):
         return 0.0
     else:
         return a[i]
+
 
 class Ui_Window(QTabWidget):
     def __init__(self, parent=None):
@@ -67,7 +70,7 @@ class Ui_Window(QTabWidget):
 
         self.center_screen()
         # sys.stdout = Stream(newText=self.onUpdateText)
-        
+
         db_text = os.getcwd() + '/src/database/core'
 
         # 添加一个sqlite数据库连接并打开
@@ -169,7 +172,7 @@ class Ui_Window(QTabWidget):
         h5.addWidget(QLabel("Onnx Model Type:"), 1, Qt.AlignLeft)
         self.combobox_process = QComboBox()
         h5.addWidget(self.combobox_process, 5, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3','yolov3_padding' ,'yolov5', 'yolov5x', 'yolov3_tiny3'])
+        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChanged)
         btn_save = QPushButton("save")
@@ -604,7 +607,8 @@ class Ui_Window(QTabWidget):
                                   nanstr(self.result['prec_'][m], i), nanstr(self.result['rec_'][m], i),
                                   nanstr(self.result['score_'][m], i)])
 
-                if len(self.result['tp_'][m]) > 0 and self.result['prec_'][m] is not None and self.result['rec_'][m] is not None:
+                if len(self.result['tp_'][m]) > 0 and self.result['prec_'][m] is not None and self.result['rec_'][
+                    m] is not None:
                     a = np.array(value)[:, 11]
                     a = a.tolist()
 
@@ -634,7 +638,7 @@ class Ui_Window(QTabWidget):
 
                     index1 = self.index_number(a_s, float(value[index_max][11]))
 
-                    if value[index_max] not in value_save :
+                    if value[index_max] not in value_save:
                         if float(value[index_max][11]) > float(a_s[index1]):
                             value_save.insert(index1 + 1, value[index_max])
                             id_max[m][3] = index1 + 2
@@ -671,7 +675,7 @@ class Ui_Window(QTabWidget):
             #
             #         DB.add_item_(value_save[i][0],value_save[i][1],value_save[i][2],value_save[i][3],value_save[i][4],value_save[i][5],value_save[i][6],value_save[i][7],value_save[i][8],
             #                      value_save[i][9],value_save[i][10],value_save[i][11])
-
+            print("saving error files ...")
             for j in range(len(self.result['error'])):
                 DB.add_erro_file(model_name, dataset_name, self.result['error'][j])
 
@@ -696,7 +700,7 @@ class Ui_Window(QTabWidget):
         elif self.rad_gt_format_pascalvoc_xml.isChecked():
             self.ret = 'voc'
         elif self.rad_gt_format_labelme_xml.isChecked():
-            self.ret='xml'
+            self.ret = 'xml'
         elif self.rad_gt_format_yolo_text.isChecked():
             self.ret = 'darknet'
         if self.ret == '':
@@ -751,10 +755,10 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            model_n = key.split('_')[0]
+            data_name = key.split('_')[-1]
+            model_n = key.split('_' + data_name)[0]
             if not model_n == text:
                 continue
-            data_name = key.split('_')[1]
             id_max = value
             class_name = class_name1[key]
             id_max.append(0)
@@ -762,7 +766,7 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
@@ -800,8 +804,8 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            model_n = key.split('_')[0]
-            data_name = key.split('_')[1]
+            data_name = key.split('_')[-1]
+            model_n = key.split('_' + data_name)[0]
             if not data_name == text:
                 continue
             id_max = value
@@ -811,7 +815,7 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                if str(self.value[i][1] == model_n) and str(self.value[i][2]) == data_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
@@ -851,8 +855,8 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            model_n = key.split('_')[0]
-            data_name = key.split('_')[1]
+            data_name = key.split('_')[-1]
+            model_n = key.split('_' + data_name)[0]
             if model_n == text_model and data_name == text_datasets:
 
                 id_max = value
@@ -862,7 +866,7 @@ class Ui_Window(QTabWidget):
 
                 data = []
                 for i in range(len(self.value)):
-                    if self.value[i][1] == model_n and self.value[i][2] == data_name:
+                    if str(self.value[i][1] == model_n) and str(self.value[i][2]) == data_name:
                         data.append(self.value[i])
 
                 class_num = len(class_name)
@@ -890,6 +894,24 @@ class Ui_Window(QTabWidget):
 
     def btn_search_by_filter1(self):
         text = self.filter_line_ui3.text()
+        cls = text.split('^')
+        md = text.split('&')
+        model_n = None
+        data_name = None
+        cls_name = None
+        if len(md) == 1:
+            if len(cls) == 1:
+                cls_name = cls[0]
+            else:
+                data_name = cls[0]
+                cls_name = cls[1]
+        elif len(md) == 2:
+            model_n = md[0]
+            if len(cls) == 1:
+                cls_name = md[1]
+            else:
+                cls_name = cls[1]
+                data_name = md[1].split('^')[0]
 
         self.model.clear()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
@@ -903,9 +925,19 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            model_n = key.split('_')[0]
-            data_name = key.split('_')[1]
+            key_d = key.split('_')[-1]
+            key_m = key.split('_' + key_d)[0]
+            if data_name == None:
+                data_name1 = key.split('_')[-1]
+            else:
+                data_name1 = data_name
 
+            if model_n == None:
+                model_n1 = key.split('_' + data_name1)[0]
+            else:
+                model_n1 = model_n
+            if not data_name1 == key_d or not model_n1 == key_m:
+                continue
             id_max = value
             class_name = class_name1[key]
             id_max.append(0)
@@ -913,7 +945,8 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if self.value[i][1] == model_n and str(self.value[i][2]) == data_name and self.value[i][3] == text:
+                if str(self.value[i][1]) == model_n1 and str(self.value[i][2]) == data_name1 and self.value[i][
+                    3] == cls_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
@@ -929,17 +962,19 @@ class Ui_Window(QTabWidget):
             # row_ = self.model.rowCount()
             # m=class_name.index(text)
             # row = row_ + m
-            if len(list[class_name.index(text)]) > 0:
+            if len(list[class_name.index(cls_name)]) > 0:
                 row_ = self.model.rowCount()
 
                 row = row_ + 0
                 for n in range(13):
                     # item=QtGui.QStandardItem()
-                    a = list[class_name.index(text)]
+                    a = list[class_name.index(cls_name)]
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(text)]][n])[0:5]))
+                        self.model.setItem(row, n,
+                                           QtGui.QStandardItem(str(a[id_max[class_name.index(cls_name)]][n])[0:5]))
                     else:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(text)]][n])))
+
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(cls_name)]][n])))
             else:
                 pass
 
@@ -956,7 +991,7 @@ class Ui_Window(QTabWidget):
         for key, value in id_max1.items():
 
             data_name = key.split('_')[-1]
-            model_n = key.split('_'+data_name)[0]
+            model_n = key.split('_' + data_name)[0]
             id_max = value
             class_name = class_name1[key]
             id_max.append(0)
@@ -964,7 +999,7 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if self.value[i][1] == model_n and str(self.value[i][2]) == data_name:
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
@@ -1013,7 +1048,7 @@ class Ui_Window(QTabWidget):
         thre = self.model.item(r, 12).text()
 
         for i in range(len(self.value)):
-            if self.value[i][1] == model and str(self.value[i][2]) == data and self.value[i][3] == class_:
+            if str(self.value[i][1]) == model and str(self.value[i][2]) == data and self.value[i][3] == class_:
                 a.append(self.value[i][12])
                 b.append(self.value[i])
         index = self.index_number(a, float(thre))

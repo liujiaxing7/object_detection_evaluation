@@ -7,34 +7,41 @@ import numpy as np
 from src.database.db import DBManager
 from .eval_detection import eval_detection_voc
 
+
 def nan_str(p, space=True):
     if np.isnan(p):
         return "{:<5}".format(str(p)) if space else 0
     else:
         return "{:.3f}".format(p)
+
+
 def nan_str_int(p, space=True):
     if np.isnan(p):
         return "{:<5}".format(str(p)) if space else 0
     else:
         return "{:d}".format(int(p))
-def ap_tolist(ap,id):
-    ap_list=[]
-    i=-1
+
+
+def ap_tolist(ap, id):
+    ap_list = []
+    i = -1
     for v in ap:
-        i+=1
+        i += 1
         if type(v) == float:
             ap_list.append(np.nan)
-        elif len(v)>0:
+        elif len(v) > 0:
             ap_list.append(v[id[i]])
-        else:ap_list.append(0)
-        
+        else:
+            ap_list.append(0)
+
     return ap_list
+
 
 def print_csv(result, class_names):
     prefix, flag = "", ','
     result_str = "\nmAP,recall,F1,Prediction\n"
     result_str += "{:.3f},{:.3f},{:.3f},{:.3f}\n".format(result["map"], np.nanmean(result['rec']), result['F1']
-                                                                        ,np.nanmean(result['prec']))
+                                                         , np.nanmean(result['prec']))
 
     table_width = 12
     head_str = "{}{}".format("class_names".ljust(table_width), flag)
@@ -49,7 +56,7 @@ def print_csv(result, class_names):
     fn_str = "{}{}".format("FN".ljust(table_width), flag)
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(ap_tolist(result['ap'],result['id'])):
+    for i, ap in enumerate(ap_tolist(result['ap'], result['id'])):
         # if i == 0:  # skip background
         #     continue
 
@@ -65,13 +72,15 @@ def print_csv(result, class_names):
         fp_str += "{}{}{}".format(prefix, nan_str_int(result['fp'][i], False), flag)
         fn_str += "{}{}{}".format(prefix, nan_str_int(result['fn'][i], False), flag)
 
-    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str, recall_str, score_str,tp_str,fp_str,fn_str)
+    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str,
+                                                                      recall_str, score_str, tp_str, fp_str, fn_str)
 
     return result_str, metrics
 
+
 def print_markdown(result, class_names):
     result_str = "\n| mAP   | recall | F1 | precision |\n"
-    result_str += "| {:.3f} | {:.3f} | {:.3f} | {:.3f} |\n".format(result["map"], np.nanmean(result['rec']), 
+    result_str += "| {:.3f} | {:.3f} | {:.3f} | {:.3f} |\n".format(result["map"], np.nanmean(result['rec']),
                                                                    result['F1'], np.nanmean(result['prec']))
 
     table_width = 12
@@ -84,7 +93,7 @@ def print_markdown(result, class_names):
     score_str = "|{}|".format("score".ljust(table_width))
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(ap_tolist(result['ap'],result['id'])):
+    for i, ap in enumerate(ap_tolist(result['ap'], result['id'])):
         # if i == 0:  # skip background
         #     continue
         metrics[class_names[i]] = ap
@@ -101,16 +110,20 @@ def print_markdown(result, class_names):
         F1_str += "{}{}{}|".format(space, nan_str(result['f1'][i]), space)
         score_str += "{}{}{}|".format(space, nan_str(result['threshold'][i]), space)
 
-    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str, recall_str, score_str)
+    result_str += "\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(head_str, count_str, AP_str, F1_str, pred_str, recall_str,
+                                                          score_str)
 
     return result_str, metrics
 
+
 def print_log(result, class_names):
-    result_str = "\nmAP {:.3f} recall {:.3f} F1: {:.3f} \n".format(result["map"], np.nanmean(result['rec']), result['F1'])
-    result_str += "{:<16}: {:<8} {:<6} {:<6} {:<6} {:<6}\n".format("class_names", "count", "ap", 'F1', "prediction", 'recall')
+    result_str = "\nmAP {:.3f} recall {:.3f} F1: {:.3f} \n".format(result["map"], np.nanmean(result['rec']),
+                                                                   result['F1'])
+    result_str += "{:<16}: {:<8} {:<6} {:<6} {:<6} {:<6}\n".format("class_names", "count", "ap", 'F1', "prediction",
+                                                                   'recall')
 
     metrics = {'mAP': result["map"]}
-    for i, ap in enumerate(ap_tolist(result['ap'],result['id'])):
+    for i, ap in enumerate(ap_tolist(result['ap'], result['id'])):
         # if i == 0:  # skip background
         #     continue
         metrics[class_names[i]] = ap
@@ -120,8 +133,8 @@ def print_log(result, class_names):
 
     return result_str, metrics
 
-def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
 
+def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None, BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -130,7 +143,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
     gt_boxes_list = []
     gt_labels_list = []
     gt_difficults = []
-    image_id_list=[]
+    image_id_list = []
 
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file(i)
@@ -162,14 +175,15 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
                                 )
     if save_anno:
         print("writing xml")
-        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'],
+                                os.path.join(output_dir, 'xml'))
     for l in dataset.ignore:
         id = dataset.class_dict[l]
         for key in result.keys():
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
+    result['map'] = np.nanmean(ap_tolist(result['ap'], result['id']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -179,17 +193,19 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
     print(result_str)
 
     if iteration is not None:
-        result_path = output_dir+'/result_{:07d}.txt'.format(iteration)
+        result_path = output_dir + '/result_{:07d}.txt'.format(iteration)
     else:
-        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        result_path = output_dir + '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    if not os.path.exists(os.path.dirname(result_path)):
+        os.makedirs(os.path.dirname(result_path))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
-    return result_csv,result
+    return result_csv, result
 
-def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
 
+def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None, BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -198,7 +214,7 @@ def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, 
     gt_boxes_list = []
     gt_labels_list = []
     gt_difficults = []
-    image_id_list=[]
+    image_id_list = []
 
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file(i)
@@ -230,14 +246,15 @@ def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, 
                                 )
     if save_anno:
         print("writing xml")
-        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'],
+                                os.path.join(output_dir, 'xml'))
     for l in dataset.ignore:
         id = dataset.class_dict[l]
         for key in result.keys():
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
+    result['map'] = np.nanmean(ap_tolist(result['ap'], result['id']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -247,16 +264,20 @@ def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, 
     print(result_str)
 
     if iteration is not None:
-        result_path = output_dir+'/result_{:07d}.txt'.format(iteration)
+        result_path = output_dir + '/result_{:07d}.txt'.format(iteration)
     else:
-        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        result_path = output_dir + '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    if not os.path.exists(os.path.dirname(result_path)):
+        os.makedirs(os.path.dirname(result_path))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
-    return result_csv,result
+    return result_csv, result
 
-def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
+
+def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,
+                               BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -272,7 +293,7 @@ def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iter
         image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
-        gt_boxes, gt_labels = dataset.get_darknet_labels_padding(image_id,annotation)
+        gt_boxes, gt_labels = dataset.get_darknet_labels_padding(image_id, annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
 
@@ -296,14 +317,15 @@ def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iter
                                 )
     if save_anno:
         print("writing xml")
-        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'],
+                                os.path.join(output_dir, 'xml'))
     for l in dataset.ignore:
         id = dataset.class_dict[l]
         for key in result.keys():
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
+    result['map'] = np.nanmean(ap_tolist(result['ap'], result['id']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -315,15 +337,18 @@ def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iter
     if iteration is not None:
         result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = output_dir+ '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        result_path = output_dir + '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    if not os.path.exists(os.path.dirname(result_path)):
+        os.makedirs(os.path.dirname(result_path))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return result_csv,result
+    return result_csv, result
 
-def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
+
+def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None, BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -339,7 +364,7 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
         image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
-        gt_boxes, gt_labels = dataset.get_darknet_labels(image_id,annotation)
+        gt_boxes, gt_labels = dataset.get_darknet_labels(image_id, annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
 
@@ -363,14 +388,15 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
                                 )
     if save_anno:
         print("writing xml")
-        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'],
+                                os.path.join(output_dir, 'xml'))
     for l in dataset.ignore:
         id = dataset.class_dict[l]
         for key in result.keys():
             if key != 'num':
                 result[key][id] = np.nan
     result['F1'] = np.nanmean(result['f1'])
-    result['map'] = np.nanmean(ap_tolist(result['ap'],result['id']))
+    result['map'] = np.nanmean(ap_tolist(result['ap'], result['id']))
     logger = logging.getLogger("SSD.inference")
     result_markdown, metrics = print_markdown(result, class_names)
     result_log, metrics = print_log(result, class_names)
@@ -382,15 +408,18 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
     if iteration is not None:
         result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = output_dir+ '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        result_path = output_dir + '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    if not os.path.exists(os.path.dirname(result_path)):
+        os.makedirs(os.path.dirname(result_path))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return result_csv,result
+    return result_csv, result
 
-def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None,BATCH_SIZE=0):
+
+def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None, threshold=None, BATCH_SIZE=0):
     class_names = dataset.get_classes()
 
     pred_boxes_list = []
@@ -401,17 +430,16 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     gt_difficults = []
     image_id_list = []
 
-    annotation_file=dataset.get_file_json()
-    ann_file=COCO(annotation_file=annotation_file)
+    annotation_file = dataset.get_file_json()
+    ann_file = COCO(annotation_file=annotation_file)
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_darknet(i)
         image_id_list.append(image_id)
         if not os.path.exists(annotation):
             continue
-        gt_boxes, gt_labels = dataset.get_coco_labels(ann_file,image_id)
+        gt_boxes, gt_labels = dataset.get_coco_labels(ann_file, image_id)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
-
 
         img_info = dataset.get_img_info(i)
         prediction = predictions[i]
@@ -432,7 +460,8 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
                                 threshold=threshold)
     if save_anno:
         print("writing xml")
-        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'], os.path.join(output_dir, 'xml'))
+        dataset.save_annotation(pred_boxes_list, pred_labels_list, pred_scores_list, result['threshold'],
+                                os.path.join(output_dir, 'xml'))
     for l in dataset.ignore:
         id = dataset.class_dict[l]
         for key in result.keys():
@@ -451,10 +480,12 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     if iteration is not None:
         result_path = os.path.join(output_dir, '/result_{:07d}.txt'.format(iteration))
     else:
-        result_path = output_dir+'/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        result_path = output_dir + '/result_{}.txt'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    if not os.path.exists(os.path.dirname(result_path)):
+        os.makedirs(os.path.dirname(result_path))
     with open(result_path, "w") as f:
         f.write(result_str)
     with open(result_path.replace(".txt", ".csv"), "w") as f:
         f.write(result_csv)
 
-    return result_csv,result
+    return result_csv, result
