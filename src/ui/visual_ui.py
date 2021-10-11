@@ -32,7 +32,6 @@ class EmptyDelegate(QItemDelegate):
     def createEditor(self, QWidget, QStyleOptionViewItem, QModelIndex):
         return None
 
-
 def nanstr(a, i):
     if a is None:
         return 0.0
@@ -42,7 +41,6 @@ def nanstr(a, i):
         return 0.0
     else:
         return a[i]
-
 
 class Ui_Window(QTabWidget):
     def __init__(self, parent=None):
@@ -171,7 +169,7 @@ class Ui_Window(QTabWidget):
         h5.addWidget(QLabel("Onnx Model Type:"), 1, Qt.AlignLeft)
         self.combobox_process = QComboBox()
         h5.addWidget(self.combobox_process, 5, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
+        self.combobox_process.addItems(['', 'yolov3','yolov3_padding' ,'yolov5', 'yolov5x', 'yolov3_tiny3'])
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChanged)
         btn_save = QPushButton("save")
@@ -428,13 +426,14 @@ class Ui_Window(QTabWidget):
         text = self.combobox_process.itemText(index)
         if text == 'yolov3':
             self.process_method = 'yolov3'
+        elif text == 'yolov3_padding':
+            self.process_method = 'yolov3_padding'
         elif text == 'yolov5':
             self.process_method = 'yolov5'
         elif text == 'yolov5x':
             self.process_method = 'yolov5x'
         elif text == 'yolov3_tiny3':
             self.process_method = 'yolov3_tiny3'
-
 
     def comboSelectionChanged1(self, index):
         text = self.combobox_classes.itemText(index)

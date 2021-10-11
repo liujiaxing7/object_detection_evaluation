@@ -3,7 +3,6 @@ import os
 from collections import defaultdict
 # from pycocotools.coco import COCO
 
-
 import numpy as np
 import xml.etree.ElementTree as ET
 from PIL import Image
@@ -47,7 +46,6 @@ class XML():
         '''
         assert  isinstance(xml, XML)
         self.file_list.extend(xml.file_list)
-
 
     def _init_targets(self, path):
         self.with_mixup = False
@@ -246,7 +244,7 @@ class XML():
 
         return (boxes, labels)
 
-    def get_darknet_labels(self,img_file,ann_file):
+    def get_darknet_labels_padding(self,img_file,ann_file):
 
         box_label=np.loadtxt(ann_file).tolist()
         if len(box_label)==0:
@@ -275,14 +273,38 @@ class XML():
 
         labels = np.array(labels, dtype=np.int64)
         return boxes,labels
-    def padding(self,boxes,img):
 
+    def get_darknet_labels(self,img_file,ann_file):
+        box_label=np.loadtxt(ann_file).tolist()
+
+        if len(box_label)==0:
+            return np.array([]),np.array([])
+        if type(box_label[0]) == float:
+            box_label = np.expand_dims(box_label, axis=0)
+
+        boxes = []
+        labels = []
+        img=cv2.imread(img_file)
+        width = np.array(img).shape[1]
+        height=np.array(img).shape[0]
+        # box_label=box_label.tolist()
+
+        for i in box_label:
+            labels.append(int(i[0]))
+            xmin=i[1]*width-i[3]*width/2
+            xmax=xmin+i[3]*width
+            ymin=i[2]*height-i[4]*height/2
+            ymax=ymin+i[4]*height
+            boxes.append([int(xmin), int(ymin), int(xmax), int(ymax)])
+
+        boxes = np.array(boxes, dtype=np.float32)
+        labels = np.array(labels, dtype=np.int64)
+        return boxes,labels
+
+    def padding(self,boxes,img):
         # Load labels
         labels = []
-        # if not os.path.isfile(label_path):
-        #     print()
-        # with open(label_path, 'r') as f:
-        #     x = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+
         w = np.array(img).shape[1]
         h = np.array(img).shape[0]
         img, ratio, padw, padh = letterbox(img, new_shape=416, mode='square')
@@ -295,6 +317,7 @@ class XML():
             labels[:, 3] = ratio[0] * w * (x[:, 1] + x[:, 3] / 2) + padw
             labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
         return labels
+
     def get_coco_labels(self,ann_file,index1):
         # boxes_coco = []
         # labels_coco = []
@@ -350,6 +373,7 @@ class XML():
         labels_coco_1=np.array(labels_coco_1, dtype=np.int64)
 
         return boxes_coco_1,labels_coco_1
+
     def save_annotation(self, box_list, label_list, score_list, thresholds, path):
         file_list = [os.path.join(path, os.path.splitext(f)[0] + ".xml") for f in self.file_list]
         for i, (box, label, score, file) in enumerate(zip(box_list, label_list, score_list, file_list)):

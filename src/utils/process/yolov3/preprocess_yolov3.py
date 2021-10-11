@@ -41,13 +41,29 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2
         left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color) # add border
     return img, ratio, dw, dh
-def pre_process(inp_img):
+def pre_process_padding(inp_img):
     if len(inp_img.shape)==3:
         gray = inp_img[:, :, 0]
     else:gray = inp_img[:, :]
     gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
     # image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
     image,ratio, dw, dh=letterbox(gray,new_shape=416, mode='square')
+
+    img = np.half(image)
+    img /= 255.0
+    if img.shape[-1] == 3:
+        img = np.expand_dims(img, 0)
+    img = np.transpose(img, (0, 3, 1, 2)).astype(np.float32)
+
+    return img.astype(np.float32)
+
+def pre_process(inp_img):
+    if len(inp_img.shape)==3:
+        gray = inp_img[:, :, 0]
+    else:gray = inp_img[:, :]
+    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
+    # image,ratio, dw, dh=letterbox(gray,new_shape=416, mode='square')
 
     img = np.half(image)
     img /= 255.0

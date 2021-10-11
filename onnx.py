@@ -12,6 +12,7 @@ import os
 from tqdm import tqdm
 
 from src.utils.process.yolov3.preprocess_yolov3 import pre_process as yoloPreProcess_yolov3
+from src.utils.process.yolov3.preprocess_yolov3 import pre_process_padding as yoloPreProcess_yolov3_padding
 from src.utils.process.yolov5.preprocess_yolov5 import pre_process as yoloPreProcess_yolov5
 from src.utils.process.yolov3.postprocess_yolov3 import  THRESHOLD_YOLOV3, post_processing,\
     load_class_names,get_prediction_yolov3
@@ -49,6 +50,8 @@ class ONNX(object):
 
         if self.process_method=='yolov3' or self.process_method=='yolov3_tiny3':
             image = yoloPreProcess_yolov3(image)
+        elif self.process_method=='yolov3_padding':
+            image=yoloPreProcess_yolov3_padding(image)
         elif self.process_method=='yolov5'or self.process_method=='yolov5x':
             image = yoloPreProcess_yolov5(image)
 
@@ -56,9 +59,14 @@ class ONNX(object):
         input_name = self.session.get_inputs()[0].name
         outputs = self.session.run(None, {input_name: image})
 
-        if self.process_method=='yolov3':
+        if self.process_method=='yolov3_padding':
             boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
             prediction=get_prediction_yolov3(boxes,416,416)
+            self.predictions.append(prediction)
+
+        elif self.process_method=='yolov3':
+            boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
+            prediction=get_prediction_yolov3(boxes,oriX,oriY)
             self.predictions.append(prediction)
 
         elif self.process_method=='yolov5':
@@ -104,7 +112,10 @@ class ONNX(object):
             result_csv,result=xml.evaluation_xml(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
         if self.format=='coco':
             result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
-        if self.format=='darknet':
-            result_csv,result=xml.evaluation_darknet(self.datasets, self.predictions,output_dir,False, None, None,batch_size)
+        if self.format=='darknet' and self.process_method=='yolov3_padding':
+            result_csv,result=xml.evaluation_darknet_padding(self.datasets, self.predictions,output_dir,False, None, None,batch_size)
+        if self.format=='darknet' and not self.process_method=='yolov3_padding':
+            result_csv, result = xml.evaluation_darknet(self.datasets, self.predictions, output_dir, False, None, None,
+                                                        batch_size)
         return result_csv,result
 
