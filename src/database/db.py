@@ -105,11 +105,9 @@ class DBManager():
         if query.exec(
                 'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
             while query.next():
-                if model_name=='yolov3_prune' or model_name=='yolov3':
-                    continue
                 value = [query.value(i) for i in range(13)]
                 id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
-                if model_name=='yolov3_prune' or model_name=='yolov3':
+                if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
                 if dataset_name==name or model_name==name:
                     if class_name in classes:
@@ -130,7 +128,7 @@ class DBManager():
 
                 value = [query.value(i) for i in range(13)]
                 id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
-                if model_name=='yolov3_prune' or model_name=='yolov3':
+                if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
                 if not model_name in models:
                     models.append(model_name)
@@ -155,7 +153,7 @@ class DBManager():
             while query.next():
                 value = [query.value(i) for i in range(5)]
                 id, model_name, dataset_name, class_name, id1 = value
-                if model_name=='yolov3_prune' or model_name=='yolov3':
+                if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
                 id_list[str(model_name)+'_'+str(dataset_name)].append(id1)
                 if not class_name in class_num:

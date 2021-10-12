@@ -308,6 +308,7 @@ class Ui_Window(QTabWidget):
         # self.table_widget.setColumnWidth(0, 50)
         self.table_widget.setSortingEnabled(True)
 
+
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.doubleClicked.connect(self.doubleClicked)
         if len(self.value) != 0:
@@ -984,6 +985,9 @@ class Ui_Window(QTabWidget):
         self.model.clear()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(0, 0)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
 
         id_max1, class_name1, datasets = self.DBManager.search_id()

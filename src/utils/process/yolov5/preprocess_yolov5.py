@@ -13,7 +13,10 @@ from cv2 import cv2
 IMAGE_SIZE_YOLOV5=640
 
 def pre_process(inp_img):
-    gray = inp_img[:, :, 0]
+    if len(inp_img.shape)==3:
+        gray = inp_img[:, :, 0]
+    else:gray = inp_img[:, :]
+
     gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
     image = cv2.resize(gray, (IMAGE_SIZE_YOLOV5, IMAGE_SIZE_YOLOV5), interpolation=cv2.INTER_LINEAR)
 
