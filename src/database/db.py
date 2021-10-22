@@ -155,9 +155,9 @@ class DBManager():
                 id, model_name, dataset_name, class_name, id1 = value
                 if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
-                id_list[str(model_name)+'_'+str(dataset_name)].append(id1)
+                id_list[str(model_name)+'$'+str(dataset_name)].append(id1)
                 if not class_name in class_num:
-                    class_num[str(model_name)+'_'+str(dataset_name)].append(class_name)
+                    class_num[str(model_name)+'$'+str(dataset_name)].append(class_name)
                 if not dataset_name in datasets:
                     datasets.append(str(dataset_name))
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)

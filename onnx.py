@@ -102,7 +102,10 @@ class ONNX(object):
                 image_id, annotation = self.datasets.get_file_txt_darknet(i)
             else:
                 image_id, annotation = self.datasets.get_file(i)
+            # image = cv2.imread(image_id,cv2.IMREAD_GRAYSCALE)
+            # image=cv2.equalizeHist(image)
             image = np.array(Image.open(image_id))
+
 
             self.forward(image)
 

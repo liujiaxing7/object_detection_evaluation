@@ -552,6 +552,7 @@ class Ui_Window(QTabWidget):
             class_name = result_csv[4].split(",")
             model_name = os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
             dataset_name = os.path.splitext(os.path.split(self.dir_images_gt)[1])[0]
+            # dataset_name='20210924_escalator'
             AP_class, F1_class, prec_class, rec_class, threshold_class, TP_class, FP_class, FN_class = result_csv[
                                                                                                            6].split(
                 ","), result_csv[7].split(","), \
@@ -756,8 +757,8 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            data_name = key.split('_')[-1]
-            model_n = key.split('_' + data_name)[0]
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
             if not model_n == text:
                 continue
             id_max = value
@@ -802,11 +803,12 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
+
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            data_name = key.split('_')[-1]
-            model_n = key.split('_' + data_name)[0]
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
             if not data_name == text:
                 continue
             id_max = value
@@ -841,6 +843,9 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+
 
     def btn_search_by_filter(self):
         text = self.filter_line_ui3.text()
@@ -856,8 +861,8 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            data_name = key.split('_')[-1]
-            model_n = key.split('_' + data_name)[0]
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
             if model_n == text_model and data_name == text_datasets:
 
                 id_max = value
@@ -926,15 +931,15 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            key_d = key.split('_')[-1]
-            key_m = key.split('_' + key_d)[0]
+            key_d = key.split('$')[-1]
+            key_m = key.split('$' + key_d)[0]
             if data_name == None:
-                data_name1 = key.split('_')[-1]
+                data_name1 = key.split('$')[-1]
             else:
                 data_name1 = data_name
 
             if model_n == None:
-                model_n1 = key.split('_' + data_name1)[0]
+                model_n1 = key.split('$' + data_name1)[0]
             else:
                 model_n1 = model_n
             if not data_name1 == key_d or not model_n1 == key_m:
@@ -994,8 +999,8 @@ class Ui_Window(QTabWidget):
 
         for key, value in id_max1.items():
 
-            data_name = key.split('_')[-1]
-            model_n = key.split('_' + data_name)[0]
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
             id_max = value
             class_name = class_name1[key]
             id_max.append(0)
