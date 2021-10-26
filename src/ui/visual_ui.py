@@ -24,6 +24,7 @@ from tqdm import tqdm
 
 # matplotlib.use("Qt5Agg")
 from src.database.db import DBManager
+from src.database.db_concat import DBManager_Changed
 
 
 class EmptyDelegate(QItemDelegate):
@@ -83,14 +84,17 @@ class Ui_Window(QTabWidget):
         self.tab2 = QtWidgets.QWidget()
         self.tab3 = QtWidgets.QWidget()
         self.tab4 = QtWidgets.QWidget()
+        self.tab5 = QtWidgets.QWidget()
         self.addTab(self.tab1, "Detection Metrics")
         self.addTab(self.tab2, "Visual Comparsion")
         self.addTab(self.tab3, "Show Database")
         self.addTab(self.tab4, "Error File Preview")
+        self.addTab(self.tab5, "Database Manager")
         self.tab1UI()
         self.tab2UI()
         self.tab3UI()
         self.tab4UI()
+        self.tab5UI()
         self.setWindowTitle("Object Detection Metrics")
 
     def tab1UI(self):
@@ -302,6 +306,7 @@ class Ui_Window(QTabWidget):
                 value_ = [query.value(i) for i in range(13)]
                 self.value.append(value_)
 
+
         self.model = QtGui.QStandardItemModel()
 
         self.table_widget.setModel(self.model)
@@ -386,6 +391,57 @@ class Ui_Window(QTabWidget):
         layout.addRow(h2)
 
         self.tab4.setLayout(layout)
+
+    def tab5UI(self):
+        layout = QFormLayout()
+        gt = QHBoxLayout()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setPixelSize(25)
+        gt_label = QLabel("Database Manager")
+        gt.addWidget(gt_label, 1, Qt.AlignCenter)
+        gt_label.setFont(font)
+        layout.addRow(gt)
+        layout.addRow(QLabel(''))
+
+        gt1 = QHBoxLayout()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setPixelSize(15)
+        gt_label = QLabel("Merge Database")
+        gt1.addWidget(gt_label, 1, Qt.AlignCenter)
+        gt_label.setFont(font)
+        layout.addRow(gt1)
+        layout.addRow(QLabel(''))
+
+        h1 = QHBoxLayout()
+        h1.addWidget(QLabel("Main database name:       "))
+        self.main_database_dir = QLineEdit()
+        self.main_database_dir.setReadOnly(True)
+        h1.addWidget(self.main_database_dir)
+        self.load_model_dir = QPushButton("...")
+        h1.addWidget(self.load_model_dir)
+        self.load_model_dir.clicked.connect(self.btn_main_database_clicked)
+        layout.addRow(h1)
+
+        h2 = QHBoxLayout()
+        h2.addWidget(QLabel("Another database name:     "))
+        self.ano_database_dir = QLineEdit()
+        self.ano_database_dir.setReadOnly(True)
+        h2.addWidget(self.ano_database_dir)
+        self.load_images_dir = QPushButton("...")
+        h2.addWidget(self.load_images_dir)
+        self.load_images_dir.clicked.connect(self.btn_ano_database_clicked)
+        layout.addRow(h2)
+
+        h3=QHBoxLayout()
+        self.merge_button=QPushButton("Merge")
+        self.merge_button.clicked.connect(self.merge_database)
+        h3.addWidget(self.merge_button)
+        layout.addRow(h3)
+
+
+        self.tab5.setLayout(layout)
 
     def doubleClicked(self, index):
         self.table_widget.openPersistentEditor(index)
@@ -1121,3 +1177,40 @@ class Ui_Window(QTabWidget):
         class_names = self.DBManager.search_classes(name)
         self.combobox_classes.clear()
         self.combobox_classes.addItems(class_names)
+
+    def btn_main_database_clicked(self):
+        if self.main_database_dir.text() == '':
+            txt = self.current_directory
+        else:
+            txt = self.txb_gt_dir.text()
+        directory = QFileDialog.getOpenFileName(
+            self, 'Choose file with Main Database', txt)
+        if directory == '':
+            return
+        file_path = directory[0]
+        if os.path.isfile(file_path):
+            self.main_database_dir.setText(file_path)
+            self.main_database_dir_ = file_path
+        else:
+            self.main_database_dir_ = None
+            self.main_database_dir.setText('')
+
+    def btn_ano_database_clicked(self):
+        if self.ano_database_dir.text() == '':
+            txt = self.current_directory
+        else:
+            txt = self.ano_database_dir.text()
+        directory = QFileDialog.getOpenFileName(
+            self, 'Choose file with Main Database', txt)
+        if directory == '':
+            return
+        file_path = directory[0]
+        if os.path.isfile(file_path):
+            self.ano_database_dir.setText(file_path)
+            self.ano_database_dir_ = file_path
+        else:
+            self.ano_database_dir_ = None
+            self.ano_database_dir.setText('')
+
+    def merge_database(self):
+        DBManager_Changed().merge(self.main_database_dir_,self.ano_database_dir_)
