@@ -874,7 +874,7 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if str(self.value[i][1] == model_n) and str(self.value[i][2]) == data_name:
+                if str(self.value[i][1] )== model_n and str(self.value[i][2]) == data_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
