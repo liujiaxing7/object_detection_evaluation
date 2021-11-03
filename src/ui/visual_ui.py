@@ -855,6 +855,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
     def btn_search_by_data(self):
         text = self.data_line_ui3.text()
@@ -1052,6 +1054,8 @@ class Ui_Window(QTabWidget):
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
         self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 100)
+        self.table_widget.setColumnWidth(3, 150)
         self.table_widget.setColumnWidth(0, 0)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
 
