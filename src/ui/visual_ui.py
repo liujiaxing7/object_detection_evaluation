@@ -173,12 +173,17 @@ class Ui_Window(QTabWidget):
         layout.addRow(QLabel(' '))
 
         h5 = QHBoxLayout()
-        h5.addWidget(QLabel("Onnx Model Type:"), 1, Qt.AlignLeft)
+        h5.addWidget(QLabel("Onnx Model Type:"), 2, Qt.AlignLeft)
         self.combobox_process = QComboBox()
-        h5.addWidget(self.combobox_process, 5, Qt.AlignLeft)
+        h5.addWidget(self.combobox_process, 9, Qt.AlignLeft)
         self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChanged)
+        h5.addWidget(QLabel("Datasets Name:"), 0, Qt.AlignLeft)
+        self.txt_gt_data_name = QLineEdit()
+        self.txt_gt_data_name.setPlaceholderText("默认为数据集文件夹名")
+        self.txt_gt_data_name.setMinimumSize(200, 27)
+        h5.addWidget(self.txt_gt_data_name, 20, Qt.AlignLeft)
         btn_save = QPushButton("save")
         h5.addWidget(btn_save, 1, Qt.AlignRight)
         btn_save.setMinimumSize(60, 27)
@@ -307,13 +312,11 @@ class Ui_Window(QTabWidget):
                 value_ = [query.value(i) for i in range(13)]
                 self.value.append(value_)
 
-
         self.model = QtGui.QStandardItemModel()
 
         self.table_widget.setModel(self.model)
         # self.table_widget.setColumnWidth(0, 50)
         self.table_widget.setSortingEnabled(True)
-
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.doubleClicked.connect(self.doubleClicked)
@@ -435,12 +438,11 @@ class Ui_Window(QTabWidget):
         self.load_images_dir.clicked.connect(self.btn_ano_database_clicked)
         layout.addRow(h2)
 
-        h3=QHBoxLayout()
-        self.merge_button=QPushButton("Merge")
+        h3 = QHBoxLayout()
+        self.merge_button = QPushButton("Merge")
         self.merge_button.clicked.connect(self.merge_database)
         h3.addWidget(self.merge_button)
         layout.addRow(h3)
-
 
         self.tab5.setLayout(layout)
 
@@ -608,7 +610,10 @@ class Ui_Window(QTabWidget):
             # each class
             class_name = result_csv[4].split(",")
             model_name = os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
-            dataset_name = os.path.splitext(os.path.split(self.dir_images_gt)[1])[0]
+            if self.txt_gt_data_name.text() == '':
+                dataset_name = os.path.splitext(os.path.split(self.dir_images_gt)[1])[0]
+            else:
+                dataset_name = self.txt_gt_data_name.text()
             # dataset_name='20210924_escalator'
             AP_class, F1_class, prec_class, rec_class, threshold_class, TP_class, FP_class, FN_class = result_csv[
                                                                                                            6].split(
@@ -860,7 +865,6 @@ class Ui_Window(QTabWidget):
         except:
             pass
 
-
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
@@ -875,7 +879,7 @@ class Ui_Window(QTabWidget):
 
             data = []
             for i in range(len(self.value)):
-                if str(self.value[i][1] )== model_n and str(self.value[i][2]) == data_name:
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name:
                     data.append(self.value[i])
 
             class_num = len(class_name)
@@ -902,7 +906,6 @@ class Ui_Window(QTabWidget):
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
-
 
     def btn_search_by_filter(self):
         text = self.filter_line_ui3.text()
@@ -1214,4 +1217,4 @@ class Ui_Window(QTabWidget):
             self.ano_database_dir.setText('')
 
     def merge_database(self):
-        DBManager_Changed().merge(self.main_database_dir_,self.ano_database_dir_)
+        DBManager_Changed().merge(self.main_database_dir_, self.ano_database_dir_)
