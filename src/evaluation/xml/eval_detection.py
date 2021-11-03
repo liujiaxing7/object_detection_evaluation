@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from src.utils.utils import bbox_iou
 
+
 def get_box_num(gt_labels, class_num):
     num = [0, ] * class_num
     for label in gt_labels:
@@ -16,13 +17,15 @@ def get_box_num(gt_labels, class_num):
 
     return num
 
+
 def get_box_num1(gt_labels, class_num):
     num = [0, ] * class_num
     for label in gt_labels:
-            num[label] += 1
+        num[label] += 1
     return num
 
-def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names,image_id_list,
+
+def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names, image_id_list,
                        threshold, gt_difficults=None, iou_thresh=0.5, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
 
@@ -32,47 +35,53 @@ def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labe
 
     # fpr, tpr, thresholds = metrics.roc_curve(gt_labels, pred_labels, y_type == "multiclass", pos_label=16)
     class_count = get_box_num(gt_labels, len(class_names))
-    prec, rec, score,tp,fp,fn,error_image = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names,image_id_list, gt_difficults, iou_thresh=iou_thresh)
+    prec, rec, score, tp, fp, fn, error_image = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes,
+                                                                     gt_labels, class_count, class_names, image_id_list,
+                                                                     gt_difficults, iou_thresh=iou_thresh)
 
     ap = voc_ap(prec, rec, use_07_metric=use_07_metric)
-    tp1, fp1, precision, recalls, f1, score1 ,f1_,id= voc_F1(tp,fp,prec, rec, score, threshold)
+    tp1, fp1, precision, recalls, f1, score1, f1_, id = voc_F1(tp, fp, prec, rec, score, threshold)
 
-    return {'ap': ap, 'prec':precision, 'rec':recalls, 'num': class_count, 'f1': f1, 'threshold':score1,'tp':tp1,'fp':fp1,'fn':class_count-tp1,'prec_':prec,'rec_':rec,'score_':score,'tp_':tp,'fp_':fp,'fn_':fn,'f1_':f1_,'error':error_image,'id':id}
+    return {'ap': ap, 'prec': precision, 'rec': recalls, 'num': class_count, 'f1': f1, 'threshold': score1, 'tp': tp1,
+            'fp': fp1, 'fn': class_count - tp1, 'prec_': prec, 'rec_': rec, 'score_': score, 'tp_': tp, 'fp_': fp,
+            'fn_': fn, 'f1_': f1_, 'error': error_image, 'id': id}
 
-def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,class_names,image_id_list,
+
+def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names,
+                         image_id_list,
                          gt_difficults=None, iou_thresh=0.5):
     """Calculate precision and recall based on evaluation code of PASCAL VOC.
     """
-    pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels,image_id = \
-        iter(pred_bboxes), iter(pred_labels), iter(pred_scores), iter(gt_bboxes), iter(gt_labels),iter(image_id_list)
+    pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, image_id = \
+        iter(pred_bboxes), iter(pred_labels), iter(pred_scores), iter(gt_bboxes), iter(gt_labels), iter(image_id_list)
 
     gt_difficults = itertools.repeat(None) if gt_difficults is None else iter(gt_difficults)
-    all_data = six.moves.zip(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults,image_id)
+    all_data = six.moves.zip(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults, image_id)
     score, match, class_count_l = defaultdict(list), defaultdict(list), defaultdict(list)
-    error_image_id=[]
-    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult ,eval_image_id in tqdm(all_data):
-        score_iter, match_iter,iou_iter = defaultdict(list), defaultdict(list),defaultdict(list)
-        class_count1=get_box_num1(gt_label, len(class_count))
+    error_image_id = []
+    for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult, eval_image_id in tqdm(all_data):
+        score_iter, match_iter, iou_iter = defaultdict(list), defaultdict(list), defaultdict(list)
+        class_count1 = get_box_num1(gt_label, len(class_count))
         if gt_difficult is None:
             gt_difficult = np.zeros(gt_bbox.shape[0], dtype=bool)
-        iou_one=[]
+        iou_one = []
         for l in np.unique(np.concatenate((pred_label, gt_label)).astype(int)):
-            pred_mask_l = pred_label==l
-            pred_mask_l=np.array(pred_mask_l).astype("int32").tolist()
+            pred_mask_l = pred_label == l
+            pred_mask_l = np.array(pred_mask_l).astype("int32").tolist()
 
-            a=[]
-            count=-1
+            a = []
+            count = -1
             for i in pred_mask_l:
-                count+=1
-                if i==1:
+                count += 1
+                if i == 1:
                     a.append(count)
-            pred_bbox_l=[pred_bbox[j] for j in a]
-            pred_score_l=[pred_score[m] for m in a]
+            pred_bbox_l = [pred_bbox[j] for j in a]
+            pred_score_l = [pred_score[m] for m in a]
 
             #  sort by score
             order = np.array(pred_score_l).argsort()[::-1]
             pred_bbox_l = [pred_bbox_l[n] for n in order]
-            pred_bbox_l=np.array(pred_bbox_l)
+            pred_bbox_l = np.array(pred_bbox_l)
             pred_score_l = [pred_score_l[n] for n in order]
 
             gt_mask_l = gt_label == l
@@ -85,7 +94,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
                     a1.append(count1)
 
             gt_bbox_l = [gt_bbox[m1] for m1 in a1]
-            gt_difficult_l =  [gt_difficult[n1] for n1 in a1]
+            gt_difficult_l = [gt_difficult[n1] for n1 in a1]
 
             score[l].extend(pred_score_l)
             score_iter[l].extend(pred_score_l)
@@ -102,8 +111,8 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             # pred_bbox_l[:, 2:] += 1
             gt_bbox_l = gt_bbox_l.copy()
             # gt_bbox_l[:, 2:] += 1
-            pred_bbox_l=np.array(pred_bbox_l)
-            gt_bbox_l=np.array(gt_bbox_l)
+            pred_bbox_l = np.array(pred_bbox_l)
+            gt_bbox_l = np.array(gt_bbox_l)
             iou = bbox_iou(pred_bbox_l, gt_bbox_l)
 
             gt_index = iou.argmax(axis=1)
@@ -112,7 +121,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             gt_index[iou.max(axis=1) < iou_thresh] = -1
             for io in iou:
                 for io1 in io:
-                    if io1>iou_thresh:
+                    if io1 > iou_thresh:
                         iou_iter[l].extend([io1])
             del iou
 
@@ -137,7 +146,6 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
                     match[l].append(0)
                     match_iter[l].append(0)
 
-
         n_fg_class = len(class_count)
         prec_iter = [None] * n_fg_class
         rec_iter = [None] * n_fg_class
@@ -145,7 +153,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         fp_iter = [None] * n_fg_class
         score_sort_iter = [None] * n_fg_class
         for l in range(n_fg_class):
-            avg_iou=0
+            avg_iou = 0
             score_l_iter = np.array(score_iter[l])
             match_l_iter = np.array(match_iter[l], dtype=np.int8)
 
@@ -163,32 +171,41 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             if class_count1[l] > 0:
                 rec_iter[l] = tp_iter[l] / class_count1[l]
 
-            if iou_iter[l] !=[]:
-                b=0
+            if iou_iter[l] != []:
+                b = 0
                 for i in iou_iter[l]:
-                    b+=i
-                avg_iou=b/len(iou_iter[l])
+                    b += i
+                avg_iou = b / len(iou_iter[l])
 
-            tp,fp,precision, recalls, f1, score1,_,_1 = voc_F1(tp_iter,fp_iter,prec_iter, rec_iter, score_sort_iter, None)
+            tp, fp, precision, recalls, f1, score1, _, _1 = voc_F1(tp_iter, fp_iter, prec_iter, rec_iter,
+                                                                   score_sort_iter, None)
 
+            print(
+                "class_id = %d, name = %s, count = %s, (TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2"
+                "f%%, avg_iou = %f) " % (
+                l, class_names[l], str(len(class_count_l[l])) + "/" + str(class_count[l]), np.nan_to_num(tp[l]),
+                np.nan_to_num(fp[l]), class_count1[l] - np.nan_to_num(tp[l]), precision[l], recalls[l], f1[l],
+                isnan(avg_iou)))
 
-            print("class_id = %d, name = %s, count = %s, (TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2"
-                  "f%%, avg_iou = %f) "% (l,class_names[l],str(len(class_count_l[l]))+"/"+str(class_count[l]),np.nan_to_num(tp[l]),np.nan_to_num(fp[l]),class_count1[l]-np.nan_to_num(tp[l]),precision[l],recalls[l],f1[l],isnan(avg_iou)))
+            if np.nan_to_num(fp[l]) > 0 or class_count1[l] - np.nan_to_num(tp[l]) > 0:
+                error_image_id.append(
+                    eval_image_id + "---" + class_names[l] + "+FP:" + str(np.nan_to_num(fp[l])) + "+FN:" + str(
+                        class_count1[l] - np.nan_to_num(tp[l])))
+            if isnan(avg_iou) != 0:
+                iou_one.append(avg_iou)
 
-            if np.nan_to_num(fp[l]) > 0 or class_count1[l]-np.nan_to_num(tp[l]) > 0:
-                error_image_id.append(eval_image_id +"---"+class_names[l]+ "+FP:" + str(np.nan_to_num(fp[l])) + "+FN:" + str(class_count1[l]-np.nan_to_num(tp[l])))
-            if isnan(avg_iou) !=0:
-                 iou_one.append(avg_iou)
-
-        tp_one,fp_one,pre_one, rec_one, f1_one, score_one,_ ,_1= voc_F1(tp_iter,fp_iter,prec_iter, rec_iter, score_sort_iter, None)
+        tp_one, fp_one, pre_one, rec_one, f1_one, score_one, _, _1 = voc_F1(tp_iter, fp_iter, prec_iter, rec_iter,
+                                                                            score_sort_iter, None)
         # tp_one,fp_one,pre_one,rec_one,f1_one,score_one=np.nansum(tp_one),np.nansum(fp_one),np.nanmean(pre_one),np.nanmean(rec_one),np.nanmean(f1_one),np.nanmean(score_one)
-        tp_one,fp_one,score_one=np.nansum(tp_one),np.nansum(fp_one),np.nanmean(score_one)
-        FN_one=np.sum(class_count1)-tp_one
-        pre_one, rec_one, f1_one=get_metric(int(tp_one),int(fp_one),int(FN_one))
+        tp_one, fp_one, score_one = np.nansum(tp_one), np.nansum(fp_one), np.nanmean(score_one)
+        FN_one = np.sum(class_count1) - tp_one
+        pre_one, rec_one, f1_one = get_metric(int(tp_one), int(fp_one), int(FN_one))
         print(
             "\n (for conf_fresh =%.3f, TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2f%%, avg_iou = %f) " % (
-            score_one,int(tp_one),int(fp_one),int(FN_one),pre_one,rec_one,f1_one,np.sum(iou_one)/len(iou_one)))
-        print("-------------------------------------------------------------------------------------------------------------------------")
+                score_one, int(tp_one), int(fp_one), int(FN_one), pre_one, rec_one, f1_one,
+                np.sum(iou_one) / len(iou_one)))
+        print(
+            "-------------------------------------------------------------------------------------------------------------------------")
 
     for iter_ in (
             pred_bboxes, pred_labels, pred_scores,
@@ -199,9 +216,9 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
     n_fg_class = len(class_count)
     prec = [None] * n_fg_class
     rec = [None] * n_fg_class
-    tp_cl= [None] * n_fg_class
-    fp_cl= [None] * n_fg_class
-    fn_cl= [None] * n_fg_class
+    tp_cl = [None] * n_fg_class
+    fp_cl = [None] * n_fg_class
+    fn_cl = [None] * n_fg_class
     score_sort = [None] * n_fg_class
 
     for l in range(n_fg_class):
@@ -221,16 +238,18 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
         # If n_pos[l] is 0, rec[l] is None.
         if class_count[l] > 0:
             rec[l] = tp_cl[l] / class_count[l]
-            fn_cl[l]=class_count[l]-tp_cl[l]
+            fn_cl[l] = class_count[l] - tp_cl[l]
         else:
-            fn_cl[l]=np.nan
-    return prec, rec, score_sort,tp_cl,fp_cl,fn_cl,error_image_id
+            fn_cl[l] = np.nan
+    return prec, rec, score_sort, tp_cl, fp_cl, fn_cl, error_image_id
+
 
 def isnan(p):
     if p is None:
         return 0
     else:
         return p
+
 
 def voc_ap(prec, rec, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
@@ -242,8 +261,8 @@ def voc_ap(prec, rec, use_07_metric=False):
             ap[l] = np.nan
             continue
         for i in range(len(prec[l])):
-            prec1=prec[l][:len(prec[l])-i]
-            rec1=rec[l][:len(prec[l])-i]
+            prec1 = prec[l][:len(prec[l]) - i]
+            rec1 = rec[l][:len(prec[l]) - i]
 
             if use_07_metric:
                 # 11 point metric
@@ -270,23 +289,25 @@ def voc_ap(prec, rec, use_07_metric=False):
                 ap[l].append(np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1]))
         ap[l] = ap[l][::-1]
 
-    ap_f=[None]*n_fg_class
+    ap_f = [None] * n_fg_class
     for m in range(n_fg_class):
-        ap_f[m]=ap[m]
+        ap_f[m] = ap[m]
     return ap_f
 
-def voc_F1(tp_,fp_,prec, rec, score, threshold):
+
+def voc_F1(tp_, fp_, prec, rec, score, threshold):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
     """
     n_fg_class = len(prec)
     f1 = np.empty(n_fg_class)
-    F1_=[None]*n_fg_class
-    id_=[None]*n_fg_class
-    tp,fp,score_threshold, precision, recall =f1.copy(), f1.copy(), f1.copy(), f1.copy(), f1.copy()
+    F1_ = [None] * n_fg_class
+    id_ = [None] * n_fg_class
+    tp, fp, score_threshold, precision, recall = f1.copy(), f1.copy(), f1.copy(), f1.copy(), f1.copy()
 
     for l in six.moves.range(n_fg_class):
         if prec[l] is None or rec[l] is None:
-            id_[l],F1_[l],tp[l],fp[l],f1[l], precision[l], recall[l], score_threshold[l] = np.nan,np.nan,np.nan, np.nan,np.nan, np.nan, np.nan, np.nan
+            id_[l], F1_[l], tp[l], fp[l], f1[l], precision[l], recall[l], score_threshold[
+                l] = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
             continue
 
         # first append sentinel values at the end
@@ -297,8 +318,8 @@ def voc_F1(tp_,fp_,prec, rec, score, threshold):
         mrec = np.concatenate(([0], rec[l], [1]))
 
         mpre = np.maximum.accumulate(mpre[::-1])[::-1]
-        F1_l = 2 / (1/mrec + 1/mpre)
-        F1_[l]=F1_l.tolist()
+        F1_l = 2 / (1 / mrec + 1 / mpre)
+        F1_[l] = F1_l.tolist()
 
         id_max_prec = min(len(mpre) - np.nanargmax(mpre[::-1]), len(mpre) - 1)
         id_max_recall = max(0, np.nanargmax(mrec) - 2)
@@ -306,15 +327,17 @@ def voc_F1(tp_,fp_,prec, rec, score, threshold):
         id_max_f1 = np.nanargmax(F1_l)
 
         id = id_max_f1 if threshold is None else np.sum(mscore > threshold[l])
-        tp[l],fp[l],f1[l], precision[l], recall[l], score_threshold[l] = mtp[id],mfp[id],F1_l[id], mpre[id], mrec[id], mscore[id]
-        id_[l]=id-1
-    return tp,fp,precision, recall, f1, score_threshold,F1_,id_
+        tp[l], fp[l], f1[l], precision[l], recall[l], score_threshold[l] = mtp[id], mfp[id], F1_l[id], mpre[id], mrec[
+            id], mscore[id]
+        id_[l] = id - 1
+    return tp, fp, precision, recall, f1, score_threshold, F1_, id_
 
-def get_metric(tp,fp,fn):
-    if tp+fp==0 or tp+fn==0:
-        return 0,0,0
 
-    prec=tp/(tp+fp)
-    rec=tp/(tp+fn)
-    f1=2/(1/prec+1/rec)
-    return prec,rec,f1
+def get_metric(tp, fp, fn):
+    if tp + fp == 0 or tp + fn == 0:
+        return 0, 0, 0
+
+    prec = tp / (tp + fp)
+    rec = tp / (tp + fn)
+    f1 = 2 / (1 / prec + 1 / rec)
+    return prec, rec, f1

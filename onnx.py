@@ -14,8 +14,8 @@ from tqdm import tqdm
 from src.utils.process.yolov3.preprocess_yolov3 import pre_process as yoloPreProcess_yolov3
 from src.utils.process.yolov3.preprocess_yolov3 import pre_process_padding as yoloPreProcess_yolov3_padding
 from src.utils.process.yolov5.preprocess_yolov5 import pre_process as yoloPreProcess_yolov5
-from src.utils.process.yolov3.postprocess_yolov3 import  THRESHOLD_YOLOV3, post_processing,\
-    load_class_names,get_prediction_yolov3
+from src.utils.process.yolov3.postprocess_yolov3 import THRESHOLD_YOLOV3, post_processing, \
+    load_class_names, get_prediction_yolov3
 from src.utils.process.yolov3_tiny3.postprocess_yolov3_tiny3 import post_processing_tiny3
 from src.utils.process.yolov5.postprocess_yolov5 import PostProcessor_YOLOV5, IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5, \
     get_prediction_yolov5, PostProcessor_YOLOV5x
@@ -29,17 +29,18 @@ import numpy as np
 from PIL import Image
 import numpy as np
 import src.datasets.voctodarknet as create_list
+
 class ONNX(object):
-    def __init__(self, file,batch_size,data_dir,classes,ret,process_method):
+    def __init__(self, file, batch_size, data_dir, classes, ret, process_method):
         if os.path.isfile(file):
             self.session = onnxruntime.InferenceSession(file)
-            self.predictions=[]
-            self.datasets=None
-            self.batch_size=batch_size
-            self.data_dir=data_dir
-            self.classes_path=classes
-            self.format=ret
-            self.process_method=process_method
+            self.predictions = []
+            self.datasets = None
+            self.batch_size = batch_size
+            self.data_dir = data_dir
+            self.classes_path = classes
+            self.format = ret
+            self.process_method = process_method
 
         else:
             raise IOError("no such file {}".format(file))
@@ -48,55 +49,54 @@ class ONNX(object):
         oriY = image.shape[0]
         oriX = image.shape[1]
 
-        if self.process_method=='yolov3' or self.process_method=='yolov3_tiny3':
+        if self.process_method == 'yolov3' or self.process_method == 'yolov3_tiny3':
             image = yoloPreProcess_yolov3(image)
-        elif self.process_method=='yolov3_padding':
-            image=yoloPreProcess_yolov3_padding(image)
-        elif self.process_method=='yolov5'or self.process_method=='yolov5x':
+        elif self.process_method == 'yolov3_padding':
+            image = yoloPreProcess_yolov3_padding(image)
+        elif self.process_method == 'yolov5' or self.process_method == 'yolov5x':
             image = yoloPreProcess_yolov5(image)
-
 
         input_name = self.session.get_inputs()[0].name
         outputs = self.session.run(None, {input_name: image})
 
-        if self.process_method=='yolov3_padding':
+        if self.process_method == 'yolov3_padding':
             boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
-            prediction=get_prediction_yolov3(boxes,416,416)
+            prediction = get_prediction_yolov3(boxes, 416, 416)
             self.predictions.append(prediction)
 
-        elif self.process_method=='yolov3':
+        elif self.process_method == 'yolov3':
             boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
-            prediction=get_prediction_yolov3(boxes,oriX,oriY)
+            prediction = get_prediction_yolov3(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
-        elif self.process_method=='yolov5':
+        elif self.process_method == 'yolov5':
             boxes = PostProcessor_YOLOV5(outputs)
-            prediction=get_prediction_yolov5(boxes,oriX,oriY)
+            prediction = get_prediction_yolov5(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
-        elif self.process_method=='yolov5x':
+        elif self.process_method == 'yolov5x':
             boxes = PostProcessor_YOLOV5x(outputs)
-            prediction=get_prediction_yolov5(boxes,oriX,oriY)
+            prediction = get_prediction_yolov5(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
-        elif self.process_method=='yolov3_tiny3':
-            boxes=post_processing_tiny3(image, THRESHOLD_YOLOV3, 0.6, outputs)
+        elif self.process_method == 'yolov3_tiny3':
+            boxes = post_processing_tiny3(image, THRESHOLD_YOLOV3, 0.6, outputs)
             prediction = get_prediction_yolov3(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
     def evaluate(self):
-        self.classes=load_class_names(self.classes_path)
+        self.classes = load_class_names(self.classes_path)
 
         # create_list.voctodark(self.data_dir,self.classes)
         print('begin')
-        self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir,self.format,
+        self.datasets = src.build_dataset(self.classes, 'Dataset', self.data_dir, self.format,
                                           None, None, None, True)
 
-        output_dir='./result/'+self.process_method
+        output_dir = './result/' + self.process_method
         if self.format == 'darknet':
-            batch_size=len(open(os.path.join(self.data_dir,  "val_images.txt" )).readlines())
+            batch_size = len(open(os.path.join(self.data_dir, "val_images.txt")).readlines())
         else:
-            batch_size=len(open(os.path.join(self.data_dir,  "ImageSets","Main","test.txt" )).readlines())
+            batch_size = len(open(os.path.join(self.data_dir, "ImageSets", "Main", "test.txt")).readlines())
         for i in tqdm(range(batch_size)):
             if self.format == 'darknet':
                 image_id, annotation = self.datasets.get_file_txt_darknet(i)
@@ -106,19 +106,21 @@ class ONNX(object):
             # image=cv2.equalizeHist(image)
             image = np.array(Image.open(image_id))
 
-
             self.forward(image)
 
-        if self.format=='voc':
-            result_csv,result=xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
-        if self.format=='xml':
-            result_csv,result=xml.evaluation_xml(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
-        if self.format=='coco':
-            result_csv,result=xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None,batch_size)
-        if self.format=='darknet' and self.process_method=='yolov3_padding':
-            result_csv,result=xml.evaluation_darknet_padding(self.datasets, self.predictions,output_dir,False, None, None,batch_size)
-        if self.format=='darknet' and not self.process_method=='yolov3_padding':
+        if self.format == 'voc':
+            result_csv, result = xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None,
+                                                batch_size)
+        if self.format == 'xml':
+            result_csv, result = xml.evaluation_xml(self.datasets, self.predictions, output_dir, False, None, None,
+                                                    batch_size)
+        if self.format == 'coco':
+            result_csv, result = xml.evaluation_coco(self.datasets, self.predictions, output_dir, False, None, None,
+                                                     batch_size)
+        if self.format == 'darknet' and self.process_method == 'yolov3_padding':
+            result_csv, result = xml.evaluation_darknet_padding(self.datasets, self.predictions, output_dir, False,
+                                                                None, None, batch_size)
+        if self.format == 'darknet' and not self.process_method == 'yolov3_padding':
             result_csv, result = xml.evaluation_darknet(self.datasets, self.predictions, output_dir, False, None, None,
                                                         batch_size)
-        return result_csv,result
-
+        return result_csv, result

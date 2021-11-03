@@ -19,7 +19,6 @@ from src.utils.utils import bbox_iou
 
 
 def _recalls(all_ious, proposal_nums, thrs):
-
     img_num = all_ious.shape[0]
     total_gt_num = sum([ious.shape[0] for ious in all_ious])
 
@@ -50,6 +49,7 @@ def _recalls(all_ious, proposal_nums, thrs):
 
     return recalls
 
+
 def set_recall_param(proposal_nums, iou_thrs):
     """Check proposal_nums and iou_thrs and set correct format.
     """
@@ -70,6 +70,7 @@ def set_recall_param(proposal_nums, iou_thrs):
         _iou_thrs = iou_thrs
 
     return _proposal_nums, _iou_thrs
+
 
 def recalls(gts, proposals, proposal_nums=None, iou_thrs=0.5):
     """Calculate recalls.
@@ -173,6 +174,7 @@ def plot_num_recall(recalls, proposal_nums):
     plt.axis([0, proposal_nums.max(), 0, 1])
     f.show()
 
+
 def plot_iou_recall(recalls, iou_thrs):
     """Plot IoU-Recalls curve.
 
@@ -197,8 +199,9 @@ def plot_iou_recall(recalls, iou_thrs):
     plt.axis([iou_thrs.min(), 1, 0, 1])
     f.show()
 
+
 def eval_recalls(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,
-                         gt_difficults=None, iou_thresh=0.5):
+                 gt_difficults=None, iou_thresh=0.5):
     """Calculate precision and recall based on evaluation code of PASCAL VOC.
     """
     pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels = \
@@ -256,6 +259,5 @@ def eval_recalls(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, cl
                 else:
                     match[l].append(0)
 
-    recall_all = [np.sum(match[i])/class_count[i] for i in range(len(class_count))]
+    recall_all = [np.sum(match[i]) / class_count[i] for i in range(len(class_count))]
     return recall_all
-

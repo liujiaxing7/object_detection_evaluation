@@ -52,7 +52,7 @@ class DBManager_Changed():
                 while query.next():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()
-        self.add_database(database1,value_metric_,value_metric,value_idmax,value_error)
+        self.add_database(database1,value_metric_,value_metric,value_idmax,value_error[:10])
     def add_database(self,database1,value_metric_,value_metric,value_idmax,value_error):
         self.db = QSqlDatabase.addDatabase("QSQLITE", 'sqlite')
         self.db.setDatabaseName(database1)
@@ -79,9 +79,9 @@ class DBManager_Changed():
         query = QSqlQuery(self.db)
         if self.db.open():
 
-            query.exec_(
-                "create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
-                " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
+            # query.exec_(
+            #     "create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
+            #     " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
 
             query.exec_("insert into metric values(" + str(
                 id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(tp) + "," + str(
@@ -103,9 +103,9 @@ class DBManager_Changed():
         query = QSqlQuery(self.db)
         if self.db.open():
             # query = QSqlQuery()
-            query.exec_(
-                "create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
-                " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
+            # query.exec_(
+            #     "create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
+            #     " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
 
             query.exec_("insert into metric_ values(" + str(
                 id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(tp) + "," + str(
@@ -127,8 +127,8 @@ class DBManager_Changed():
         query = QSqlQuery(self.db)
         if self.db.open():
             # query = QSqlQuery()
-            query.exec_(
-                "create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
+            # query.exec_(
+            #     "create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
 
             query.exec_("insert into id_max values(" + str(
                 id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(id_) + ")")
@@ -148,8 +148,8 @@ class DBManager_Changed():
         query = QSqlQuery(self.db)
         if self.db.open():
             # query = QSqlQuery()
-            query.exec_(
-                "create table error(id int primary key, model_name str , dataset_name str,error_file str)")
+            # query.exec_(
+            #     "create table error(id int primary key, model_name str , dataset_name str,error_file str)")
 
             query.exec_("insert into error values(" + str(
                 id) + "," + model_name + "," + dataset_name + "," + error_file + ")")
@@ -162,9 +162,9 @@ class DBManager_Changed():
             self.db.close()
 
     def get_max_id(self):
-        self.db.open(self.db)
+        self.db.open()
         id_all=[]
-        query = QSqlQuery()
+        query = QSqlQuery(self.db)
         if query.exec('select id from metric'):
             while query.next():
                 id = query.value(0)
@@ -209,4 +209,4 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-# DBManager_Changed().merge("/home/fandong/Code/weights/1/core.db","/home/fandong/Code/weights/10/core.db")
+# DBManager_Changed().merge("/home/fandong/Code/concat/core.db","/home/fandong/Code/concat/core_new.db")

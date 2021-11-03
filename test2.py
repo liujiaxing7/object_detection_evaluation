@@ -1,4 +1,5 @@
 import pickle
+
 # 列表
 # 存储
 # list1 = [123, 'xiaopingguo', 54, [90, 78]]
@@ -12,10 +13,10 @@ import pickle
 # print(a)
 # print(a)
 # print(a)
-with open('/home/fandong/Code/object_detection_evaluation/src/database/yolov3-v410&EVT2','rb') as f:
+with open('/home/fandong/Code/object_detection_evaluation/src/database/yolov3-v410&EVT2', 'rb') as f:
     while True:
         try:
-            aa=pickle.load(f)
+            aa = pickle.load(f)
             print(aa)
         except EOFError:
             break

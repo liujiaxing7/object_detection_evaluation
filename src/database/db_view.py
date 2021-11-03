@@ -1,11 +1,12 @@
 # coding:utf-8
 
-from PyQt5 import QtGui,QtCore,QtWidgets,QtSql
+from PyQt5 import QtGui, QtCore, QtWidgets, QtSql
 import sys
 
 '''
     州的先生 - 在PyQt5中使用数据库
 '''
+
 
 class MainUi(QtWidgets.QMainWindow):
 
@@ -18,7 +19,7 @@ class MainUi(QtWidgets.QMainWindow):
         # 设置窗口标题
         self.setWindowTitle("PyQt5查询数据库")
         # 设置窗口大小
-        self.resize(1900,400)
+        self.resize(1900, 400)
 
         # 创建一个窗口部件
         self.widget = QtWidgets.QWidget()
@@ -34,8 +35,8 @@ class MainUi(QtWidgets.QMainWindow):
         # 创建一个表格部件
         self.table_widget = QtWidgets.QTableView()
         # 将上述两个部件添加到网格布局中
-        self.grid_layout.addWidget(self.group_box,0,0)
-        self.grid_layout.addWidget(self.table_widget,0,1)
+        self.grid_layout.addWidget(self.group_box, 0, 0)
+        self.grid_layout.addWidget(self.table_widget, 0, 1)
 
         # 创建按钮组的按钮
         self.b_create_db = QtWidgets.QPushButton("创建数据库")
@@ -58,8 +59,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.b_delete_row.clicked.connect(self.del_row_data)
         self.b_add_row.clicked.connect(self.add_row_data)
         # self.b_delete_row.clicked.connect(self.del_row_data)
+
     def view_data(self):
-        db_text='core'
+        db_text = 'core'
 
         print(db_text)
         self.db_name = db_text
@@ -71,9 +73,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.model = QtSql.QSqlTableModel()
         self.table_widget.setModel(self.model)
 
-        self.model.setTable('id_max') # 设置数据模型的数据表
-        self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange) # 允许字段更改
-        self.model.select() # 查询所有数据
+        self.model.setTable('id_max')  # 设置数据模型的数据表
+        self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)  # 允许字段更改
+        self.model.select()  # 查询所有数据
         # 设置表格头
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
@@ -89,7 +91,6 @@ class MainUi(QtWidgets.QMainWindow):
         self.model.setHeaderData(11, QtCore.Qt.Horizontal, 'recall')
         self.model.setHeaderData(12, QtCore.Qt.Horizontal, 'threshold')
 
-
         # 添加一行数据行
 
     def add_row_data(self):
@@ -98,13 +99,15 @@ class MainUi(QtWidgets.QMainWindow):
             self.model.insertRows(self.model.rowCount(), 1)
         else:
             self.create_db()
+
     def del_row_data(self):
         if self.model:
             self.model.removeRow(self.table_widget.currentIndex().row())
         else:
             self.create_db()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
     ui = MainUi()

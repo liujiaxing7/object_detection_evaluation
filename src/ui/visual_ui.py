@@ -285,6 +285,7 @@ class Ui_Window(QTabWidget):
         search_by_model.clicked.connect(self.btn_search_by_model)
         h1.addWidget(QLabel(" Filter condition："))
         self.filter_line_ui3 = QLineEdit()
+        self.filter_line_ui3.setPlaceholderText("m&d^c/m^c/d^c")
         h1.addWidget(self.filter_line_ui3)
         search_by_filter = QPushButton("Search by condition")
         h1.addWidget(search_by_filter)

@@ -22,8 +22,7 @@ image_set = set()
 image_id = 2019000001  # train:2018xxx; val:2019xxx; test:2020xxx
 category_item_id = 1
 annotation_id = 1
-category_set = ['person','person_dummy','person_model','escalator_handrails','escalator']
-
+category_set = ['person', 'person_dummy', 'person_model', 'escalator_handrails', 'escalator']
 
 
 def addCatItem(name):
@@ -196,4 +195,3 @@ if __name__ == '__main__':
     json_file = r'/home/fandong/Code/Evaluation-procedure/json/a.json'
     parseXmlFiles(xml_path)
 json.dump(coco, open(json_file, 'w'))
-

@@ -1,6 +1,7 @@
 import os
 from .xml import XML
 
+
 class VOCDataset(XML):
     '''
     class_names = ('__background__',
@@ -10,10 +11,12 @@ class VOCDataset(XML):
                'motorbike', 'person', 'pottedplant',
                'sheep', 'sofa', 'train', 'tvmonitor')
     '''
+
     # class_names = ('person', 'escalator', 'escalator_handrails', 'person_dummy', 'escalator_model', 'escalator_handrails_model')
     # class_names = ['person','person_dummy','person_model','escalator_handrails','escalator']
 
-    def __init__(self, data_dir,classes, target, transform=None, target_transform=None, keep_difficult=False, train=False,format=None):
+    def __init__(self, data_dir, classes, target, transform=None, target_transform=None, keep_difficult=False,
+                 train=False, format=None):
         """Dataset for VOC data.
         Args:
             data_dir: the root of the VOC2007 or VOC2012 dataset, the directory contains the following sub-directories:
@@ -25,19 +28,20 @@ class VOCDataset(XML):
         #     batch_size=len(open(os.path.join(self.data_dir,  "val_images.txt" )).readlines())
         # else:
         #     batch_size=len(open(os.path.join(self.data_dir,  "JPEGImages","Main","test.txt" )).readlines())
-        if format=='darknet':
-            image_sets_file = os.path.join(data_dir, "val_images.txt" )
-        else:image_sets_file = os.path.join(data_dir, "ImageSets","Main","test.txt" )
+        if format == 'darknet':
+            image_sets_file = os.path.join(data_dir, "val_images.txt")
+        else:
+            image_sets_file = os.path.join(data_dir, "ImageSets", "Main", "test.txt")
 
-        super(VOCDataset, self).__init__(data_dir,classes, image_sets_file, target, transform, target_transform, keep_difficult, train,format)
-
+        super(VOCDataset, self).__init__(data_dir, classes, image_sets_file, target, transform, target_transform,
+                                         keep_difficult, train, format)
 
     def get_file(self, index):
         image_id = self.file_list[index]
-        image_file = self.data_dir+ "/JPEGImages/"+ "%s.png" % image_id
-        annotation_file = self.data_dir+ "/Annotations/"+ "%s.xml" % image_id
+        image_file = self.data_dir + "/JPEGImages/" + "%s.png" % image_id
+        annotation_file = self.data_dir + "/Annotations/" + "%s.xml" % image_id
         if not os.path.isfile(image_file):
-            image_file = self.data_dir+ "/JPEGImages/"+ "%s.jpg" % image_id
+            image_file = self.data_dir + "/JPEGImages/" + "%s.jpg" % image_id
         # annotation_file = os.path.join(self.data_dir, "Annotations", "%s.xml" % image_id)
         return image_file, annotation_file
 
@@ -45,11 +49,11 @@ class VOCDataset(XML):
         image_id = self.file_list[index]
         image_file = image_id
         if 'JPEGImages' in image_id:
-                annotation_file=image_id.replace('JPEGImages', 'Annotations').replace(os.path.splitext(image_id)[-1], '.xml')
+            annotation_file = image_id.replace('JPEGImages', 'Annotations').replace(os.path.splitext(image_id)[-1],
+                                                                                    '.xml')
         else:
 
-                annotation_file=image_id.replace('image', 'Annotations').replace(os.path.splitext(image_id)[-1], '.xml')
-
+            annotation_file = image_id.replace('image', 'Annotations').replace(os.path.splitext(image_id)[-1], '.xml')
 
         return image_file, annotation_file
 
@@ -57,23 +61,23 @@ class VOCDataset(XML):
         image_id = self.file_list[index]
         image_file = image_id
         if 'JPEGImages' in image_id:
-                annotation_file=image_id.replace('JPEGImages', 'labels').replace(os.path.splitext(image_id)[-1], '.txt')
+            annotation_file = image_id.replace('JPEGImages', 'labels').replace(os.path.splitext(image_id)[-1], '.txt')
         else:
-                annotation_file=image_id.replace('image', 'labels').replace(os.path.splitext(image_id)[-1], '.txt')
+            annotation_file = image_id.replace('image', 'labels').replace(os.path.splitext(image_id)[-1], '.txt')
 
         return image_file, annotation_file
 
     def get_file_darknet(self, index):
         image_id = self.file_list[index]
-        image_file = self.data_dir+ "/JPEGImages"+ "%s.png" % image_id
+        image_file = self.data_dir + "/JPEGImages" + "%s.png" % image_id
         if not os.path.isfile(image_file):
-            image_file = self.data_dir+ "/JPEGImages"+ "%s.jpg" % image_id
-        annotation_file = self.data_dir+ "/labels"+ "%s.txt" % image_id
+            image_file = self.data_dir + "/JPEGImages" + "%s.jpg" % image_id
+        annotation_file = self.data_dir + "/labels" + "%s.txt" % image_id
         return image_file, annotation_file
 
     def get_classes(self):
         return self.class_names
 
     def get_file_json(self):
-        json_file=os.path.join(self.data_dir,"train.json")
+        json_file = os.path.join(self.data_dir, "train.json")
         return json_file

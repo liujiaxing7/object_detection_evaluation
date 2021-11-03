@@ -20,17 +20,17 @@ with open('result_2021-10-09_18-52-24.csv', 'r') as f:
         result_csv.append(row)
 
 # each class
-class_name = result_csv[4] 
+class_name = result_csv[4]
 model_name = 'yolov3_best'
 dataset_name = 'subDataset'
 AP_class, F1_class, prec_class, rec_class, threshold_class, TP_class, FP_class, FN_class = result_csv[
-                                                                                               6] , result_csv[7] , \
+                                                                                               6], result_csv[7], \
                                                                                            result_csv[8], \
                                                                                            result_csv[
-                                                                                               9] , \
+                                                                                               9], \
                                                                                            result_csv[
-                                                                                               10]  \
-    , result_csv[11] , result_csv[12] , result_csv[13] 
+                                                                                               10] \
+    , result_csv[11], result_csv[12], result_csv[13]
 
 TP_all, FP_all, FN_all = 0, 0, 0
 

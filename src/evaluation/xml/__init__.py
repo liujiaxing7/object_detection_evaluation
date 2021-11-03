@@ -149,8 +149,7 @@ def evaluation(dataset, predictions, output_dir, save_anno, iteration=None, thre
         image_id, annotation = dataset.get_file(i)
         image_id_list.append(image_id)
 
-        if not os.path.exists(annotation):
-            continue
+
         gt_boxes, gt_labels = dataset.get_annotation(annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
@@ -220,8 +219,7 @@ def evaluation_xml(dataset, predictions, output_dir, save_anno, iteration=None, 
         image_id, annotation = dataset.get_file(i)
         image_id_list.append(image_id)
 
-        if not os.path.exists(annotation):
-            continue
+
         gt_boxes, gt_labels = dataset.get_annotation(annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
@@ -291,8 +289,6 @@ def evaluation_darknet_padding(dataset, predictions, output_dir, save_anno, iter
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_txt_darknet(i)
         image_id_list.append(image_id)
-        if not os.path.exists(annotation):
-            continue
         gt_boxes, gt_labels = dataset.get_darknet_labels_padding(image_id, annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
@@ -362,8 +358,6 @@ def evaluation_darknet(dataset, predictions, output_dir, save_anno, iteration=No
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_txt_darknet(i)
         image_id_list.append(image_id)
-        if not os.path.exists(annotation):
-            continue
         gt_boxes, gt_labels = dataset.get_darknet_labels(image_id, annotation)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)
@@ -435,8 +429,7 @@ def evaluation_coco(dataset, predictions, output_dir, save_anno, iteration=None,
     for i in range(BATCH_SIZE):
         image_id, annotation = dataset.get_file_darknet(i)
         image_id_list.append(image_id)
-        if not os.path.exists(annotation):
-            continue
+
         gt_boxes, gt_labels = dataset.get_coco_labels(ann_file, image_id)
         gt_boxes_list.append(gt_boxes)
         gt_labels_list.append(gt_labels)

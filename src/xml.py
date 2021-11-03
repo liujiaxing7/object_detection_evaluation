@@ -245,6 +245,8 @@ class XML():
         return (boxes, labels)
 
     def get_darknet_labels_padding(self,img_file,ann_file):
+        if not os.path.exists(ann_file):
+            raise IOError("no such file: ", ann_file)
 
         box_label=np.loadtxt(ann_file).tolist()
         if len(box_label)==0:
@@ -275,6 +277,8 @@ class XML():
         return boxes,labels
 
     def get_darknet_labels(self,img_file,ann_file):
+        if not os.path.exists(ann_file):
+            raise IOError("no such file: ", ann_file)
         box_label=np.loadtxt(ann_file).tolist()
 
         if len(box_label)==0:
@@ -319,6 +323,8 @@ class XML():
         return labels
 
     def get_coco_labels(self,ann_file,index1):
+        if not os.path.exists(ann_file):
+            raise IOError("no such file: ", ann_file)
         # boxes_coco = []
         # labels_coco = []
         labels_coco_1 = []
