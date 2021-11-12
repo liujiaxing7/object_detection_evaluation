@@ -209,4 +209,4 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-# DBManager_Changed().merge("/home/fandong/Code/concat/core.db","/home/fandong/Code/concat/core_new.db")
+# DBManager_Changed().merge("/home/fandong/Code/weights/save/main.db","/home/fandong/Code/weights/save/other.db")

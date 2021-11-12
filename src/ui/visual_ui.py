@@ -302,7 +302,7 @@ class Ui_Window(QTabWidget):
 
         h3 = QGridLayout()
         self.table_widget = QtWidgets.QTableView()
-        self.table_widget.setFixedSize(1340, 600)
+        self.table_widget.setFixedSize(1540, 600)
 
         query = QSqlQuery()
         self.value = []
