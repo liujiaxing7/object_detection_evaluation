@@ -741,7 +741,7 @@ class Ui_Window(QTabWidget):
             #                      value_save[i][9],value_save[i][10],value_save[i][11])
             print("saving error files ...")
             for j in range(len(self.result['error'])):
-                if j % 5==0:
+                if j % 10==0:
                     DB.add_erro_file(model_name, dataset_name, self.result['error'][j])
 
     def get_metric(self, tp, fp, fn):
