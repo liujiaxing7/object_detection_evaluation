@@ -55,19 +55,19 @@ class DBManager_Changed():
             #     while query.next():
             #         value_error.append([query.value(i) for i in range(4)])
             if query.exec(
-                    'update metric_ set dataset_name = "20210924-escalator" where dataset_name = "20210924_escalator"'):
+                    'update metric_ set dataset_name = "20210612" where model_name = "prune_0.5" dataset_name="coco"'):
                 while query.next():
                     value_metric_.append([query.value(i) for i in range(13)])
             if query.exec(
-                    'update metric set dataset_name = "20210924-escalator" where dataset_name = "20210924_escalator"'):
+                    'update metric set dataset_name = "20210612" where model_name = "prune_0.5" dataset_name="coco"'):
                 while query.next():
                     value_metric.append([query.value(i) for i in range(13)])
             if query.exec(
-                    'update id_max set dataset_name = "20210924-escalator" where dataset_name = "20210924_escalator"'):
+                    'update id_max set dataset_name = "20210612" where model_name = "prune_0.5" dataset_name="coco"'):
                 while query.next():
                     value_idmax.append([query.value(i) for i in range(5)])
             if query.exec(
-                    'update error set dataset_name = "20210924-escalator" where dataset_name = "20210924_escalator"'):
+                    'update error set dataset_name = "20210612" where model_name = "prune_0.5" dataset_name="coco"'):
                 while query.next():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()

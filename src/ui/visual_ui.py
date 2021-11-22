@@ -6,6 +6,7 @@
 @time: 2021/8/24 18.46
 @desc:
 '''
+import random
 from decimal import Decimal
 import time, threading
 
@@ -680,7 +681,7 @@ class Ui_Window(QTabWidget):
                     b = b.tolist()
 
                     value_save = []
-                    for t in tqdm(np.arange(-1., 0.001, 0.001)):
+                    for t in np.arange(-1., 0.001, 0.001):
                         t = abs(t)
                         index = self.index_number(a, float(t))
                         if value[index] not in value_save:
@@ -715,7 +716,7 @@ class Ui_Window(QTabWidget):
                         id_max[m][3] = index1 + 1
 
                     DB.add_item_id(str(id_max[m][0]), str(id_max[m][1]), str(id_max[m][2]), int(id_max[m][3]))
-                    for i in range(len(value_save)):
+                    for i in tqdm(range(len(value_save))):
                         DB.add_item_(str(value_save[i][0]), str(value_save[i][1]), str(value_save[i][2]),
                                      int(value_save[i][3]),
                                      int(value_save[i][4]), int(value_save[i][5]), float(value_save[i][6]),
@@ -733,16 +734,17 @@ class Ui_Window(QTabWidget):
                 #     else:
                 #         id_max[i1][3]=index1
 
-            # for m in range(len(self.result['tp_'])):
-            #     DB.add_item_id(id_max[m][0],id_max[m][1],id_max[m][2],id_max[m][3])
-            #     for i in range(len(self.result['tp_'][m])):
-            #
-            #         DB.add_item_(value_save[i][0],value_save[i][1],value_save[i][2],value_save[i][3],value_save[i][4],value_save[i][5],value_save[i][6],value_save[i][7],value_save[i][8],
-            #                      value_save[i][9],value_save[i][10],value_save[i][11])
+
             print("saving error files ...")
-            for j in range(len(self.result['error'])):
-                if j % 10==0:
-                    DB.add_erro_file(model_name, dataset_name, self.result['error'][j])
+            nums_list = np.arange(0, len(self.result['error'])).tolist()
+            if len(nums_list) > 100:
+                nums = random.sample(nums_list, 100)
+                nums = sorted(nums)
+            else:
+                nums = nums_list
+
+            for j in nums:
+                DB.add_erro_file(model_name, dataset_name, self.result['error'][j])
 
     def get_metric(self, tp, fp, fn):
         if tp + fp == 0 or tp + fn == 0:
@@ -771,6 +773,21 @@ class Ui_Window(QTabWidget):
         if self.ret == '':
             print("no format select")
             exit(-1)
+
+        model_name = os.path.splitext(os.path.split(self.dir_model_gt)[1])[0]
+        if self.txt_gt_data_name.text() == '':
+            dataset_name = os.path.splitext(os.path.split(self.dir_images_gt)[1])[0]
+        else:
+            dataset_name = self.txt_gt_data_name.text()
+
+        id_max1, class_name1, datasets=self.DBManager.search_id()
+
+        for key, value in id_max1.items():
+            if model_name+"$"+dataset_name==key:
+                print("model and dataset repeat！")
+                exit(-1)
+
+
 
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
