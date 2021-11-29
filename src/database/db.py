@@ -14,6 +14,10 @@ class MyFigure(FigureCanvas):
 
         super(MyFigure,self).__init__(self.fig)
 
+
+
+
+
 class DBManager():
     def __init__(self):
         self.db = QSqlDatabase.addDatabase("QSQLITE",'sqlite') #select database type
@@ -22,13 +26,28 @@ class DBManager():
         self.db.open()  #connect to or create database
         self.query = QSqlQuery() #sql handler
         self.queryModel = QSqlQueryModel()
+        self.first_metric = True
+        self.first_metric_ = True
+        self.first_id = True
+        self. first_error = True
+
+        self. count_metric = 0
+        self. count_metric_ = 0
+        self. count_id = 0
+        self. count_error = 0
 
 #id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
     def add_item(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id=self.get_max_id()+1
+        if self.first_metric:
+            id=self.get_max_id()+1
+            self.count_metric = id+1
+            self.first_metric=False
+        else:
+            id=self.count_metric
+            self.count_metric=id+1
         if self.db.open():
             query = QSqlQuery()
             query.exec_("create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
@@ -47,7 +66,13 @@ class DBManager():
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id=self.get_max_id_()+1
+        if self.first_metric_:
+            id = self.get_max_id_() + 1
+            self.count_metric_ = id + 1
+            self.first_metric_=False
+        else:
+            id = self.count_metric_
+            self.count_metric_ = id + 1
         if self.db.open():
             query = QSqlQuery()
             query.exec_("create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
@@ -66,7 +91,13 @@ class DBManager():
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id=self.get_max_id_id()+1
+        if self.first_id:
+            id=self.get_max_id_id()+1
+            self.count_id = id+1
+            self.first_id=False
+        else:
+            id=self.count_id
+            self.count_id=id+1
         if self.db.open():
             query = QSqlQuery()
             query.exec_("create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
@@ -84,11 +115,20 @@ class DBManager():
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         error_file = "\"" + error_file + "\""
-        id=self.get_max_id_error()+1
+
+        if self.first_error:
+            id=self.get_max_id_error()+1
+            self.count_error = id+1
+            self.first_error=False
+        else:
+            id=self.count_error
+            self.count_error=id+1
         if self.db.open():
+            # print("保存错误文件")
             query = QSqlQuery()
             query.exec_("create table error(id int primary key, model_name str , dataset_name str,error_file str)")
 
+            # print("insert into error values("+str(id)+","+model_name+","+dataset_name+","+error_file+")")
             query.exec_("insert into error values("+str(id)+","+model_name+","+dataset_name+","+error_file+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'

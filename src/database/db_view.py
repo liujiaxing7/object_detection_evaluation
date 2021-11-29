@@ -19,7 +19,7 @@ class MainUi(QtWidgets.QMainWindow):
         # 设置窗口标题
         self.setWindowTitle("PyQt5查询数据库")
         # 设置窗口大小
-        self.resize(1900, 400)
+        self.resize(1900, 1400)
 
         # 创建一个窗口部件
         self.widget = QtWidgets.QWidget()
