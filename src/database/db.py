@@ -16,7 +16,8 @@ class MyFigure(FigureCanvas):
 
 class DBManager():
     def __init__(self):
-        self.db = QSqlDatabase.addDatabase("QSQLITE",'sqlite') #select database type
+        # self.db = QSqlDatabase.addDatabase("QSQLITE",'sqlite') #select database type
+        self.db = QSqlDatabase.addDatabase("QSQLITE") #select database type
         db_path= os.getcwd()+'/src/database/core.db'
         self.db.setDatabaseName(db_path) # set database name
         self.db.open()  #connect to or create database
@@ -117,6 +118,26 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return classes
 
+    def search_all_classes(self):
+        classes=[]
+        self.db.open()
+        query = QSqlQuery()
+        if query.exec(
+                'select id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
+            while query.next():
+                value = [query.value(i) for i in range(13)]
+                id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
+                if model_name=='yolov3_prune' or model_name=='yolov3_best':
+                    continue
+                if class_name == 'all':
+                    break
+                if class_name in classes:
+                    continue
+                else:
+                    classes.append(class_name)
+                # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
+        return classes
+
     def search_model_datasets(self):
         models=[]
         datasets=[]
@@ -130,13 +151,20 @@ class DBManager():
                 id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = value
                 if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
-                if not model_name in models:
+                tmp_model_flag = 0
+                tmp_dataset_flag = 0
+                for index_model in models:
+                    if model_name == index_model:
+                        tmp_model_flag = 1
+                        break
+                if tmp_model_flag == 0:
                     models.append(model_name)
-                elif not dataset_name in datasets:
-                    datasets.append(dataset_name)
-                else:
-                  continue
-
+                for index_dataset in datasets:
+                    if str(dataset_name) == index_dataset:
+                        tmp_dataset_flag = 1
+                        break
+                if tmp_dataset_flag == 0:
+                    datasets.append(str(dataset_name))
 
 
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
@@ -153,12 +181,11 @@ class DBManager():
             while query.next():
                 value = [query.value(i) for i in range(5)]
                 id, model_name, dataset_name, class_name, id1 = value
-                if model_name=='yolov3_prune' or model_name=='yolov3_best':
-                    continue
+
                 id_list[str(model_name)+'$'+str(dataset_name)].append(id1)
                 if not class_name in class_num:
                     class_num[str(model_name)+'$'+str(dataset_name)].append(class_name)
-                if not dataset_name in datasets:
+                if not str(dataset_name) in datasets:
                     datasets.append(str(dataset_name))
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list,class_num,datasets
@@ -257,6 +284,25 @@ class DBManager():
         F1.axes7.bar(index, ap)
         F1.axes8.bar(index, Thre)
         # F1.axes9.bar(index, FN)
+
+        for a, b, i in zip(index, map, range(len(index))):  # zip 函数
+            F1.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
+            F1.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
+            F1.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
+            F1.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
+            F1.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
+            F1.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
+            F1.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
+            F1.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
+            F1.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
         # F1.axes.legend()
         # F1.axes4.xlabel("model")
         F1.axes0.set_title("Map")
