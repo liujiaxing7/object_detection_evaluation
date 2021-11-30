@@ -37,23 +37,6 @@ class DBManager_Changed():
         value_idmax = []
         value_error = []
         if db1.open():
-            print(1)
-            # if query.exec(
-            #         'update id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric_'):
-            #     while query.next():
-            #         value_metric_ .append( [query.value(i) for i in range(13)])
-            # if query.exec(
-            #     'update id ,model_name,dataset_name,class_name,TP,FP,FN,F1,Ap,Map,Precision,Recall,Threshold from metric'):
-            #     while query.next():
-            #         value_metric.append( [query.value(i) for i in range(13)])
-            # if query.exec(
-            #         'update id ,model_name,dataset_name,class_name,ID_max from id_max'):
-            #     while query.next():
-            #         value_idmax.append( [query.value(i) for i in range(5)])
-            # if query.exec(
-            #         'update id ,model_name,dataset_name,error_file from error'):
-            #     while query.next():
-            #         value_error.append([query.value(i) for i in range(4)])
             if query.exec(
                     'update metric_ set dataset_name = "20210612" where model_name = "prune_0.5" dataset_name="coco"'):
                 while query.next():
@@ -72,4 +55,6 @@ class DBManager_Changed():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()
 
-# DBManager_Changed().merge("/home/fandong/Code/object_detection_evaluation/src/database/core.db")
+
+# DBManager_Deleted().merge("/home/fandong/Code/object_detection_evaluation/src/database/core.db")
+

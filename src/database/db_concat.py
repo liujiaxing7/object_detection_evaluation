@@ -21,6 +21,16 @@ class DBManager_Changed():
     def __init__(self):
         # pass
         self.db=None
+        self.first_metric = True
+        self.first_metric_ = True
+        self.first_id = True
+        self. first_error = True
+
+        self. count_metric = 0
+        self. count_metric_ = 0
+        self. count_id = 0
+        self. count_error = 0
+
     def merge(self,database1,database2):
         db1=QSqlDatabase.addDatabase("QSQLITE",'sqlite')
         db1.setDatabaseName(database2)
@@ -53,6 +63,7 @@ class DBManager_Changed():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()
         self.add_database(database1,value_metric_,value_metric,value_idmax,value_error[:10])
+
     def add_database(self,database1,value_metric_,value_metric,value_idmax,value_error):
         self.db = QSqlDatabase.addDatabase("QSQLITE", 'sqlite')
         self.db.setDatabaseName(database1)
@@ -71,22 +82,23 @@ class DBManager_Changed():
             for n in tqdm(value_error):
                 self.add_erro_file(n[1],n[2],n[3])
 
-    def add_item(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
-        model_name = "\"" + model_name + "\""
-        dataset_name = "\"" + dataset_name + "\""
+    def add_item(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id = self.get_max_id() + 1
-        query = QSqlQuery(self.db)
+        if self.first_metric:
+            id=self.get_max_id()+1
+            self.count_metric = id+1
+            self.first_metric=False
+        else:
+            id=self.count_metric
+            self.count_metric=id+1
         if self.db.open():
+            query = QSqlQuery()
+            query.exec_("create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
+                        " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
 
-            # query.exec_(
-            #     "create table metric(id int primary key, model_name str , dataset_name str,class_name str,"
-            #     " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
-
-            query.exec_("insert into metric values(" + str(
-                id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(tp) + "," + str(
-                fp) + "," + str(fn) + "," + str(F1) + "," + str(ap) + "," + str(map) + "," + str(
-                prec) + "," + str(recall) + "," + str(thre) + ")")
+            query.exec_("insert into metric values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(tp)+","+str(fp)+","+str(fn)+","+str(F1)+","+str(ap)+","+str(map)+","+str(prec)+","+str(recall)+","+str(thre)+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'
             # query.prepare(insert_sql)
@@ -95,22 +107,23 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
-        model_name = "\"" + model_name + "\""
-        dataset_name = "\"" + dataset_name + "\""
+    def add_item_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id = self.get_max_id_() + 1
-        query = QSqlQuery(self.db)
+        if self.first_metric_:
+            id = self.get_max_id_() + 1
+            self.count_metric_ = id + 1
+            self.first_metric_=False
+        else:
+            id = self.count_metric_
+            self.count_metric_ = id + 1
         if self.db.open():
-            # query = QSqlQuery()
-            # query.exec_(
-            #     "create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
-            #     " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
+            query = QSqlQuery()
+            query.exec_("create table metric_(id int primary key, model_name str , dataset_name str,class_name str,"
+                        " TP int,FP int,FN int,F1 float,Ap float ,Map float ,Precision float ,Recall float,Threshold float  )")
 
-            query.exec_("insert into metric_ values(" + str(
-                id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(tp) + "," + str(
-                fp) + "," + str(fn) + "," + str(F1) + "," + str(ap) + "," + str(map) + "," + str(
-                prec) + "," + str(recall) + "," + str(thre) + ")")
+            query.exec_("insert into metric_ values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(tp)+","+str(fp)+","+str(fn)+","+str(F1)+","+str(ap)+","+str(map)+","+str(prec)+","+str(recall)+","+str(thre)+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'
             # query.prepare(insert_sql)
@@ -119,19 +132,22 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_id(self, model_name, dataset_name, class_name, id_):
-        model_name = "\"" + model_name + "\""
-        dataset_name = "\"" + dataset_name + "\""
+    def add_item_id(self,model_name,dataset_name,class_name,id_):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
-        id = self.get_max_id_id() + 1
-        query = QSqlQuery(self.db)
+        if self.first_id:
+            id=self.get_max_id_id()+1
+            self.count_id = id+1
+            self.first_id=False
+        else:
+            id=self.count_id
+            self.count_id=id+1
         if self.db.open():
-            # query = QSqlQuery()
-            # query.exec_(
-            #     "create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
+            query = QSqlQuery()
+            query.exec_("create table id_max(id int primary key, model_name str , dataset_name str,class_name str,ID_max int)")
 
-            query.exec_("insert into id_max values(" + str(
-                id) + "," + model_name + "," + dataset_name + "," + class_name + "," + str(id_) + ")")
+            query.exec_("insert into id_max values("+str(id)+","+model_name+","+dataset_name+","+class_name+","+str(id_)+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'
             # query.prepare(insert_sql)
@@ -140,19 +156,25 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_erro_file(self, model_name, dataset_name, error_file):
-        model_name = "\"" + model_name + "\""
-        dataset_name = "\"" + dataset_name + "\""
+    def add_erro_file(self,model_name,dataset_name,error_file):
+        model_name="\""+model_name+"\""
+        dataset_name="\""+dataset_name+"\""
         error_file = "\"" + error_file + "\""
-        id = self.get_max_id_error() + 1
-        query = QSqlQuery(self.db)
-        if self.db.open():
-            # query = QSqlQuery()
-            # query.exec_(
-            #     "create table error(id int primary key, model_name str , dataset_name str,error_file str)")
 
-            query.exec_("insert into error values(" + str(
-                id) + "," + model_name + "," + dataset_name + "," + error_file + ")")
+        if self.first_error:
+            id=self.get_max_id_error()+1
+            self.count_error = id+1
+            self.first_error=False
+        else:
+            id=self.count_error
+            self.count_error=id+1
+        if self.db.open():
+            # print("保存错误文件")
+            query = QSqlQuery()
+            query.exec_("create table error(id int primary key, model_name str , dataset_name str,error_file str)")
+
+            # print("insert into error values("+str(id)+","+model_name+","+dataset_name+","+error_file+")")
+            query.exec_("insert into error values("+str(id)+","+model_name+","+dataset_name+","+error_file+")")
 
             # insert_sql = 'insert into student metric (?,?,?)'
             # query.prepare(insert_sql)

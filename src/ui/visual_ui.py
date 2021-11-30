@@ -8,7 +8,6 @@
 '''
 import random
 from decimal import Decimal
-import time, threading
 
 from PyQt5 import QtGui, QtCore, QtWidgets, QtSql
 from PyQt5.QtCore import Qt, QRect, QThread, pyqtSignal
@@ -16,11 +15,9 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import *
 
 import os
-import sys
 from cv2 import cv2
 import onnx
 import numpy as np
-import matplotlib
 from tqdm import tqdm
 
 # matplotlib.use("Qt5Agg")
@@ -1092,29 +1089,21 @@ class Ui_Window(QTabWidget):
 
                     a_s = np.array(value_save)[:, 11]
                     a_s = a_s.tolist()
-                    # fff1 = np.array(value_save)[:, 7]
-                    # fff1 = fff1.tolist()
-                    # fff1.sort()
-                    #
-                    # fff_t = False
-                    # if float(fff1[-1]) == 0.0:
-                    #     fff_t = True
-                    #
-                    # if int(float(b[m]))==len(value):
-                    #     index_max=int(float(b[m]))-1
+
                     index_max = int(float(b[m]))
+                    print("value_max")
+                    print(value[index_max])
 
                     index1 = self.index_number(a_s, float(value[index_max][11]))
 
                     if value[index_max] not in value_save:
                         if float(value[index_max][11]) > float(a_s[index1]):
-                            value_save.insert(index1 + 1, value[index_max])
-                            id_max[m][3] = index1 + 2
-                        else:
                             value_save.insert(index1, value[index_max])
                             id_max[m][3] = index1 + 1
-                    # elif fff_t:
-                    #     print('')
+                        else:
+                            value_save.insert(index1+1, value[index_max])
+                            id_max[m][3] = index1 + 2
+
                     else:
                         id_max[m][3] = index1 + 1
 
@@ -1128,15 +1117,6 @@ class Ui_Window(QTabWidget):
                                      float(value_save[i][9]), float(value_save[i][10]), float(value_save[i][11]))
                 else:
                     DB.add_item_id(str(id_max[m][0]), str(id_max[m][1]), str(id_max[m][2]), int(id_max[m][3]))
-
-                # for i1,b1 in enumerate(b):
-                #     index1=self.index_number(a_s,float(b1))
-                #     if value[int(b[int(i1)])] not in value_save:
-                #         value_save.insert(index1+1,value[int(b[int(i1)])])
-                #         id_max[i1][3]=index1+1
-                #     else:
-                #         id_max[i1][3]=index1
-
 
             print("saving error files ...")
             nums_list = np.arange(0, len(self.result['error'])).tolist()
@@ -1183,14 +1163,12 @@ class Ui_Window(QTabWidget):
         else:
             dataset_name = self.txt_gt_data_name.text()
 
-        id_max1, class_name1, datasets=self.DBManager.search_id()
+        id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
-            if model_name+"$"+dataset_name==key:
+            if model_name + "$" + dataset_name == key:
                 print("model and dataset repeat！")
                 exit(-1)
-
-
 
         evaluation = onnx.ONNX(self.dir_model_gt, 64, self.dir_images_gt, self.filepath_classes_gt, self.ret,
                                self.process_method)
@@ -1273,7 +1251,7 @@ class Ui_Window(QTabWidget):
                     # item=QtGui.QStandardItem()
                     a = list[m]
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
@@ -1324,7 +1302,7 @@ class Ui_Window(QTabWidget):
                     # item=QtGui.QStandardItem()
                     a = list[m]
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
@@ -1377,7 +1355,7 @@ class Ui_Window(QTabWidget):
                         # item=QtGui.QStandardItem()
                         a = list[m]
                         if n > 5:
-                            self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                            self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                         else:
                             self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
@@ -1462,7 +1440,7 @@ class Ui_Window(QTabWidget):
                     a = list[class_name.index(cls_name)]
                     if n > 5:
                         self.model.setItem(row, n,
-                                           QtGui.QStandardItem(str(a[id_max[class_name.index(cls_name)]][n])[0:5]))
+                                           QtGui.QStandardItem(str(round(a[id_max[class_name.index(cls_name)]][n],3))))
                     else:
 
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(cls_name)]][n])))
@@ -1485,6 +1463,8 @@ class Ui_Window(QTabWidget):
         id_max1, class_name1, datasets = self.DBManager.search_id()
 
         for key, value in id_max1.items():
+            # for m1 in range(len(class_name1[key])):
+            #     value[m1]+=1
 
             data_name = key.split('$')[-1]
             model_n = key.split('$' + data_name)[0]
@@ -1509,12 +1489,12 @@ class Ui_Window(QTabWidget):
                             list[l].append(data[i])
 
             row_ = self.model.rowCount()
+
             for m in range(class_num):
                 row = row_ + m
                 for n in range(13):
-
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(list[m][id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])))
 
@@ -1626,7 +1606,7 @@ class Ui_Window(QTabWidget):
 
         for j in range(13):
             if j > 5:
-                self.model.setItem(r, j, QtGui.QStandardItem(str(b[index][j])[0:5]))
+                self.model.setItem(r, j, QtGui.QStandardItem(str(round(b[index][j],3))))
             else:
                 self.model.setItem(r, j, QtGui.QStandardItem(str(b[index][j])))
 
