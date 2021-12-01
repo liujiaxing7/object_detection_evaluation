@@ -7,6 +7,7 @@
 @desc:
 '''
 import random
+import sys
 from decimal import Decimal
 
 from PyQt5 import QtGui, QtCore, QtWidgets, QtSql
@@ -615,7 +616,9 @@ class Ui_Window(QTabWidget):
 
         h3 = QGridLayout()
         self.table_widget = QtWidgets.QTableView()
-        self.table_widget.horizontalHeader().setStretchLastSection(False)
+
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.verticalHeader().setStretchLastSection(True)
 
         query = QSqlQuery()
         self.value = []
@@ -683,8 +686,8 @@ class Ui_Window(QTabWidget):
 
         h2 = QGridLayout()
         self.table_widget1 = QtWidgets.QTableView()
-        self.table_widget.horizontalHeader().setStretchLastSection(True)
-        self.table_widget.verticalHeader().setStretchLastSection(True)
+        self.table_widget1.horizontalHeader().setStretchLastSection(True)
+        self.table_widget1.verticalHeader().setStretchLastSection(True)
         db_text = os.getcwd() + '/src/database/core'
 
         # 实例化一个可编辑数据模型
@@ -838,7 +841,7 @@ class Ui_Window(QTabWidget):
                     if len(a) == 0:
                         continue
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
 
@@ -1567,7 +1570,7 @@ class Ui_Window(QTabWidget):
                     if len(a) == 0:
                         continue
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[index_thresh][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])))
 
