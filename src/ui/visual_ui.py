@@ -24,7 +24,16 @@ from tqdm import tqdm
 from src.database.db import DBManager
 from src.database.db_concat import DBManager_Changed
 
+global subDBManager, models, datasets, classes
+subDBManager = DBManager()
+models, datasets = subDBManager.search_model_datasets()
+classes = subDBManager.search_all_classes()
 
+global model_selecion, dataset_selection, class_selection, all_model_names, all_dataset_names, all_class_names
+all_model_names = models.copy()
+all_dataset_names = datasets.copy()
+all_class_names = classes.copy()
+model_selecion, dataset_selection, class_selection = all_model_names, all_dataset_names, all_class_names
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
         super(EmptyDelegate, self).__init__(parent)
@@ -42,6 +51,274 @@ def nanstr(a, i):
         return 0.0
     else:
         return a[i]
+
+
+class ModelDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Model selection')
+        global subDBManager, models, datasets
+        self.models, self.datasets = models, datasets
+        self.checkmodels = models.copy()
+        self.checkdatasets = datasets.copy()
+
+        self.setGeometry(400, 400, 200, 400)
+        self.center_screen()
+        self.initUI()
+        self.show()
+        self.memoryUI()
+
+    def initUI(self):
+        # 实例化垂直布局
+        self.models_box = QGridLayout()
+        self.bt_add = QPushButton('add item')
+        self.bt_add.setGeometry(QtCore.QRect(0, 0, 20, 20))
+        self.bt_add.clicked.connect(self.save_selection)
+        # self.hbox.addStretch(5)
+        self.all_check_box = QCheckBox('All')
+        self.all_check_box.stateChanged.connect(self.All)
+        self.models_box.addWidget(self.all_check_box, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.models)):
+            self.checkmodels[i] = QCheckBox(str(self.models[i]))
+            self.checkmodels[i].stateChanged.connect(self.btn_draw_clicked)
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.models_box.addWidget(self.checkmodels[i], m, n)
+            n += 1
+        # for i in range(len(self.datasets)):
+        #     self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
+        #     self.checkdatasets[i].stateChanged.connect(self.btn_draw_clicked)
+        #     self.models_box.addWidget(self.checkdatasets[i])
+
+        self.setLayout(self.models_box)  # 设置窗体布局
+
+    def memoryUI(self):
+        global model_selecion
+        tmp_model = model_selecion
+        for i in range(len(self.models)):
+            if str(self.models[i]) in tmp_model:
+                self.checkmodels[i].setChecked(True)
+
+
+    def center_screen(self):
+        size = self.size()
+        desktopSize = QtWidgets.QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
+        self.move(left, top)
+    def save_selection(self):
+        print('')
+    def btn_draw_clicked(self):
+        # data = []
+        # for i in range(len(self.checkdatasets)):
+        #     if self.checkdatasets[i].isChecked():
+        #         data.append(self.datasets[i])
+        model = []
+        for j in range(len(self.checkmodels)):
+            if self.checkmodels[j].isChecked():
+                model.append(self.models[j])
+        self.Selectedrow_num = len(model)
+        if self.Selectedrow_num == 0:
+            self.all_check_box.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkmodels):
+            self.all_check_box.setCheckState(2)
+        else:
+            self.all_check_box.setCheckState(1)
+        global model_selecion
+        model_selecion = model.copy()
+
+    def All(self, status):
+        if status == 2:
+            for i in range(len(self.checkmodels)):
+                self.checkmodels[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box.setCheckState(2)
+        elif status == 0:
+            self.clear()
+    def clear(self):
+        for i in range(len(self.models)):
+            self.checkmodels[i].setChecked(False)
+        self.all_check_box.setChecked(False)
+
+
+class DatasetDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Dataset selection')
+        global subDBManager, models, datasets
+        self.datasets = datasets
+
+        # self.checkmodels = models.copy()
+        self.checkdatasets = datasets.copy()
+
+        self.setGeometry(400, 400, 200, 400)
+        self.center_screen()
+        self.initUI()
+        self.show()
+        self.memoryUI()
+
+    def initUI(self):
+        global dataset_selection
+        # 实例化垂直布局
+        self.datasets_box = QGridLayout()
+        self.bt_add = QPushButton('add item')
+        self.bt_add.setGeometry(QtCore.QRect(0, 0, 20, 20))
+        self.bt_add.clicked.connect(self.save_selection)
+        # self.hbox.addStretch(5)
+        self.all_check_box = QCheckBox('All')
+        self.all_check_box.stateChanged.connect(self.All)
+        self.datasets_box.addWidget(self.all_check_box, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.datasets)):
+            self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
+            self.checkdatasets[i].stateChanged.connect(self.btn_draw_clicked)
+            # if str(self.datasets[i]) in dataset_selection:
+            #     self.checkdatasets[i].ser
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.datasets_box.addWidget(self.checkdatasets[i], m, n)
+            n += 1
+
+        self.setLayout(self.datasets_box)  # 设置窗体布局
+
+    def memoryUI(self):
+        global dataset_selection
+        tmp_dataset = dataset_selection
+        for i in range(len(self.datasets)):
+            if str(self.datasets[i]) in tmp_dataset:
+                self.checkdatasets[i].setChecked(True)
+
+    def center_screen(self):
+        size = self.size()
+        desktopSize = QtWidgets.QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
+        self.move(left, top)
+
+    def save_selection(self):
+        print('')
+
+    def btn_draw_clicked(self):
+        data = []
+        for i in range(len(self.checkdatasets)):
+            if self.checkdatasets[i].isChecked():
+                data.append(self.datasets[i])
+        self.Selectedrow_num = len(data)
+        if self.Selectedrow_num == 0:
+            self.all_check_box.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkdatasets):
+            self.all_check_box.setCheckState(2)
+        else:
+            self.all_check_box.setCheckState(1)
+        global dataset_selection
+        dataset_selection = data.copy()
+
+    def All(self, status):
+        if status == 2:
+            for i in range(len(self.checkdatasets)):
+                self.checkdatasets[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box.setCheckState(2)
+        elif status == 0:
+            self.clear()
+
+    def clear(self):
+        for i in range(len(self.datasets)):
+            self.checkdatasets[i].setChecked(False)
+        self.all_check_box.setChecked(False)
+
+
+class ClassesDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Classes selection')
+        global subDBManager, models, datasets, classes
+        self.classes = classes
+
+        self.checkclasses = classes.copy()
+
+        self.setGeometry(400, 400, 200, 400)
+        self.center_screen()
+        self.initUI()
+        self.show()
+        self.memoryUI()
+
+    def initUI(self):
+        # 实例化垂直布局
+        self.classes_box = QGridLayout()
+
+        self.all_check_box = QCheckBox('All')
+        self.all_check_box.stateChanged.connect(self.All)
+        self.classes_box.addWidget(self.all_check_box, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.classes)):
+            self.checkclasses[i] = QCheckBox(str(self.classes[i]))
+            self.checkclasses[i].stateChanged.connect(self.btn_draw_clicked)
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.classes_box.addWidget(self.checkclasses[i], m, n)
+            n += 1
+
+
+        self.setLayout(self.classes_box)  # 设置窗体布局
+
+
+    def memoryUI(self):
+        global class_selection
+        tmp_class = class_selection
+        for i in range(len(self.classes)):
+            if str(self.classes[i]) in tmp_class:
+                self.checkclasses[i].setChecked(True)
+
+
+    def center_screen(self):
+        size = self.size()
+        desktopSize = QtWidgets.QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
+        self.move(left, top)
+
+    def save_selection(self):
+        print('')
+
+    def btn_draw_clicked(self):
+        data = []
+        for i in range(len(self.checkclasses)):
+            if self.checkclasses[i].isChecked():
+                data.append(self.classes[i])
+        self.Selectedrow_num = len(data)
+        if self.Selectedrow_num == 0:
+            self.all_check_box.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkclasses):
+            self.all_check_box.setCheckState(2)
+        else:
+            self.all_check_box.setCheckState(1)
+        global class_selection
+        class_selection = data.copy()
+
+    def All(self, status):
+        if status == 2:
+            for i in range(len(self.checkclasses)):
+                self.checkclasses[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box.setCheckState(2)
+        elif status == 0:
+            self.clear()
+
+    def clear(self):
+        for i in range(len(self.checkclasses)):
+            self.checkclasses[i].setChecked(False)
+        self.all_check_box.setChecked(False)
 
 
 class Ui_Window(QTabWidget):
@@ -70,12 +347,9 @@ class Ui_Window(QTabWidget):
         self.center_screen()
         # sys.stdout = Stream(newText=self.onUpdateText)
 
-        db_text = os.getcwd() + '/src/database/core'
-
-        # 添加一个sqlite数据库连接并打开
-        db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('{}.db'.format(db_text))
-        db.open()
+        # global subDBManager, models, datasets
+        # self.models = models.copy()
+        # self.datasets = datasets.copy()
         self.DBManager = DBManager()
 
         self.tab1 = QtWidgets.QWidget()
@@ -205,6 +479,7 @@ class Ui_Window(QTabWidget):
         self.tab1.setLayout(layout)
 
     def tab2UI(self):
+        self.checkmodels, self.checkdatasets, self.models, self.datasets = [], [], [], []
         layout = QFormLayout()
 
         gt = QHBoxLayout()
@@ -223,14 +498,31 @@ class Ui_Window(QTabWidget):
         self.combobox_classes.setMinimumSize(200, 27)
         self.combobox_classes.currentIndexChanged.connect(self.comboSelectionChanged1)
         h2.addWidget(self.combobox_classes, 5, Qt.AlignLeft)
-        self.load_class_dir = QPushButton("Load ...")
-        self.load_class_dir.setMinimumSize(60, 27)
-        h2.addWidget(self.load_class_dir, 1, Qt.AlignRight)
-        self.load_class_dir.clicked.connect(self.btn_show_classes_clicked)
-        self.btn_draw = QPushButton("Draw")
-        self.btn_draw.setMinimumSize(80, 27)
-        h2.addWidget(self.btn_draw, 1, Qt.AlignRight)
-        self.btn_draw.clicked.connect(self.btn_draw_clicked)
+
+        select_model = QPushButton("Model Select")
+        select_model.setMinimumSize(60, 27)
+        select_model.clicked.connect(self.pop_model_select)
+        h2.addWidget(select_model, 1, Qt.AlignRight)
+
+        select_dataset = QPushButton("Dataset Select")
+        select_dataset.setMinimumSize(60, 27)
+        select_dataset.clicked.connect(self.pop_dataset_select)
+        h2.addWidget(select_dataset, 1, Qt.AlignRight)
+
+        self.load_selection = QPushButton("Load selection")
+        self.load_selection.setMinimumSize(60, 27)
+        h2.addWidget(self.load_selection, 1, Qt.AlignRight)
+        self.load_selection.clicked.connect(self.btn_load_selection)
+
+        # self.load_class_dir = QPushButton("Load ...")
+        # self.load_class_dir.setMinimumSize(60, 27)
+        # h2.addWidget(self.load_class_dir, 1, Qt.AlignRight)
+        # self.load_class_dir.clicked.connect(self.btn_show_classes_clicked)
+        # self.btn_draw = QPushButton("Draw")
+        # self.btn_draw.setMinimumSize(80, 27)
+        # h2.addWidget(self.btn_draw, 1, Qt.AlignRight)
+        # self.btn_draw.clicked.connect(self.btn_draw_clicked)
+
         layout.addRow(h2)
 
         h1 = QGridLayout()
@@ -241,18 +533,18 @@ class Ui_Window(QTabWidget):
         group_box.setMinimumSize(100, 10)
         h1.addWidget(group_box, 0, 0, 1, 2)
 
-        group_box1 = QtWidgets.QGroupBox('Datasets')
+        self._group_box1 = QtWidgets.QGroupBox('Datasets')
         self.group_box_layout1 = QtWidgets.QVBoxLayout()
-        group_box1.setLayout(self.group_box_layout1)
+        self._group_box1.setLayout(self.group_box_layout1)
 
-        group_box1.setMaximumSize(130, 1000)
+        self._group_box1.setMaximumSize(200, 1000)
         # layout.addChildLayout(h1)
-        h1.addWidget(group_box1, 1, 0)
-        self.btn_load_md()
+        h1.addWidget(self._group_box1, 1, 0)
+        # self.btn_load_md()
 
         self.draw_grid = QWidget()
-        groupBox = QGroupBox(self.draw_grid)
-        self.gridlayout = QGridLayout(groupBox)
+        self._groupBox = QGroupBox(self.draw_grid)
+        self.gridlayout = QGridLayout(self._groupBox)
         self.draw_grid.setLayout(self.gridlayout)
         self.draw_grid.setVisible(False)
         h1.addWidget(self.draw_grid, 1, 1)
@@ -298,9 +590,32 @@ class Ui_Window(QTabWidget):
         refresh.clicked.connect(self.btn_refresh)
         layout.addRow(h1)
 
+        pop_subwindow = QHBoxLayout()
+        select_model = QPushButton("Model Select")
+        select_model.clicked.connect(self.pop_model_select)
+
+        pop_subwindow.addWidget(select_model)
+        select_dataset = QPushButton("Dataset Select")
+        select_dataset.clicked.connect(self.pop_dataset_select)
+        pop_subwindow.addWidget(select_dataset)
+
+        select_classes = QPushButton("classes Select")
+        select_classes.clicked.connect(self.pop_classes_select)
+        pop_subwindow.addWidget(select_classes)
+
+        search_by_selection = QPushButton("search by Selections")
+        search_by_selection.clicked.connect(self.search_selection)
+        pop_subwindow.addWidget(search_by_selection)
+
+        search_by_thresh = QPushButton("refresh by threshold0.8")
+        search_by_thresh.clicked.connect(self.refresh_thresh)
+        pop_subwindow.addWidget(search_by_thresh)
+        layout.addRow(pop_subwindow)
+
+
         h3 = QGridLayout()
         self.table_widget = QtWidgets.QTableView()
-        self.table_widget.setFixedSize(1540, 600)
+        self.table_widget.horizontalHeader().setStretchLastSection(False)
 
         query = QSqlQuery()
         self.value = []
@@ -368,7 +683,8 @@ class Ui_Window(QTabWidget):
 
         h2 = QGridLayout()
         self.table_widget1 = QtWidgets.QTableView()
-        self.table_widget1.setFixedSize(1370, 600)
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.verticalHeader().setStretchLastSection(True)
         db_text = os.getcwd() + '/src/database/core'
 
         # 实例化一个可编辑数据模型
@@ -444,6 +760,92 @@ class Ui_Window(QTabWidget):
 
         self.tab5.setLayout(layout)
 
+    @staticmethod
+    def pop_model_select(self):
+        diary_window = ModelDialog()
+        diary_window.exec_()
+        print('')
+
+    @staticmethod
+    def pop_dataset_select(self):
+        diary_window = DatasetDialog()
+        diary_window.exec_()
+        print('')
+
+    @staticmethod
+    def pop_classes_select(self):
+        diary_window = ClassesDialog()
+        diary_window.exec_()
+        print('')
+
+    def search_selection(self):
+        global model_selecion, dataset_selection
+        temp_models = model_selecion
+        temp_dataset = dataset_selection
+
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = self.DBManager.search_id()
+
+        if len(id_max1) == 0:
+            return
+        for key, value in id_max1.items():
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
+            if not model_n in temp_models:
+                continue
+            if not data_name in temp_dataset:
+                continue
+            id_max = value
+            class_name = class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
+            data = []
+            for i in range(len(self.value)):
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name:
+                    data.append(self.value[i])
+
+            class_num = len(class_name)
+            list = [[]] * class_num
+            # global class_selection
+            # selection_length = len(class_selection)
+            # if selection_length > class_num:
+            #     class_selection = class_name
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3] == class_name[l] and data[i][3] in class_selection:
+                    # if data[i][3] == class_name[l]:
+                        if len(list[l]) == 0:
+                            list[l] = [data[i]]
+                        else:
+                            list[l].append(data[i])
+
+            row_ = self.model.rowCount()
+            # class_num = min(class_num, len(class_selection))
+            for m in range(class_num):
+                row = row_ + m
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a = list[m]
+                    if len(a) == 0:
+                        continue
+                    if n > 5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                    else:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+
     def doubleClicked(self, index):
         self.table_widget.openPersistentEditor(index)
 
@@ -469,6 +871,7 @@ class Ui_Window(QTabWidget):
                                icon=QMessageBox.Question)
         if conf == QMessageBox.Yes:
             event.accept()
+            sys.exit(0)
         else:
             event.ignore()
 
@@ -795,6 +1198,8 @@ class Ui_Window(QTabWidget):
         for j in range(len(self.checkmodels)):
             if self.checkmodels[j].isChecked():
                 model.append(self.models[j])
+        print(model)
+        print(data)
 
         if len(data) == 1:
             self.btn_draw_by_model(model, data[0])
@@ -1095,6 +1500,81 @@ class Ui_Window(QTabWidget):
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
+    def refresh_thresh(self):
+        global model_selecion, dataset_selection
+        temp_models = model_selecion
+        temp_dataset = dataset_selection
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+
+        id_max1, class_name1, datasets = self.DBManager.search_id()
+
+        if len(id_max1) == 0:
+            return
+        for key, value in id_max1.items():
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
+            if not model_n in temp_models:
+                continue
+            if not data_name in temp_dataset:
+                continue
+            id_max = value
+            class_name = class_name1[key]
+            id_max.append(0)
+            class_name.append('all')
+
+            thresh_hold = []
+            data = []
+            for i in range(len(self.value)):
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name:
+                    data.append(self.value[i])
+
+            # index_thresh = self.index_number(thresh_hold, float(0.8))
+
+            class_num = len(class_name)
+            list = [[]] * class_num
+            thresh_hold = [[]] * class_num
+
+            for i in range(len(data)):
+                for l in range(class_num):
+                    if data[i][3] == class_name[l] and data[i][3] in class_selection:
+                        # if data[i][3] == class_name[l]:
+                        if len(list[l]) == 0:
+                            list[l] = [data[i]]
+                            thresh_hold[l] = [data[i][12]]
+                        else:
+                            list[l].append(data[i])
+                            thresh_hold[l].append(data[i][12])
+
+
+            row_ = self.model.rowCount()
+            for m in range(class_num):
+                row = row_ + m
+                temp_thresh_list = thresh_hold[m]
+                if len(temp_thresh_list) > 0:
+                    index_thresh = self.index_number(temp_thresh_list, float(0.8))
+                else:
+                    index_thresh = 0
+                for n in range(13):
+                    # item=QtGui.QStandardItem()
+                    a = list[m]
+                    if len(a) == 0:
+                        continue
+                    if n > 5:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])[0:5]))
+                    else:
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])))
+
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+
     def index_number(self, li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
         index = 0
@@ -1158,6 +1638,48 @@ class Ui_Window(QTabWidget):
         image_path = text.split('---')[0]
         img = cv2.imread(image_path)
         cv2.imshow("Image", img)
+
+    def btn_load_selection(self):
+        global dataset_selection, model_selecion
+        pre_models, pre_datasets = self.models, self.datasets
+        tmp_dataset = []
+        tmp_model = []
+        for new_model in model_selecion:
+            if new_model in pre_models:
+                p = pre_models.index(new_model)
+                self.checkmodels[p].setChecked(False)
+                continue
+            else:
+                tmp_model.append(new_model)
+        for new_dataset in dataset_selection:
+            if new_dataset in pre_datasets:
+                p = pre_datasets.index(new_dataset)
+                self.checkdatasets[p].setChecked(False)
+                continue
+            else:
+                tmp_dataset.append(new_dataset)
+
+        if not len(tmp_model) == 0:
+            self.checkmodels.extend(tmp_model)
+            self.models.extend(tmp_model)
+            for i in range(len(tmp_model)):
+                self.checkmodels[i] = QCheckBox(str(tmp_model[i]))
+                self.checkmodels[i].stateChanged.connect(self.btn_draw_clicked)
+                self.group_box_layout.addWidget(self.checkmodels[i])
+
+        if not len(tmp_dataset) == 0:
+            self.checkdatasets.extend(tmp_dataset)
+            self.datasets.extend(tmp_dataset)
+            for i in range(len(tmp_dataset)):
+                self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
+                self.checkdatasets[i].stateChanged.connect(self.btn_draw_clicked)
+                self.group_box_layout1.addWidget(self.checkdatasets[i])
+
+        for i in range(len(tmp_model)):
+            self.checkmodels[i].setChecked(True)
+        self.checkdatasets[0].setChecked(True)
+
+        self.btn_show_classes_clicked()
 
     def btn_load_md(self):
 
