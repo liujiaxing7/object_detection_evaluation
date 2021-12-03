@@ -21,7 +21,7 @@ import numpy as np
 from tqdm import tqdm
 
 # matplotlib.use("Qt5Agg")
-from src.database.db import DBManager
+from src.database.db import DBManager, MyFigure
 from src.database.db_concat import DBManager_Changed
 
 global subDBManager, models, datasets, classes
@@ -369,6 +369,10 @@ class Ui_Window(QTabWidget):
         self.tab5UI()
         self.setWindowTitle("Object Detection Metrics")
 
+        self.thr80_id_max1, self.id_max_class_name1, self.id_max_datasets = self.DBManager.search_id()
+        self.class_dict = {'person':0, 'escalator':1, 'escalator_handrails':2, 'person_dummy':3, 'escalator_model':4, 'escalator_handrails_model':5}
+        self.filter_thresh = 0
+
     def tab1UI(self):
         layout = QFormLayout()
 
@@ -500,17 +504,22 @@ class Ui_Window(QTabWidget):
         h2.addWidget(self.combobox_classes, 5, Qt.AlignLeft)
 
         select_model = QPushButton("Model Select")
-        select_model.setMinimumSize(60, 27)
+        select_model.setMinimumSize(100, 27)
         select_model.clicked.connect(self.pop_model_select)
         h2.addWidget(select_model, 1, Qt.AlignRight)
 
         select_dataset = QPushButton("Dataset Select")
-        select_dataset.setMinimumSize(60, 27)
+        select_dataset.setMinimumSize(100, 27)
         select_dataset.clicked.connect(self.pop_dataset_select)
         h2.addWidget(select_dataset, 1, Qt.AlignRight)
 
+        select_best_thresh = QPushButton("Load other threshold")
+        select_best_thresh.setMinimumSize(100, 27)
+        select_best_thresh.clicked.connect(self.btn_load_diff_thresh)
+        h2.addWidget(select_best_thresh, 1, Qt.AlignRight)
+
         self.load_selection = QPushButton("Load selection")
-        self.load_selection.setMinimumSize(60, 27)
+        self.load_selection.setMinimumSize(100, 27)
         h2.addWidget(self.load_selection, 1, Qt.AlignRight)
         self.load_selection.clicked.connect(self.btn_load_selection)
 
@@ -845,6 +854,7 @@ class Ui_Window(QTabWidget):
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.filter_thresh = 0
 
     def doubleClicked(self, index):
         self.table_widget.openPersistentEditor(index)
@@ -905,7 +915,7 @@ class Ui_Window(QTabWidget):
             print(1)
         else:
             self.class_name_draw = text
-            self.btn_draw_clicked()
+            self.btn_draw()
 
     def load_annotations_gt(self):
 
@@ -1188,6 +1198,209 @@ class Ui_Window(QTabWidget):
 
         plt = self.DBManager.draw_by_data(model, data, self.class_name_draw)
         self.gridlayout.addWidget(plt, 0, 2)
+
+    def draw_by_models(self, models, dataset):
+        if len(models) == 0:
+            return
+        self.draw_grid.setVisible(True)
+
+        map, ap, recall, Precision, F1_, index, TP, FP, FN, Thre = [], [], [], [], [], [], [], [], [], []
+        for key, value in self.thr80_id_max1.items():
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
+            if not model_n in models:
+                continue
+            if not data_name == dataset:
+                continue
+            if self.class_name_draw == None:
+                self.class_name_draw = 'person'
+            id_max = value[self.class_dict[self.class_name_draw]]
+            tmp_data = []
+            tmp_thresh = []
+            for i in range(len(self.value)):
+                if str(self.value[i][1]) == model_n and str(self.value[i][2]) == data_name and str(self.value[i][3]) == self.class_name_draw:
+                    tmp_data.append(self.value[i])
+                    tmp_thresh.append(self.value[i][12])
+            if len(tmp_data) == 0:
+                continue
+            index_thresh = self.index_number(tmp_thresh, float(0.8))
+            id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = tmp_data[index_thresh]
+
+            if not class_name == self.class_name_draw:
+                continue
+            index.append(model_name)
+            map.append(float(Map))
+            ap.append(float(Ap))
+            recall.append(float(rec))
+            Precision.append(float(prec))
+            F1_.append(float(f1))
+            TP.append(tp)
+            FP.append(fp)
+            FN.append(fn)
+            Thre.append(float(Threshold))
+        if len(index) == 0:
+            return
+        fig_show = MyFigure(width=10, height=5, dpi=100)
+        fig_show.fig.suptitle("Metric comparison")
+        fig_show.fig.subplots_adjust(wspace=0.3, hspace=0.5)
+        fig_show.axes0 = fig_show.fig.add_subplot(258)
+        fig_show.axes1 = fig_show.fig.add_subplot(256)
+        fig_show.axes2 = fig_show.fig.add_subplot(255)
+        fig_show.axes3 = fig_show.fig.add_subplot(251)
+        fig_show.axes4 = fig_show.fig.add_subplot(252)
+        fig_show.axes5 = fig_show.fig.add_subplot(253)
+        fig_show.axes6 = fig_show.fig.add_subplot(254)
+        fig_show.axes7 = fig_show.fig.add_subplot(257)
+        fig_show.axes8 = fig_show.fig.add_subplot(259)
+        # F1.axes9 = F1.fig.add_subplot(260)
+        fig_show.axes0.bar(index, map)
+        fig_show.axes1.bar(index, recall)
+        fig_show.axes2.bar(index, Precision)
+        fig_show.axes3.bar(index, F1_)
+        fig_show.axes4.bar(index, TP)
+        fig_show.axes5.bar(index, FP)
+        fig_show.axes6.bar(index, FN)
+        fig_show.axes7.bar(index, ap)
+        fig_show.axes8.bar(index, Thre)
+
+        for a, b, i in zip(index, map, range(len(index))):  # zip 函数
+            fig_show.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
+            fig_show.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
+            fig_show.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
+            fig_show.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
+            fig_show.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
+            fig_show.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
+            fig_show.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
+            fig_show.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
+            fig_show.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+
+        fig_show.axes0.set_title("Map")
+        fig_show.axes1.set_title("recall")
+        fig_show.axes2.set_title("Prediction")
+        fig_show.axes3.set_title("F1")
+        fig_show.axes4.set_title("TP")
+        fig_show.axes5.set_title("FP")
+        fig_show.axes6.set_title("FN")
+        fig_show.axes7.set_title("Ap")
+        fig_show.axes8.set_title("Threshold")
+
+        self.gridlayout.addWidget(fig_show, 0, 2)
+        # return fig_show
+
+    def draw_by_datasets(self, model, datasets):
+        if len(datasets) == 0:
+            return
+        self.draw_grid.setVisible(True)
+        map, ap, recall, Precision, F1_, index, TP, FP, FN, Thre = [], [], [], [], [], [], [], [], [], []
+        for key, value in self.thr80_id_max1.items():
+            data_name = key.split('$')[-1]
+            model_n = key.split('$' + data_name)[0]
+            if not model_n == model:
+                continue
+            if not data_name in datasets:
+                continue
+            id_max = value
+            id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold = self.value[id_max]
+
+            if not class_name==self.class_name_draw:
+                continue
+            index.append(dataset_name)
+            map.append(float(Map))
+            ap.append(float(Ap))
+            recall.append(float(rec))
+            Precision.append(float(prec))
+            F1_.append(float(f1))
+            TP.append(tp)
+            FP.append(fp)
+            FN.append(fn)
+            Thre.append(float(Threshold))
+        fig_show = MyFigure(width=10, height=5, dpi=100)
+        fig_show.fig.suptitle("Metric comparison")
+        fig_show.fig.subplots_adjust(wspace=0.3, hspace=0.5)
+        fig_show.axes0 = fig_show.fig.add_subplot(258)
+        fig_show.axes1 = fig_show.fig.add_subplot(256)
+        fig_show.axes2 = fig_show.fig.add_subplot(255)
+        fig_show.axes3 = fig_show.fig.add_subplot(251)
+        fig_show.axes4 = fig_show.fig.add_subplot(252)
+        fig_show.axes5 = fig_show.fig.add_subplot(253)
+        fig_show.axes6 = fig_show.fig.add_subplot(254)
+        fig_show.axes7 = fig_show.fig.add_subplot(257)
+        fig_show.axes8 = fig_show.fig.add_subplot(259)
+        # F1.axes9 = F1.fig.add_subplot(260)
+        fig_show.axes0.bar(index, map)
+        fig_show.axes1.bar(index, recall)
+        fig_show.axes2.bar(index, Precision)
+        fig_show.axes3.bar(index, F1_)
+        fig_show.axes4.bar(index, TP)
+        fig_show.axes5.bar(index, FP)
+        fig_show.axes6.bar(index, FN)
+        fig_show.axes7.bar(index, ap)
+        fig_show.axes8.bar(index, Thre)
+
+        for a, b, i in zip(index, map, range(len(index))):  # zip 函数
+            fig_show.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
+            fig_show.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
+            fig_show.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
+            fig_show.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
+            fig_show.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
+            fig_show.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
+            fig_show.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
+            fig_show.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
+            fig_show.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+
+        fig_show.axes0.set_title("Map")
+        fig_show.axes1.set_title("recall")
+        fig_show.axes2.set_title("Prediction")
+        fig_show.axes3.set_title("F1")
+        fig_show.axes4.set_title("TP")
+        fig_show.axes5.set_title("FP")
+        fig_show.axes6.set_title("FN")
+        fig_show.axes7.set_title("Ap")
+        fig_show.axes8.set_title("Threshold")
+
+        self.gridlayout.addWidget(fig_show, 0, 2)
+        # return fig_show
+
+    def btn_draw_clicked_by_thresh(self):
+        data = []
+        for i in range(len(self.checkdatasets)):
+            if self.checkdatasets[i].isChecked():
+                data.append(self.datasets[i])
+        model = []
+        for j in range(len(self.checkmodels)):
+            if self.checkmodels[j].isChecked():
+                model.append(self.models[j])
+        print(model)
+        print(data)
+
+        if len(data) == 1:
+            self.draw_by_models(model, data[0])
+        elif len(model) == 1:
+            self.draw_by_datasets(model[0], data)
+        else:
+            print("ui2 erroe")
+
+    def btn_draw(self):
+        if self.filter_thresh == 0:
+            self.btn_draw_clicked()
+        else:
+            self.btn_draw_clicked_by_thresh()
 
     def btn_draw_clicked(self):
         data = []
@@ -1574,6 +1787,7 @@ class Ui_Window(QTabWidget):
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.filter_thresh = 1
 
     def index_number(self, li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -1646,15 +1860,15 @@ class Ui_Window(QTabWidget):
         tmp_model = []
         for new_model in model_selecion:
             if new_model in pre_models:
-                p = pre_models.index(new_model)
-                self.checkmodels[p].setChecked(False)
+                # p = pre_models.index(new_model)
+                # self.checkmodels[p].setChecked(False)
                 continue
             else:
                 tmp_model.append(new_model)
         for new_dataset in dataset_selection:
             if new_dataset in pre_datasets:
-                p = pre_datasets.index(new_dataset)
-                self.checkdatasets[p].setChecked(False)
+                # p = pre_datasets.index(new_dataset)
+                # self.checkdatasets[p].setChecked(False)
                 continue
             else:
                 tmp_dataset.append(new_dataset)
@@ -1664,7 +1878,7 @@ class Ui_Window(QTabWidget):
             self.models.extend(tmp_model)
             for i in range(len(tmp_model)):
                 self.checkmodels[i] = QCheckBox(str(tmp_model[i]))
-                self.checkmodels[i].stateChanged.connect(self.btn_draw_clicked)
+                self.checkmodels[i].stateChanged.connect(self.btn_draw)
                 self.group_box_layout.addWidget(self.checkmodels[i])
 
         if not len(tmp_dataset) == 0:
@@ -1672,7 +1886,53 @@ class Ui_Window(QTabWidget):
             self.datasets.extend(tmp_dataset)
             for i in range(len(tmp_dataset)):
                 self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
-                self.checkdatasets[i].stateChanged.connect(self.btn_draw_clicked)
+                self.checkdatasets[i].stateChanged.connect(self.btn_draw)
+                self.group_box_layout1.addWidget(self.checkdatasets[i])
+
+        for i in range(len(tmp_model)):
+            self.checkmodels[i].setChecked(True)
+        self.checkdatasets[0].setChecked(True)
+
+        self.btn_show_classes_clicked()
+
+    def btn_load_diff_thresh(self):
+        if self.filter_thresh == 1:
+            self.filter_thresh = 0
+        else:
+            self.filter_thresh = 1
+        global dataset_selection, model_selecion
+        pre_models, pre_datasets = self.models, self.datasets
+        tmp_dataset = []
+        tmp_model = []
+        for new_model in model_selecion:
+            if new_model in pre_models:
+                # p = pre_models.index(new_model)
+                # self.checkmodels[p].setChecked(False)
+                continue
+            else:
+                tmp_model.append(new_model)
+        for new_dataset in dataset_selection:
+            if new_dataset in pre_datasets:
+                # p = pre_datasets.index(new_dataset)
+                # self.checkdatasets[p].setChecked(False)
+                continue
+            else:
+                tmp_dataset.append(new_dataset)
+
+        if not len(tmp_model) == 0:
+            self.checkmodels.extend(tmp_model)
+            self.models.extend(tmp_model)
+            for i in range(len(tmp_model)):
+                self.checkmodels[i] = QCheckBox(str(tmp_model[i]))
+                self.checkmodels[i].stateChanged.connect(self.btn_draw)
+                self.group_box_layout.addWidget(self.checkmodels[i])
+
+        if not len(tmp_dataset) == 0:
+            self.checkdatasets.extend(tmp_dataset)
+            self.datasets.extend(tmp_dataset)
+            for i in range(len(tmp_dataset)):
+                self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
+                self.checkdatasets[i].stateChanged.connect(self.btn_draw)
                 self.group_box_layout1.addWidget(self.checkdatasets[i])
 
         for i in range(len(tmp_model)):
