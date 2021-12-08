@@ -34,6 +34,11 @@ all_model_names = models.copy()
 all_dataset_names = datasets.copy()
 all_class_names = classes.copy()
 model_selecion, dataset_selection, class_selection = all_model_names, all_dataset_names, all_class_names
+
+# error file save path
+global save_path, error_file_list
+save_path = 'error_file.list'
+error_file_list = []
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
         super(EmptyDelegate, self).__init__(parent)
@@ -320,6 +325,208 @@ class ClassesDialog(QtWidgets.QDialog):
             self.checkclasses[i].setChecked(False)
         self.all_check_box.setChecked(False)
 
+class Sub_window(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super(Sub_window, self).__init__(parent)
+        self.setWindowTitle('Model and DataSet selection')
+        global subDBManager, models, datasets, classes
+        self.models, self.datasets, self.classes = models, datasets, classes
+        self.checkmodels = models.copy()
+        self.checkdatasets = datasets.copy()
+        self.checkclasses = classes.copy()
+        self.table = QTabWidget(self)
+        self.table.resize(800, 400)
+
+        self.setGeometry(400, 400, 800, 400)
+        self.center_screen()
+        self.initUI()
+        self.show()
+        self.memoryUI()
+
+    def initUI(self):
+        self.model_tab = QtWidgets.QWidget()
+        self.dataset_tab = QtWidgets.QWidget()
+        self.class_tab = QtWidgets.QWidget()
+
+        self.table.addTab(self.model_tab, "Model Selection")
+        self.table.addTab(self.dataset_tab, "Dataset Selection")
+        self.table.addTab(self.class_tab, "Classes Selection")
+
+        self.model_UI()
+        self.dataset_UI()
+        self.classes_UI()
+
+    def center_screen(self):
+        size = self.size()
+        desktopSize = QtWidgets.QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
+        self.move(left, top)
+
+    def model_UI(self):
+        # 实例化垂直布局
+        self.models_box = QGridLayout()
+
+        self.all_check_box_model = QCheckBox('All')
+        self.all_check_box_model.stateChanged.connect(self.All_models)
+        self.models_box.addWidget(self.all_check_box_model, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.models)):
+            self.checkmodels[i] = QCheckBox(str(self.models[i]))
+            self.checkmodels[i].stateChanged.connect(self.btn_draw_models_clicked)
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.models_box.addWidget(self.checkmodels[i], m, n)
+            n += 1
+
+        self.model_tab.setLayout(self.models_box)
+    def dataset_UI(self):
+        global dataset_selection
+        # 实例化垂直布局
+        self.datasets_box = QGridLayout()
+        self.all_check_box_datasets = QCheckBox('All')
+        self.all_check_box_datasets.stateChanged.connect(self.All_datasets)
+        self.datasets_box.addWidget(self.all_check_box_datasets, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.datasets)):
+            self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
+            self.checkdatasets[i].stateChanged.connect(self.btn_draw_datasets_clicked)
+            # if str(self.datasets[i]) in dataset_selection:
+            #     self.checkdatasets[i].ser
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.datasets_box.addWidget(self.checkdatasets[i], m, n)
+            n += 1
+        self.dataset_tab.setLayout(self.datasets_box)
+    def classes_UI(self):
+        # 实例化垂直布局
+        self.classes_box = QGridLayout()
+
+        self.all_check_box_classes = QCheckBox('All')
+        self.all_check_box_classes.stateChanged.connect(self.All_classes)
+        self.classes_box.addWidget(self.all_check_box_classes, 0, 0)
+
+        m, n = 1, 0
+        for i in range(len(self.classes)):
+            self.checkclasses[i] = QCheckBox(str(self.classes[i]))
+            self.checkclasses[i].stateChanged.connect(self.btn_draw_classes_clicked)
+            if i > 0 and i % 5 == 0:
+                m += 1
+                n = 0
+            self.classes_box.addWidget(self.checkclasses[i], m, n)
+            n += 1
+        self.class_tab.setLayout(self.classes_box)
+
+    def All_datasets(self, status):
+        if status == 2:
+            for i in range(len(self.checkdatasets)):
+                self.checkdatasets[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box_datasets.setCheckState(2)
+        elif status == 0:
+            self.clear_datasets()
+    def clear_datasets(self):
+        for i in range(len(self.datasets)):
+            self.checkdatasets[i].setChecked(False)
+        self.all_check_box_datasets.setChecked(False)
+
+    def All_models(self, status):
+        if status == 2:
+            for i in range(len(self.checkmodels)):
+                self.checkmodels[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box_model.setCheckState(2)
+        elif status == 0:
+            self.clear_models()
+    def clear_models(self):
+        for i in range(len(self.models)):
+            self.checkmodels[i].setChecked(False)
+        self.all_check_box_model.setChecked(False)
+
+    def All_classes(self, status):
+        if status == 2:
+            for i in range(len(self.checkclasses)):
+                self.checkclasses[i].setChecked(True)
+        elif status == 1:
+            if self.Selectedrow_num == 0:
+                self.all_check_box_classes.setCheckState(2)
+        elif status == 0:
+            self.clear_classes()
+    def clear_classes(self):
+        for i in range(len(self.checkclasses)):
+            self.checkclasses[i].setChecked(False)
+        self.all_check_box_classes.setChecked(False)
+
+    def btn_draw_classes_clicked(self):
+        data = []
+        for i in range(len(self.checkclasses)):
+            if self.checkclasses[i].isChecked():
+                data.append(self.classes[i])
+        self.Selectedrow_num = len(data)
+        if self.Selectedrow_num == 0:
+            self.all_check_box_classes.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkclasses):
+            self.all_check_box_classes.setCheckState(2)
+        else:
+            self.all_check_box_classes.setCheckState(1)
+        global class_selection
+        class_selection = data.copy()
+
+    def btn_draw_models_clicked(self):
+        # data = []
+        # for i in range(len(self.checkdatasets)):
+        #     if self.checkdatasets[i].isChecked():
+        #         data.append(self.datasets[i])
+        model = []
+        for j in range(len(self.checkmodels)):
+            if self.checkmodels[j].isChecked():
+                model.append(self.models[j])
+        self.Selectedrow_num = len(model)
+        if self.Selectedrow_num == 0:
+            self.all_check_box_model.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkmodels):
+            self.all_check_box_model.setCheckState(2)
+        else:
+            self.all_check_box_model.setCheckState(1)
+        global model_selecion
+        model_selecion = model.copy()
+
+    def btn_draw_datasets_clicked(self):
+        data = []
+        for i in range(len(self.checkdatasets)):
+            if self.checkdatasets[i].isChecked():
+                data.append(self.datasets[i])
+        self.Selectedrow_num = len(data)
+        if self.Selectedrow_num == 0:
+            self.all_check_box_datasets.setCheckState(0)
+        elif self.Selectedrow_num == len(self.checkdatasets):
+            self.all_check_box_datasets.setCheckState(2)
+        else:
+            self.all_check_box_datasets.setCheckState(1)
+        global dataset_selection
+        dataset_selection = data.copy()
+    def memoryUI(self):
+        global dataset_selection, model_selecion, class_selection
+        tmp_dataset = dataset_selection
+        for i in range(len(self.datasets)):
+            if str(self.datasets[i]) in tmp_dataset:
+                self.checkdatasets[i].setChecked(True)
+
+        tmp_model = model_selecion
+        for i in range(len(self.models)):
+            if str(self.models[i]) in tmp_model:
+                self.checkmodels[i].setChecked(True)
+
+        tmp_class = class_selection
+        for i in range(len(self.classes)):
+            if str(self.classes[i]) in tmp_class:
+                self.checkclasses[i].setChecked(True)
 
 class Ui_Window(QTabWidget):
     def __init__(self, parent=None):
@@ -600,17 +807,10 @@ class Ui_Window(QTabWidget):
         layout.addRow(h1)
 
         pop_subwindow = QHBoxLayout()
-        select_model = QPushButton("Model Select")
-        select_model.clicked.connect(self.pop_model_select)
+        select_model = QPushButton("Model/dataset/classes Select")
+        select_model.clicked.connect(self.pop_sub_select)
 
         pop_subwindow.addWidget(select_model)
-        select_dataset = QPushButton("Dataset Select")
-        select_dataset.clicked.connect(self.pop_dataset_select)
-        pop_subwindow.addWidget(select_dataset)
-
-        select_classes = QPushButton("classes Select")
-        select_classes.clicked.connect(self.pop_classes_select)
-        pop_subwindow.addWidget(select_classes)
 
         search_by_selection = QPushButton("search by Selections")
         search_by_selection.clicked.connect(self.search_selection)
@@ -636,12 +836,17 @@ class Ui_Window(QTabWidget):
 
         self.model = QtGui.QStandardItemModel()
 
+        self.table_widget.setSortingEnabled(True)
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
         self.table_widget.setModel(self.model)
         # self.table_widget.setColumnWidth(0, 50)
-        self.table_widget.setSortingEnabled(True)
+
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.doubleClicked.connect(self.doubleClicked)
+        # self.table_widget.clicked.connect(self.SelectClicked)
         if len(self.value) != 0:
             self.btn_refresh()
         for i in range(12):
@@ -689,6 +894,34 @@ class Ui_Window(QTabWidget):
         h1.addWidget(refresh)
         refresh.clicked.connect(self.btn_refresh_error)
         layout.addRow(h1)
+
+        pop_subwindow = QHBoxLayout()
+
+        select_classes = QPushButton("models/datasets/classes Select")
+        select_classes.clicked.connect(self.pop_sub_select)
+        pop_subwindow.addWidget(select_classes)
+
+
+        # self.search_for_error = QPushButton("search for error")
+        # self.search_for_error.clicked.connect(self.search_error)
+        # pop_subwindow.addWidget(self.search_for_error)
+
+        label_text = QLabel("error save path:")
+        label_text.setMaximumWidth(80)
+        pop_subwindow.addWidget(label_text)
+        self.error_path = QLineEdit()
+        self.error_path.setMaximumWidth(200)
+        pop_subwindow.addWidget(self.error_path)
+        self.load_save_dir = QPushButton("...")
+        self.load_save_dir.setMaximumWidth(40)
+        pop_subwindow.addWidget(self.load_save_dir)
+        self.load_save_dir.clicked.connect(self.btn_save_dir_clicked)
+
+        self.export_selection = QPushButton("export error")
+        self.export_selection.clicked.connect(self.export_error)
+        pop_subwindow.addWidget(self.export_selection)
+
+        layout.addRow(pop_subwindow)
 
         h2 = QGridLayout()
         self.table_widget1 = QtWidgets.QTableView()
@@ -769,6 +1002,11 @@ class Ui_Window(QTabWidget):
 
         self.tab5.setLayout(layout)
 
+    def pop_sub_select(self):
+        diary_window = Sub_window()
+        diary_window.exec_()
+        self.refresh_thresh()
+
     @staticmethod
     def pop_model_select(self):
         diary_window = ModelDialog()
@@ -795,6 +1033,9 @@ class Ui_Window(QTabWidget):
         self.model.clear()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
         try:
             self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
@@ -858,6 +1099,17 @@ class Ui_Window(QTabWidget):
 
     def doubleClicked(self, index):
         self.table_widget.openPersistentEditor(index)
+
+    def SelectClicked(self):
+        r = self.table_widget.currentIndex().row()  # 获取行号D
+        c = self.table_widget.currentIndex().column()  # 获取行号D
+        for i in range(r):
+            self.model.item(i, c).setBackground(QtGui.QColor(125, 125, 125))
+            self.model.itemChanged.connect(self.QStandardModelItemChanged)
+        for j in range(c):
+            self.model.item(r, j).setBackground(QtGui.QColor(125, 125, 125))
+            self.model.itemChanged.connect(self.QStandardModelItemChanged)
+
 
     def onUpdateText(self, text):
         """Write console output to text widget."""
@@ -948,6 +1200,20 @@ class Ui_Window(QTabWidget):
         else:
             self.dir_model_gt = None
             self.txb_gt_dir.setText('')
+
+    def btn_save_dir_clicked(self):
+        if self.error_path.text() == '':
+            txt = self.current_directory
+        else:
+            txt = self.error_path.text()
+        directory = QFileDialog.getExistingDirectory(
+            self, 'Choose directory to save', txt)
+        if directory == '':
+            return
+        if os.path.isdir(directory):
+            self.error_path.setText(directory)
+        else:
+            self.error_path.setText('')
 
     def btn_gt_classes_clicked(self):
         filepath = QFileDialog.getOpenFileName(self, 'Choose a file with a list of classes',
@@ -1264,23 +1530,23 @@ class Ui_Window(QTabWidget):
         fig_show.axes8.bar(index, Thre)
 
         for a, b, i in zip(index, map, range(len(index))):  # zip 函数
-            fig_show.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes0.text(a, b - map[i]/10, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
-            fig_show.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes1.text(a, b - recall[i]/10, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
-            fig_show.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes2.text(a, b - Precision[i]/10, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
-            fig_show.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes3.text(a, b - F1_[i]/10, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
-            fig_show.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes4.text(a, b - TP[i]/10, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
-            fig_show.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes5.text(a, b - FP[i]/10, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
-            fig_show.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes6.text(a, b - FN[i]/10, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
-            fig_show.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes7.text(a, b - ap[i]/10, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
-            fig_show.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes8.text(a, b - Thre[i]/10, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
 
         fig_show.axes0.set_title("Map")
         fig_show.axes1.set_title("recall")
@@ -1346,23 +1612,23 @@ class Ui_Window(QTabWidget):
         fig_show.axes8.bar(index, Thre)
 
         for a, b, i in zip(index, map, range(len(index))):  # zip 函数
-            fig_show.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes0.text(a, b - map[i]/10, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
-            fig_show.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes1.text(a, b - recall[i]/10, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
-            fig_show.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes2.text(a, b - Precision[i]/10, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
-            fig_show.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes3.text(a, b - F1_[i]/10, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
-            fig_show.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes4.text(a, b - TP[i]/10, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
-            fig_show.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes5.text(a, b - FP[i]/10, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
-            fig_show.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes6.text(a, b - FN[i]/10, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
-            fig_show.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes7.text(a, b - ap[i]/10, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
-            fig_show.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+            fig_show.axes8.text(a, b - Thre[i]/10, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
 
         fig_show.axes0.set_title("Map")
         fig_show.axes1.set_title("recall")
@@ -1471,6 +1737,9 @@ class Ui_Window(QTabWidget):
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
 
     def btn_search_by_data(self):
         text = self.data_line_ui3.text()
@@ -1522,6 +1791,9 @@ class Ui_Window(QTabWidget):
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
 
     def btn_search_by_filter(self):
         text = self.filter_line_ui3.text()
@@ -1598,6 +1870,9 @@ class Ui_Window(QTabWidget):
         self.model.clear()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
         try:
             self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
@@ -1668,7 +1943,7 @@ class Ui_Window(QTabWidget):
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
 
         self.table_widget.setColumnWidth(1, 160)
-        self.table_widget.setColumnWidth(2, 100)
+        self.table_widget.setColumnWidth(2, 150)
         self.table_widget.setColumnWidth(3, 150)
         self.table_widget.setColumnWidth(0, 0)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
@@ -1718,8 +1993,11 @@ class Ui_Window(QTabWidget):
         temp_models = model_selecion
         temp_dataset = dataset_selection
         self.model.clear()
-        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
-                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        # self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+        #                                          , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.table_widget.setColumnWidth(1, 160)
+        self.table_widget.setColumnWidth(2, 150)
+        self.table_widget.setColumnWidth(3, 150)
         self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
         try:
             self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
@@ -1767,22 +2045,24 @@ class Ui_Window(QTabWidget):
 
 
             row_ = self.model.rowCount()
+            tmp_index = 0
             for m in range(class_num):
-                row = row_ + m
+                row = row_ + tmp_index
                 temp_thresh_list = thresh_hold[m]
                 if len(temp_thresh_list) > 0:
                     index_thresh = self.index_number(temp_thresh_list, float(0.8))
                 else:
                     index_thresh = 0
+                a = list[m]
+                if len(a) == 0:
+                    continue
                 for n in range(13):
                     # item=QtGui.QStandardItem()
-                    a = list[m]
-                    if len(a) == 0:
-                        continue
                     if n > 5:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])[0:5]))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])))
+                tmp_index += 1
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
@@ -2002,3 +2282,43 @@ class Ui_Window(QTabWidget):
 
     def merge_database(self):
         DBManager_Changed().merge(self.main_database_dir_, self.ano_database_dir_)
+
+    def search_error(self):
+        self.search_for_error.setEnabled(False)
+        global model_selecion, dataset_selection
+        tmp_error_list = []
+        tmp_model_selection = model_selecion
+        tmp_dataset_selection = dataset_selection
+        error_dic = self.DBManager.search_error()
+        for key, value in error_dic.items():
+            tmp_model_name, tmp_data_name = key.split('$')
+            if not tmp_model_name in tmp_model_selection:
+                continue
+            if not tmp_data_name in tmp_dataset_selection:
+                continue
+            for index_value in value:
+                if '---' not in index_value:
+                    continue
+                tmp_error_list.append(index_value)
+        global error_file_list
+        error_file_list = tmp_error_list
+        self.search_for_error.setEnabled(True)
+
+    def export_error(self):
+        self.export_selection.setEnabled(False)
+        tmp_save_path = self.error_path.text()
+        if len(tmp_save_path) > 0 and os.path.exists(tmp_save_path):
+            cache_path = tmp_save_path
+        else:
+            self.show_popup('please input error file save path', 'warning')
+            self.export_selection.setEnabled(True)
+            return
+        global error_file_list
+        if len(error_file_list) == 0:
+            self.search_error()
+        cache_file_list = error_file_list
+        error_file = open(os.path.join(cache_path, 'error_files.list'), 'w')
+        for index_file in cache_file_list:
+            error_file.write(index_file + '\n')
+        error_file.close()
+        self.export_selection.setEnabled(True)
