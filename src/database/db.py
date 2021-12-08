@@ -229,7 +229,25 @@ class DBManager():
                     datasets.append(str(dataset_name))
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list,class_num,datasets
-
+    def search_matched_models_datasets_classes(self):
+        model_dataset_dict = defaultdict(list)
+        model_classes_dict = defaultdict(list)
+        self.db.open()
+        query = QSqlQuery()
+        if query.exec(
+                'select id ,model_name,dataset_name,class_name,ID_max from id_max'):
+            while query.next():
+                value = [query.value(i) for i in range(5)]
+                id, model_name, dataset_name, class_name, id1 = value
+                if model_name not in model_dataset_dict:
+                    model_dataset_dict[model_name] = []
+                if not str(dataset_name) in model_dataset_dict[model_name]:
+                    model_dataset_dict[model_name].append(str(dataset_name))
+                if model_name not in model_classes_dict:
+                    model_classes_dict[model_name] = []
+                if not class_name in model_classes_dict[model_name]:
+                    model_classes_dict[model_name].append(class_name)
+        return model_dataset_dict, model_classes_dict
     def search_error(self):
         error_dic = defaultdict(list)
         self.db.open()

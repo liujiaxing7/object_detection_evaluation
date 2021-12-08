@@ -39,6 +39,9 @@ model_selecion, dataset_selection, class_selection = all_model_names, all_datase
 global save_path, error_file_list
 save_path = 'error_file.list'
 error_file_list = []
+
+global model_dataset_dict, model_classes_dict
+model_dataset_dict, model_classes_dict = subDBManager.search_matched_models_datasets_classes()
 class EmptyDelegate(QItemDelegate):
     def __init__(self, parent):
         super(EmptyDelegate, self).__init__(parent)
@@ -329,6 +332,8 @@ class Sub_window(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(Sub_window, self).__init__(parent)
         self.setWindowTitle('Model and DataSet selection')
+        global model_dataset_dict, model_classes_dict
+        self.model_dataset_dict, self.model_classes_dict =  model_dataset_dict, model_classes_dict
         global subDBManager, models, datasets, classes
         self.models, self.datasets, self.classes = models, datasets, classes
         self.checkmodels = models.copy()
@@ -496,6 +501,7 @@ class Sub_window(QtWidgets.QDialog):
             self.all_check_box_model.setCheckState(1)
         global model_selecion
         model_selecion = model.copy()
+        self.memoryUI()
 
     def btn_draw_datasets_clicked(self):
         data = []
@@ -513,20 +519,42 @@ class Sub_window(QtWidgets.QDialog):
         dataset_selection = data.copy()
     def memoryUI(self):
         global dataset_selection, model_selecion, class_selection
-        tmp_dataset = dataset_selection
-        for i in range(len(self.datasets)):
-            if str(self.datasets[i]) in tmp_dataset:
-                self.checkdatasets[i].setChecked(True)
-
+        global model_dataset_dict, model_classes_dict
         tmp_model = model_selecion
         for i in range(len(self.models)):
             if str(self.models[i]) in tmp_model:
                 self.checkmodels[i].setChecked(True)
+        match_index_datasets = []
+        match_index_classes = []
+        for index_model in tmp_model:
+            match_dataset = model_dataset_dict[index_model]
+            match_class = model_classes_dict[index_model]
+            for index_match_dataset in match_dataset:
+                if index_match_dataset not in match_index_datasets:
+                    match_index_datasets.append(index_match_dataset)
+            for index_match_class in match_class:
+                if index_match_class not in match_index_classes:
+                    match_index_classes.append(index_match_class)
+        tmp_dataset = dataset_selection
+        for i in range(len(self.datasets)):
+            if str(self.datasets[i]) in match_index_datasets:
+                self.checkdatasets[i].setEnabled(True)
+                self.checkdatasets[i].setChecked(True)
+            else:
+                self.checkdatasets[i].setChecked(False)
+                self.checkdatasets[i].setEnabled(False)
+
 
         tmp_class = class_selection
         for i in range(len(self.classes)):
-            if str(self.classes[i]) in tmp_class:
+            if str(self.classes[i]) in match_index_classes:
+                self.checkclasses[i].setEnabled(True)
                 self.checkclasses[i].setChecked(True)
+            else:
+                self.checkclasses[i].setChecked(False)
+                self.checkclasses[i].setEnabled(False)
+        class_selection = match_index_classes
+        dataset_selection = match_index_datasets
 
 class Ui_Window(QTabWidget):
     def __init__(self, parent=None):
