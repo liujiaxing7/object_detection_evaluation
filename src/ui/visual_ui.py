@@ -898,7 +898,7 @@ class Ui_Window(QTabWidget):
         pop_subwindow = QHBoxLayout()
 
         select_classes = QPushButton("models/datasets/classes Select")
-        select_classes.clicked.connect(self.pop_sub_select)
+        select_classes.clicked.connect(self.pop_error_select)
         pop_subwindow.addWidget(select_classes)
 
 
@@ -907,15 +907,15 @@ class Ui_Window(QTabWidget):
         # pop_subwindow.addWidget(self.search_for_error)
 
         label_text = QLabel("error save path:")
-        label_text.setMaximumWidth(80)
+        label_text.setMaximumWidth(100)
         pop_subwindow.addWidget(label_text)
         self.error_path = QLineEdit()
         self.error_path.setMaximumWidth(200)
         pop_subwindow.addWidget(self.error_path)
-        self.load_save_dir = QPushButton("...")
-        self.load_save_dir.setMaximumWidth(40)
-        pop_subwindow.addWidget(self.load_save_dir)
-        self.load_save_dir.clicked.connect(self.btn_save_dir_clicked)
+        # self.load_save_dir = QPushButton("...")
+        # self.load_save_dir.setMaximumWidth(40)
+        # pop_subwindow.addWidget(self.load_save_dir)
+        # self.load_save_dir.clicked.connect(self.btn_save_dir_clicked)
 
         self.export_selection = QPushButton("export error")
         self.export_selection.clicked.connect(self.export_error)
@@ -1007,6 +1007,10 @@ class Ui_Window(QTabWidget):
         diary_window.exec_()
         self.refresh_thresh()
 
+    def pop_error_select(self):
+        diary_window = Sub_window()
+        diary_window.exec_()
+
     @staticmethod
     def pop_model_select(self):
         diary_window = ModelDialog()
@@ -1091,7 +1095,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
-
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
@@ -1733,7 +1738,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
-
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
@@ -1787,7 +1793,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
-
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
@@ -1934,7 +1941,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[class_name.index(cls_name)]][n])))
             else:
                 pass
-
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def btn_refresh(self):
@@ -1985,7 +1993,8 @@ class Ui_Window(QTabWidget):
                         self.model.setItem(row, n, QtGui.QStandardItem(str(round(list[m][id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(list[m][id_max[m]][n])))
-
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
     def refresh_thresh(self):
@@ -1993,8 +2002,8 @@ class Ui_Window(QTabWidget):
         temp_models = model_selecion
         temp_dataset = dataset_selection
         self.model.clear()
-        # self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
-        #                                          , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
+        self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
+                                                 , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.table_widget.setColumnWidth(1, 160)
         self.table_widget.setColumnWidth(2, 150)
         self.table_widget.setColumnWidth(3, 150)
@@ -2063,6 +2072,8 @@ class Ui_Window(QTabWidget):
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])))
                 tmp_index += 1
+        row_last = self.model.rowCount()
+        self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
@@ -2284,7 +2295,6 @@ class Ui_Window(QTabWidget):
         DBManager_Changed().merge(self.main_database_dir_, self.ano_database_dir_)
 
     def search_error(self):
-        self.search_for_error.setEnabled(False)
         global model_selecion, dataset_selection
         tmp_error_list = []
         tmp_model_selection = model_selecion
@@ -2302,9 +2312,9 @@ class Ui_Window(QTabWidget):
                 tmp_error_list.append(index_value)
         global error_file_list
         error_file_list = tmp_error_list
-        self.search_for_error.setEnabled(True)
 
     def export_error(self):
+        self.btn_save_dir_clicked()
         self.export_selection.setEnabled(False)
         tmp_save_path = self.error_path.text()
         if len(tmp_save_path) > 0 and os.path.exists(tmp_save_path):
@@ -2313,9 +2323,8 @@ class Ui_Window(QTabWidget):
             self.show_popup('please input error file save path', 'warning')
             self.export_selection.setEnabled(True)
             return
+        self.search_error()
         global error_file_list
-        if len(error_file_list) == 0:
-            self.search_error()
         cache_file_list = error_file_list
         error_file = open(os.path.join(cache_path, 'error_files.list'), 'w')
         for index_file in cache_file_list:
