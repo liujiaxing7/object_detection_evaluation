@@ -230,6 +230,18 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list,class_num,datasets
 
+    def search_error(self):
+        error_dic = defaultdict(list)
+        self.db.open()
+        query = QSqlQuery()
+        if query.exec(
+                'select id ,model_name,dataset_name,error_file from error'):
+            while query.next():
+                value = [query.value(i) for i in range(4)]
+                id, model_name, dataset_name, file = value
+                error_dic[str(model_name)+'$'+str(dataset_name)].append(file)
+        return error_dic
+
 
     def get_max_id(self):
         self.db.open()
@@ -326,23 +338,24 @@ class DBManager():
         # F1.axes9.bar(index, FN)
 
         for a, b, i in zip(index, map, range(len(index))):  # zip 函数
-            F1.axes0.text(a, b + 0.01, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes0.text(a, b - map[i] / 10, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
-            F1.axes1.text(a, b + 0.01, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes1.text(a, b - recall[i] / 10, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
-            F1.axes2.text(a, b + 0.01, "%.2f" % Precision[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes2.text(a, b - Precision[i] / 10, "%.2f" % Precision[i], ha='center',
+                                fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
-            F1.axes3.text(a, b + 0.01, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes3.text(a, b - F1_[i] / 10, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
-            F1.axes4.text(a, b + 0.01, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes4.text(a, b - TP[i] / 10, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
-            F1.axes5.text(a, b + 0.01, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes5.text(a, b - FP[i] / 10, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
-            F1.axes6.text(a, b + 0.01, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes6.text(a, b - FN[i] / 10, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
-            F1.axes7.text(a, b + 0.01, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes7.text(a, b - ap[i] / 10, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
         for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
-            F1.axes8.text(a, b + 0.01, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+            F1.axes8.text(a, b - Thre[i] / 10, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
         # F1.axes.legend()
         # F1.axes4.xlabel("model")
         F1.axes0.set_title("Map")
@@ -404,6 +417,27 @@ class DBManager():
         # F1.axes9.bar(index, FN)
         # F1.axes.legend()
         # F1.axes4.xlabel("model")
+
+        for a, b, i in zip(index, map, range(len(index))):  # zip 函数
+            F1.axes0.text(a, b - map[i] / 10, "%.2f" % map[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, recall, range(len(index))):  # zip 函数
+            F1.axes1.text(a, b - recall[i] / 10, "%.2f" % recall[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Precision, range(len(index))):  # zip 函数
+            F1.axes2.text(a, b - Precision[i] / 10, "%.2f" % Precision[i], ha='center',
+                                fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, F1_, range(len(index))):  # zip 函数
+            F1.axes3.text(a, b - F1_[i] / 10, "%.2f" % F1_[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, TP, range(len(index))):  # zip 函数
+            F1.axes4.text(a, b - TP[i] / 10, "%.2f" % TP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FP, range(len(index))):  # zip 函数
+            F1.axes5.text(a, b - FP[i] / 10, "%.2f" % FP[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, FN, range(len(index))):  # zip 函数
+            F1.axes6.text(a, b - FN[i] / 10, "%.2f" % FN[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, ap, range(len(index))):  # zip 函数
+            F1.axes7.text(a, b - ap[i] / 10, "%.2f" % ap[i], ha='center', fontsize=10)  # plt.text 函数
+        for a, b, i in zip(index, Thre, range(len(index))):  # zip 函数
+            F1.axes8.text(a, b - Thre[i] / 10, "%.2f" % Thre[i], ha='center', fontsize=10)  # plt.text 函数
+
         F1.axes0.set_title("Map")
         F1.axes1.set_title("recall")
         F1.axes2.set_title("Prediction")
