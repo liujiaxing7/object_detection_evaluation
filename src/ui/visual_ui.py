@@ -578,6 +578,9 @@ class Ui_Window(QTabWidget):
         self.result_csv = None
         self.result = None
         self.class_name_draw = None
+        self.filter_thresh = 1
+        self.class_dict = {'person': 0, 'escalator': 1, 'escalator_handrails': 2, 'person_dummy': 3,
+                           'escalator_model': 4, 'escalator_handrails_model': 5}
 
         self.center_screen()
         # sys.stdout = Stream(newText=self.onUpdateText)
@@ -586,6 +589,7 @@ class Ui_Window(QTabWidget):
         # self.models = models.copy()
         # self.datasets = datasets.copy()
         self.DBManager = DBManager()
+        self.thr80_id_max1, self.id_max_class_name1, self.id_max_datasets = self.DBManager.search_id()
 
         self.tab1 = QtWidgets.QWidget()
         self.tab2 = QtWidgets.QWidget()
@@ -604,9 +608,6 @@ class Ui_Window(QTabWidget):
         self.tab5UI()
         self.setWindowTitle("Object Detection Metrics")
 
-        self.thr80_id_max1, self.id_max_class_name1, self.id_max_datasets = self.DBManager.search_id()
-        self.class_dict = {'person':0, 'escalator':1, 'escalator_handrails':2, 'person_dummy':3, 'escalator_model':4, 'escalator_handrails_model':5}
-        self.filter_thresh = 0
 
     def tab1UI(self):
         layout = QFormLayout()
@@ -753,10 +754,6 @@ class Ui_Window(QTabWidget):
         select_best_thresh.clicked.connect(self.btn_load_diff_thresh)
         h2.addWidget(select_best_thresh, 1, Qt.AlignRight)
 
-        self.load_selection = QPushButton("Load selection")
-        self.load_selection.setMinimumSize(100, 27)
-        h2.addWidget(self.load_selection, 1, Qt.AlignRight)
-        self.load_selection.clicked.connect(self.btn_load_selection)
 
         # self.load_class_dir = QPushButton("Load ...")
         # self.load_class_dir.setMinimumSize(60, 27)
@@ -874,7 +871,7 @@ class Ui_Window(QTabWidget):
 
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
         self.table_widget.doubleClicked.connect(self.doubleClicked)
-        # self.table_widget.clicked.connect(self.SelectClicked)
+        self.table_widget.clicked.connect(self.SelectClicked)
         if len(self.value) != 0:
             self.btn_refresh()
         for i in range(12):
@@ -1133,15 +1130,23 @@ class Ui_Window(QTabWidget):
     def doubleClicked(self, index):
         self.table_widget.openPersistentEditor(index)
 
-    def SelectClicked(self):
-        r = self.table_widget.currentIndex().row()  # 获取行号D
-        c = self.table_widget.currentIndex().column()  # 获取行号D
-        for i in range(r):
-            self.model.item(i, c).setBackground(QtGui.QColor(125, 125, 125))
-            self.model.itemChanged.connect(self.QStandardModelItemChanged)
-        for j in range(c):
-            self.model.item(r, j).setBackground(QtGui.QColor(125, 125, 125))
-            self.model.itemChanged.connect(self.QStandardModelItemChanged)
+    def SelectClicked(self, Item=None):
+        r = Item.row()  # 获取行号D
+        c = Item.column()  # 获取列号D
+        row_last = self.model.rowCount()
+        col_last = self.model.columnCount()
+        try:
+            self.model.itemChanged.disconnect(self.QStandardModelItemChanged)
+        except:
+            pass
+        for i in range(row_last-1):
+            for j in range(col_last):
+                self.model.item(i, j).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
+        for i in range(row_last-1):
+            self.model.item(i, c).setBackground(QtGui.QBrush(QtGui.QColor(125, 125, 125)))
+        for j in range(col_last):
+            self.model.item(r, j).setBackground(QtGui.QBrush(QtGui.QColor(125, 125, 125)))
+        self.model.itemChanged.connect(self.QStandardModelItemChanged)
 
 
     def onUpdateText(self, text):
@@ -2107,6 +2112,7 @@ class Ui_Window(QTabWidget):
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.filter_thresh = 1
+        self.btn_load_selection()
 
     def index_number(self, li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
