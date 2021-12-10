@@ -1,4 +1,8 @@
 #版本更改记录
+## 'hightlight and auto show' 2021.12.08
+添加自动化展示以及行列高亮
+## "match datasets&classes support" 2021.12.08
+support datasets and classes match by models
 ## fix: 2021.12.08
 1. fix export crash
 2. mix table show
