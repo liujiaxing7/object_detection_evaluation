@@ -1,4 +1,6 @@
 #版本更改记录
+## 'fix:extend show crash' 2021.12.12
+修复增加选项后的展示崩溃问题
 ## 'hightlight and auto show' 2021.12.08
 添加自动化展示以及行列高亮
 ## "match datasets&classes support" 2021.12.08

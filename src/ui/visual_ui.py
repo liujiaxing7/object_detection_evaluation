@@ -754,6 +754,11 @@ class Ui_Window(QTabWidget):
         select_best_thresh.setMinimumSize(100, 27)
         select_best_thresh.clicked.connect(self.btn_load_diff_thresh)
         h2.addWidget(select_best_thresh, 1, Qt.AlignRight)
+        #
+        # select_selections = QPushButton("Load selection")
+        # select_selections.setMinimumSize(100, 27)
+        # select_selections.clicked.connect(self.btn_load_selection)
+        # h2.addWidget(select_selections, 1, Qt.AlignRight)
 
 
         # self.load_class_dir = QPushButton("Load ...")
@@ -2183,7 +2188,7 @@ class Ui_Window(QTabWidget):
 
     def btn_load_selection(self):
         global dataset_selection, model_selecion
-        pre_models, pre_datasets = self.models, self.datasets
+        pre_models, pre_datasets = self.models.copy(), self.datasets.copy()
         tmp_dataset = []
         tmp_model = []
         for new_model in model_selecion:
@@ -2204,20 +2209,20 @@ class Ui_Window(QTabWidget):
         if not len(tmp_model) == 0:
             self.checkmodels.extend(tmp_model)
             self.models.extend(tmp_model)
-            for i in range(len(tmp_model)):
-                self.checkmodels[i] = QCheckBox(str(tmp_model[i]))
+            for i in range(len(pre_models), len(self.models)):
+                self.checkmodels[i] = QCheckBox(str(self.models[i]))
                 self.checkmodels[i].stateChanged.connect(self.btn_draw)
                 self.group_box_layout.addWidget(self.checkmodels[i])
 
         if not len(tmp_dataset) == 0:
             self.checkdatasets.extend(tmp_dataset)
             self.datasets.extend(tmp_dataset)
-            for i in range(len(tmp_dataset)):
+            for i in range(len(pre_datasets), len(self.datasets)):
                 self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
                 self.checkdatasets[i].stateChanged.connect(self.btn_draw)
                 self.group_box_layout1.addWidget(self.checkdatasets[i])
 
-        for i in range(len(tmp_model)):
+        for i in range(len(self.models)):
             self.checkmodels[i].setChecked(True)
         self.checkdatasets[0].setChecked(True)
 
