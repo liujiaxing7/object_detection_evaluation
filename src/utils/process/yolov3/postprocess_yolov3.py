@@ -252,3 +252,17 @@ def get_prediction_yolov3(boxes,oriX,oriY):
                 scores.append(i[4])
     prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
     return prediction
+
+def get_prediction_yolov3_mmdetection(boxes,oriX,oriY):
+    box_es = []
+    labels = []
+    scores = []
+    for result in boxes:
+        if len(result) > 0:
+            # result = result.tolist()
+            for i in result:
+                box_es.append([i[0] /416* oriX, i[1] /416* oriY, i[2] /416* oriX, i[3] /416* oriY])
+                labels.append(i[6])
+                scores.append(i[4])
+    prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
+    return prediction
