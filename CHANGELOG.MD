@@ -1,4 +1,7 @@
 #版本更改记录
+## 'fix: datasets exchange，thresh exchange' 2021.12.13
+1. 修复数据集切换崩溃
+2. 阈值切换空行
 ## 'fix:extend show crash' 2021.12.12
 修复增加选项后的展示崩溃问题
 ## 'hightlight and auto show' 2021.12.08
