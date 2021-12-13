@@ -689,7 +689,7 @@ class Ui_Window(QTabWidget):
         h5.addWidget(QLabel("Onnx Model Type:"), 2, Qt.AlignLeft)
         self.combobox_process = QComboBox()
         h5.addWidget(self.combobox_process, 9, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
+        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3', 'yolov3_mmdetection'])
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChanged)
         h5.addWidget(QLabel("Datasets Name:"), 0, Qt.AlignLeft)
@@ -1206,6 +1206,8 @@ class Ui_Window(QTabWidget):
             self.process_method = 'yolov5x'
         elif text == 'yolov3_tiny3':
             self.process_method = 'yolov3_tiny3'
+        elif text == 'yolov3_mmdetection':
+            self.process_method = 'yolov3_mmdetection'
 
     def comboSelectionChanged1(self, index):
         text = self.combobox_classes.itemText(index)
