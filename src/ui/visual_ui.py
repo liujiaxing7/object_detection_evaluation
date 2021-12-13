@@ -1117,17 +1117,19 @@ class Ui_Window(QTabWidget):
 
             row_ = self.model.rowCount()
             # class_num = min(class_num, len(class_selection))
+            tmp_index = 0
             for m in range(class_num):
-                row = row_ + m
+                row = row_ + tmp_index
+                a = list[m]
+                if len(a) == 0:
+                    continue
                 for n in range(13):
                     # item=QtGui.QStandardItem()
-                    a = list[m]
-                    if len(a) == 0:
-                        continue
                     if n > 5:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
+                tmp_index += 1
         row_last = self.model.rowCount()
         self.model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
         self.model.itemChanged.connect(self.QStandardModelItemChanged)
@@ -2218,7 +2220,7 @@ class Ui_Window(QTabWidget):
             self.checkdatasets.extend(tmp_dataset)
             self.datasets.extend(tmp_dataset)
             for i in range(len(pre_datasets), len(self.datasets)):
-                self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
+                self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
                 self.checkdatasets[i].stateChanged.connect(self.btn_draw)
                 self.group_box_layout1.addWidget(self.checkdatasets[i])
 
@@ -2270,7 +2272,7 @@ class Ui_Window(QTabWidget):
 
         for i in range(len(tmp_model)):
             self.checkmodels[i].setChecked(True)
-        self.checkdatasets[0].setChecked(True)
+        # self.checkdatasets[0].setChecked(True)
 
         self.btn_show_classes_clicked()
 
