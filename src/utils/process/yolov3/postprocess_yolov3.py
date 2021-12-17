@@ -253,7 +253,7 @@ def getPredictionYolov3(boxes,oriX,oriY):
     prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
     return prediction
 
-def get_prediction_yolov3_mmdetection(boxes,oriX,oriY):
+def getPredictionYolov3Mmdetection(boxes,oriX,oriY):
     box_es = []
     labels = []
     scores = []

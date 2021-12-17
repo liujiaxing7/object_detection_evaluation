@@ -74,7 +74,7 @@ def preProcess(inp_img):
     return img.astype(np.float32)
 
 
-def pre_process_mmdetection(inp_img):
+def preProcessMmdetection(inp_img):
     
     if len(inp_img.shape)==3:
         gray = inp_img[:, :, 0]

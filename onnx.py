@@ -13,11 +13,11 @@ from tqdm import tqdm
 
 
 from src.utils.process.yolov3.preprocess_yolov3 import preProcess as yoloPreProcessYolov3
-from src.utils.process.yolov3.preprocess_yolov3 import pre_process_mmdetection as yoloPreProcess_yolov3_mmdetection
+from src.utils.process.yolov3.preprocess_yolov3 import preProcessMmdetection as yoloPreProcessYolov3Mmdetection
 from src.utils.process.yolov3.preprocess_yolov3 import preProcessPadding as yoloPreProcessYolov3Padding
 from src.utils.process.yolov5.preprocess_yolov5 import preProcess as yoloPreProcessYolov5
 from src.utils.process.yolov3.postprocess_yolov3 import THRESHOLD_YOLOV3, postProcessing, \
-    loadClassNames, getPredictionYolov3
+    loadClassNames, getPredictionYolov3,getPredictionYolov3Mmdetection
 from src.utils.process.yolov3_tiny3.postprocess_yolov3_tiny3 import postProcessingTiny3
 from src.utils.process.yolov5.postprocess_yolov5 import postProcessorYOLOV5, IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5, \
     getPredictionYolov5, postProcessorYOLOV5x
@@ -59,7 +59,7 @@ class ONNX(object):
         elif self.process_method == 'yolov3_padding':
             image = yoloPreProcessYolov3Padding(image)
         elif self.process_method == 'yolov3_mmdetection':
-            image=yoloPreProcess_yolov3_mmdetection(image)
+            image=yoloPreProcessYolov3Mmdetection(image)
         elif self.process_method == 'yolov5' or self.process_method == 'yolov5x':
             image = yoloPreProcessYolov5(image)
 
@@ -93,8 +93,8 @@ class ONNX(object):
             self.predictions.append(prediction)
 
         elif self.process_method == 'yolov3_mmdetection':
-            boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
-            prediction = get_prediction_yolov3_mmdetection(boxes, oriX, oriY)
+            boxes = postProcessing(image, THRESHOLD_YOLOV3, 0.6, outputs)
+            prediction = getPredictionYolov3Mmdetection(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
     def evaluate(self):
