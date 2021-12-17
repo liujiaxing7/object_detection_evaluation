@@ -55,12 +55,12 @@ class MainUi(QtWidgets.QMainWindow):
 
         # 设置UI界面的核心部件
         self.setCentralWidget(self.widget)
-        self.b_view_data.clicked.connect(self.view_data)
-        self.b_delete_row.clicked.connect(self.del_row_data)
-        self.b_add_row.clicked.connect(self.add_row_data)
-        # self.b_delete_row.clicked.connect(self.del_row_data)
+        self.b_view_data.clicked.connect(self.viewData)
+        self.b_delete_row.clicked.connect(self.delRowData)
+        self.b_add_row.clicked.connect(self.addRowData)
+        # self.b_delete_row.clicked.connect(self.delRowData)
 
-    def view_data(self):
+    def viewData(self):
         db_text = 'core'
 
         print(db_text)
@@ -94,14 +94,14 @@ class MainUi(QtWidgets.QMainWindow):
 
         # 添加一行数据行
 
-    def add_row_data(self):
+    def addRowData(self):
         # 如果存在实例化的数据模型对象
         if self.model:
             self.model.insertRows(self.model.rowCount(), 1)
         else:
             self.create_db()
 
-    def del_row_data(self):
+    def delRowData(self):
         if self.model:
             self.model.removeRow(self.table_widget.currentIndex().row())
         else:

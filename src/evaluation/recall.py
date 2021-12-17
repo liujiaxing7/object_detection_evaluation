@@ -14,8 +14,8 @@ import numpy as np
 from terminaltables import AsciiTable
 import six
 
-from src.ssd.logger import print_log
-from src.utils.utils import bbox_iou
+from src.ssd.logger import printLog
+from src.utils.utils import bboxIou
 
 
 def _recalls(all_ious, proposal_nums, thrs):
@@ -50,7 +50,7 @@ def _recalls(all_ious, proposal_nums, thrs):
     return recalls
 
 
-def set_recall_param(proposal_nums, iou_thrs):
+def setRecallParam(proposal_nums, iou_thrs):
     """Check proposal_nums and iou_thrs and set correct format.
     """
     if isinstance(proposal_nums, Sequence):
@@ -90,7 +90,7 @@ def recalls(gts, proposals, proposal_nums=None, iou_thrs=0.5):
     img_num = len(gts)
     assert img_num == len(proposals)
 
-    proposal_nums, iou_thrs = set_recall_param(proposal_nums, iou_thrs)
+    proposal_nums, iou_thrs = setRecallParam(proposal_nums, iou_thrs)
 
     all_ious = []
     for i in range(img_num):
@@ -105,16 +105,16 @@ def recalls(gts, proposals, proposal_nums=None, iou_thrs=0.5):
         if gts[i] is None or gts[i].shape[0] == 0:
             ious = np.zeros((0, img_proposal.shape[0]), dtype=np.float32)
         else:
-            ious = bbox_iou(gts[i], img_proposal[:prop_num, :4])
+            ious = bboxIou(gts[i], img_proposal[:prop_num, :4])
         all_ious.append(ious)
     all_ious = np.array(all_ious)
     recalls = _recalls(all_ious, proposal_nums, iou_thrs)
 
-    # print_recall_summary(recalls, proposal_nums, iou_thrs, logger=logger)
+    # printRecallSummary(recalls, proposal_nums, iou_thrs, logger=logger)
     return recalls
 
 
-def print_recall_summary(recalls,
+def printRecallSummary(recalls,
                          proposal_nums,
                          iou_thrs,
                          row_idxs=None,
@@ -147,10 +147,10 @@ def print_recall_summary(recalls,
         row.insert(0, num)
         table_data.append(row)
     table = AsciiTable(table_data)
-    print_log('\n' + table.table, logger=logger)
+    printLog('\n' + table.table, logger=logger)
 
 
-def plot_num_recall(recalls, proposal_nums):
+def plotNumRecall(recalls, proposal_nums):
     """Plot Proposal_num-Recalls curve.
 
     Args:
@@ -175,7 +175,7 @@ def plot_num_recall(recalls, proposal_nums):
     f.show()
 
 
-def plot_iou_recall(recalls, iou_thrs):
+def plotIouRecall(recalls, iou_thrs):
     """Plot IoU-Recalls curve.
 
     Args:
@@ -200,7 +200,7 @@ def plot_iou_recall(recalls, iou_thrs):
     f.show()
 
 
-def eval_recalls(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,
+def evalRecalls(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count,
                  gt_difficults=None, iou_thresh=0.5):
     """Calculate precision and recall based on evaluation code of PASCAL VOC.
     """
@@ -239,7 +239,7 @@ def eval_recalls(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, cl
             gt_bbox_l = gt_bbox_l.copy()
             gt_bbox_l[:, 2:] += 1
 
-            iou = bbox_iou(pred_bbox_l, gt_bbox_l)
+            iou = bboxIou(pred_bbox_l, gt_bbox_l)
             gt_index = iou.argmax(axis=1)
             # set -1 if there is no matching ground truth
             gt_index[iou.max(axis=1) < iou_thresh] = -1

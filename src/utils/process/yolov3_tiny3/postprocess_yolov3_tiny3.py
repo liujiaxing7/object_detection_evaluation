@@ -32,7 +32,7 @@ def softmax(x):
     return x
 
 
-def bbox_iou(box1, box2, x1y1x2y2=True):
+def bboxIou(box1, box2, x1y1x2y2=True):
     # print('iou box1:', box1)
     # print('iou box2:', box2)
 
@@ -70,7 +70,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     return carea / uarea
 
 
-def nms_cpu(boxes, confs, nms_thresh=0.5, min_mode=False):
+def nmsCpu(boxes, confs, nms_thresh=0.5, min_mode=False):
     # print(boxes.shape)
 
     x1 = boxes[:, 0]
@@ -151,7 +151,7 @@ def nms_cpu(boxes, confs, nms_thresh=0.5, min_mode=False):
 #     return max_ids, np.array(weighted_boxes)
 
 
-def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
+def plotBoxesCV2(img, boxes, savename=None, class_names=None, color=None):
     import cv2
     img = np.copy(img)
     colors = np.array([[1, 0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0], [1, 0, 0]], dtype=np.float32)
@@ -196,7 +196,7 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
     return img
 
 
-def read_truths(lab_path):
+def readTruths(lab_path):
     if not os.path.exists(lab_path):
         return np.array([])
     if os.path.getsize(lab_path):
@@ -207,7 +207,7 @@ def read_truths(lab_path):
         return np.array([])
 
 
-def load_class_names(namesfile):
+def loadClassNames(namesfile):
     class_names = []
     with open(namesfile, 'r') as fp:
         lines = fp.readlines()
@@ -223,7 +223,7 @@ def xywh2xyxy(x):
     y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
-def post_processing_tiny3(img, conf_thresh, nms_thresh, output):
+def postProcessingTiny3(img, conf_thresh, nms_thresh, output):
     # anchors = [12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401]
     # num_anchors = 9
     # anchor_masks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -274,7 +274,7 @@ def post_processing_tiny3(img, conf_thresh, nms_thresh, output):
             ll_max_conf = l_max_conf[cls_argwhere]
             ll_max_id = l_max_id[cls_argwhere]
 
-            keep = nms_cpu(ll_box_array, ll_max_conf, nms_thresh)
+            keep = nmsCpu(ll_box_array, ll_max_conf, nms_thresh)
 
             if (keep.size > 0):
                 ll_box_array = ll_box_array[keep, :]

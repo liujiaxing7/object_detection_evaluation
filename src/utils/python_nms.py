@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def max_pool2d(feature_map, size, padding, stride=1):
+def maxPool2d(feature_map, size, padding, stride=1):
     feature_map = np.squeeze(feature_map, axis=0)
     channel = feature_map.shape[0]
     height = feature_map.shape[1]
@@ -25,15 +25,15 @@ def max_pool2d(feature_map, size, padding, stride=1):
     return pool_out
 
 
-def centernet_nms(heat, kernel=3):
+def centernetNms(heat, kernel=3):
     pad = (kernel - 1) // 2
 
-    hmax = max_pool2d(heat, kernel, padding=pad, stride=1).astype(np.float32)
+    hmax = maxPool2d(heat, kernel, padding=pad, stride=1).astype(np.float32)
     keep = (hmax == heat)
 
     return heat * keep
 
-def ssd_nms(boxes, scores, nms_thresh):
+def ssdNms(boxes, scores, nms_thresh):
     """ Performs non-maximum suppression using numpy
         Args:
             boxes(numpy): `xyxy` mode boxes, use absolute coordinates(not support relative coordinates),

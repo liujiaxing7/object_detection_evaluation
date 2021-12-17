@@ -1,13 +1,13 @@
 import warnings
 
-from src.utils.python_nms import ssd_nms
+from src.utils.python_nms import ssdNms
 
-_nms = ssd_nms
+_nms = ssdNms
 warnings.warn('You are using python version NMS, which is very very slow. Try compile c++ NMS '
               'using `cd ext & python build.py build_ext develop`')
 
 
-def boxes_nms(boxes, scores, nms_thresh, max_count=-1):
+def boxesNms(boxes, scores, nms_thresh, max_count=-1):
     """ Performs non-maximum suppression, run on GPU or CPU according to
     boxes's device.
     Args:

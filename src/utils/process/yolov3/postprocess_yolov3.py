@@ -29,7 +29,7 @@ def softmax(x):
     return x
 
 
-def bbox_iou(box1, box2, x1y1x2y2=True):
+def bboxIou(box1, box2, x1y1x2y2=True):
     # print('iou box1:', box1)
     # print('iou box2:', box2)
 
@@ -67,7 +67,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     return carea / uarea
 
 
-def nms_cpu(boxes, confs, nms_thresh=0.5, min_mode=False):
+def nmsCpu(boxes, confs, nms_thresh=0.5, min_mode=False):
     # print(boxes.shape)
     x1 = boxes[:, 0]
     y1 = boxes[:, 1]
@@ -104,12 +104,12 @@ def nms_cpu(boxes, confs, nms_thresh=0.5, min_mode=False):
     return np.array(keep)
 
 
-def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
+def plotBoxesCV2(img, boxes, savename=None, class_names=None, color=None):
     import cv2
     img = np.copy(img)
     colors = np.array([[1, 0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0], [1, 0, 0]], dtype=np.float32)
 
-    def get_color(c, x, max_val):
+    def getColor(c, x, max_val):
         ratio = float(x) / max_val * 5
         i = int(math.floor(ratio))
         j = int(math.ceil(ratio))
@@ -136,9 +136,9 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
             print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
-            red = get_color(2, offset, classes)
-            green = get_color(1, offset, classes)
-            blue = get_color(0, offset, classes)
+            red = getColor(2, offset, classes)
+            green = getColor(1, offset, classes)
+            blue = getColor(0, offset, classes)
             if color is None:
                 rgb = (red, green, blue)
             img = cv2.putText(img, class_names[cls_id], (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1.2, rgb, 1)
@@ -149,7 +149,7 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
     return img
 
 
-def read_truths(lab_path):
+def readTruths(lab_path):
     if not os.path.exists(lab_path):
         return np.array([])
     if os.path.getsize(lab_path):
@@ -160,7 +160,7 @@ def read_truths(lab_path):
         return np.array([])
 
 
-def load_class_names(namesfile):
+def loadClassNames(namesfile):
     class_names = []
     with open(namesfile, 'r') as fp:
         lines = fp.readlines()
@@ -170,7 +170,7 @@ def load_class_names(namesfile):
     return class_names
 
 
-def post_processing(img, conf_thresh, nms_thresh, output):
+def postProcessing(img, conf_thresh, nms_thresh, output):
     # anchors = [12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401]
     # num_anchors = 9
     # anchor_masks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -216,7 +216,7 @@ def post_processing(img, conf_thresh, nms_thresh, output):
             ll_max_conf = l_max_conf[cls_argwhere]
             ll_max_id = l_max_id[cls_argwhere]
 
-            keep = nms_cpu(ll_box_array, ll_max_conf, nms_thresh)
+            keep = nmsCpu(ll_box_array, ll_max_conf, nms_thresh)
 
             if (keep.size > 0):
                 ll_box_array = ll_box_array[keep, :]
@@ -239,7 +239,7 @@ def post_processing(img, conf_thresh, nms_thresh, output):
     # print('-----------------------------------')
 
     return bboxes_batch
-def get_prediction_yolov3(boxes,oriX,oriY):
+def getPredictionYolov3(boxes,oriX,oriY):
     box_es = []
     labels = []
     scores = []

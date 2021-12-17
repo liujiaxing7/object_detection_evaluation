@@ -9,10 +9,10 @@
 '''
 import numpy as np
 
-def Empty(box:np.ndarray):
+def empty(box:np.ndarray):
     return box is None or 0 in box.shape
 
-def bbox_iou(bbox_a, bbox_b):
+def bboxIou(bbox_a, bbox_b):
     if bbox_a.shape[1] != 4 or bbox_b.shape[1] != 4:
         raise IndexError
 

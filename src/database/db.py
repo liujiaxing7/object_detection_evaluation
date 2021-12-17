@@ -7,15 +7,13 @@ matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+
 class MyFigure(FigureCanvas):
     def __init__(self,width=10, height=8, dpi=100):
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
 
         super(MyFigure,self).__init__(self.fig)
-
-
-
 
 
 class DBManager():
@@ -37,13 +35,12 @@ class DBManager():
         self. count_id = 0
         self. count_error = 0
 
-#id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
-    def add_item(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+    def addItem(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_metric:
-            id=self.get_max_id()+1
+            id=self.getMaxId()+1
             self.count_metric = id+1
             self.first_metric=False
         else:
@@ -63,12 +60,12 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+    def addItem_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_metric_:
-            id = self.get_max_id_() + 1
+            id = self.getMaxId_() + 1
             self.count_metric_ = id + 1
             self.first_metric_=False
         else:
@@ -88,12 +85,12 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_id(self,model_name,dataset_name,class_name,id_):
+    def addItemId(self,model_name,dataset_name,class_name,id_):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_id:
-            id=self.get_max_id_id()+1
+            id=self.getMaxIdFromId()+1
             self.count_id = id+1
             self.first_id=False
         else:
@@ -112,13 +109,13 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_erro_file(self,model_name,dataset_name,error_file):
+    def addErrorFile(self,model_name,dataset_name,error_file):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         error_file = "\"" + error_file + "\""
 
         if self.first_error:
-            id=self.get_max_id_error()+1
+            id=self.getMaxIdError()+1
             self.count_error = id+1
             self.first_error=False
         else:
@@ -139,7 +136,7 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def search_classes(self,name):
+    def searchClasses(self,name):
         classes=[]
         self.db.open()
         query = QSqlQuery()
@@ -158,7 +155,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return classes
 
-    def search_all_classes(self):
+    def searchAllClasses(self):
         classes=[]
         self.db.open()
         query = QSqlQuery()
@@ -178,7 +175,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return classes
 
-    def search_model_datasets(self):
+    def searchModelDatasets(self):
         models=[]
         datasets=[]
         self.db.open()
@@ -210,7 +207,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return models,datasets
 
-    def search_id(self):
+    def searchId(self):
         id_list=defaultdict(list)
         class_num=defaultdict(list)
         datasets=[]
@@ -229,7 +226,8 @@ class DBManager():
                     datasets.append(str(dataset_name))
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list,class_num,datasets
-    def search_matched_models_datasets_classes(self):
+
+    def searchMatchedModelsDatasetsClasses(self):
         model_dataset_dict = defaultdict(list)
         model_classes_dict = defaultdict(list)
         self.db.open()
@@ -248,7 +246,8 @@ class DBManager():
                 if not class_name in model_classes_dict[model_name]:
                     model_classes_dict[model_name].append(class_name)
         return model_dataset_dict, model_classes_dict
-    def search_error(self):
+
+    def searchError(self):
         error_dic = defaultdict(list)
         self.db.open()
         query = QSqlQuery()
@@ -260,8 +259,7 @@ class DBManager():
                 error_dic[str(model_name)+'$'+str(dataset_name)].append(file)
         return error_dic
 
-
-    def get_max_id(self):
+    def getMaxId(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery()
@@ -273,7 +271,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_(self):
+    def getMaxId_(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery()
@@ -285,7 +283,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_id(self):
+    def getMaxIdFromId(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery()
@@ -297,7 +295,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_error(self):
+    def getMaxIdError(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery()
@@ -309,7 +307,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def draw_by_model(self,models,datasets,classses):
+    def drawByModel(self,models,datasets,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()
@@ -388,7 +386,7 @@ class DBManager():
 
         return F1
 
-    def draw_by_data(self,models,datasets,classses):
+    def drawByData(self,models,datasets,classses):
         map,ap,recall,Precision,F1_,index,TP,FP,FN,Thre = [],[],[],[],[],[],[],[],[],[]
 
         self.db.open()

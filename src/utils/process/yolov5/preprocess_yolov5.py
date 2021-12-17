@@ -12,7 +12,7 @@ import numpy as np
 from cv2 import cv2
 IMAGE_SIZE_YOLOV5=640
 
-def pre_process(inp_img):
+def preProcess(inp_img):
     if len(inp_img.shape)==3:
         gray = inp_img[:, :, 0]
     else:gray = inp_img[:, :]

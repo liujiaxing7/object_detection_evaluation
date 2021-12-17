@@ -1,6 +1,6 @@
 from src.voc import VOCDataset
-# from .coco import evaluation as evaluation_coco
-from .xml import evaluation as evaluation_xml
+# from .coco import evaluation as evaluationCoco
+from .xml import evaluation as evaluationXml
 
 
 def evaluate(dataset, predictions, output_dir, save_anno, **kwargs):
@@ -17,10 +17,10 @@ def evaluate(dataset, predictions, output_dir, save_anno, **kwargs):
         dataset=dataset, predictions=predictions, output_dir=output_dir, save_anno=save_anno, **kwargs,
     )
     if isinstance(dataset, VOCDataset):
-        return evaluation_xml(**args)
+        return evaluationXml(**args)
     # elif isinstance(dataset, COCODataset):
-    #     return evaluation_coco(**args)
+    #     return evaluationCoco(**args)
     # elif isinstance(dataset, ImageByXML):
-    #     return evaluation_xml(**args)
+    #     return evaluationXml(**args)
     else:
         raise NotImplementedError

@@ -6,10 +6,10 @@ import numpy as np
 import six
 from tqdm import tqdm
 
-from src.utils.utils import bbox_iou
+from src.utils.utils import bboxIou
 
 
-def get_box_num(gt_labels, class_num):
+def getBoxNum(gt_labels, class_num):
     num = [0, ] * class_num
     for label in gt_labels:
         for l in label:
@@ -18,14 +18,14 @@ def get_box_num(gt_labels, class_num):
     return num
 
 
-def get_box_num1(gt_labels, class_num):
+def getBoxLabelNum(gt_labels, class_num):
     num = [0, ] * class_num
     for label in gt_labels:
         num[label] += 1
     return num
 
 
-def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names, image_id_list,
+def evalDetectionVoc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_names, image_id_list,
                        threshold, gt_difficults=None, iou_thresh=0.5, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
 
@@ -34,20 +34,20 @@ def eval_detection_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labe
     """
 
     # fpr, tpr, thresholds = metrics.roc_curve(gt_labels, pred_labels, y_type == "multiclass", pos_label=16)
-    class_count = get_box_num(gt_labels, len(class_names))
-    prec, rec, score, tp, fp, fn, error_image = voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes,
+    class_count = getBoxNum(gt_labels, len(class_names))
+    prec, rec, score, tp, fp, fn, error_image = vocPrecisionRecall(pred_bboxes, pred_labels, pred_scores, gt_bboxes,
                                                                      gt_labels, class_count, class_names, image_id_list,
                                                                      gt_difficults, iou_thresh=iou_thresh)
 
-    ap = voc_ap(prec, rec, use_07_metric=use_07_metric)
-    tp1, fp1, precision, recalls, f1, score1, f1_, id = voc_F1(tp, fp, prec, rec, score, threshold)
+    ap = vocAp(prec, rec, use_07_metric=use_07_metric)
+    tp1, fp1, precision, recalls, f1, score1, f1_, id = vocF1(tp, fp, prec, rec, score, threshold)
 
     return {'ap': ap, 'prec': precision, 'rec': recalls, 'num': class_count, 'f1': f1, 'threshold': score1, 'tp': tp1,
             'fp': fp1, 'fn': class_count - tp1, 'prec_': prec, 'rec_': rec, 'score_': score, 'tp_': tp, 'fp_': fp,
             'fn_': fn, 'f1_': f1_, 'error': error_image, 'id': id}
 
 
-def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names,
+def vocPrecisionRecall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, class_count, class_names,
                          image_id_list,
                          gt_difficults=None, iou_thresh=0.5):
     """Calculate precision and recall based on evaluation code of PASCAL VOC.
@@ -61,7 +61,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
     error_image_id = []
     for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult, eval_image_id in tqdm(all_data):
         score_iter, match_iter, iou_iter = defaultdict(list), defaultdict(list), defaultdict(list)
-        class_count1 = get_box_num1(gt_label, len(class_count))
+        class_count1 = getBoxLabelNum(gt_label, len(class_count))
         if gt_difficult is None:
             gt_difficult = np.zeros(gt_bbox.shape[0], dtype=bool)
         iou_one = []
@@ -113,7 +113,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             # gt_bbox_l[:, 2:] += 1
             pred_bbox_l = np.array(pred_bbox_l)
             gt_bbox_l = np.array(gt_bbox_l)
-            iou = bbox_iou(pred_bbox_l, gt_bbox_l)
+            iou = bboxIou(pred_bbox_l, gt_bbox_l)
 
             gt_index = iou.argmax(axis=1)
 
@@ -177,7 +177,7 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
                     b += i
                 avg_iou = b / len(iou_iter[l])
 
-            tp, fp, precision, recalls, f1, score1, _, _1 = voc_F1(tp_iter, fp_iter, prec_iter, rec_iter,
+            tp, fp, precision, recalls, f1, score1, _, _1 = vocF1(tp_iter, fp_iter, prec_iter, rec_iter,
                                                                    score_sort_iter, None)
 
             print(
@@ -194,12 +194,12 @@ def voc_precision_recall(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_la
             if isnan(avg_iou) != 0:
                 iou_one.append(avg_iou)
 
-        tp_one, fp_one, pre_one, rec_one, f1_one, score_one, _, _1 = voc_F1(tp_iter, fp_iter, prec_iter, rec_iter,
+        tp_one, fp_one, pre_one, rec_one, f1_one, score_one, _, _1 = vocF1(tp_iter, fp_iter, prec_iter, rec_iter,
                                                                             score_sort_iter, None)
         # tp_one,fp_one,pre_one,rec_one,f1_one,score_one=np.nansum(tp_one),np.nansum(fp_one),np.nanmean(pre_one),np.nanmean(rec_one),np.nanmean(f1_one),np.nanmean(score_one)
         tp_one, fp_one, score_one = np.nansum(tp_one), np.nansum(fp_one), np.nanmean(score_one)
         FN_one = np.sum(class_count1) - tp_one
-        pre_one, rec_one, f1_one = get_metric(int(tp_one), int(fp_one), int(FN_one))
+        pre_one, rec_one, f1_one = getMetric(int(tp_one), int(fp_one), int(FN_one))
         print(
             "\n (for conf_fresh =%.3f, TP = %d, FP = %d，FN = %d, precision = %.2f%%, recalls = %.2f%%, f1 = %.2f%%, avg_iou = %f) " % (
                 score_one, int(tp_one), int(fp_one), int(FN_one), pre_one, rec_one, f1_one,
@@ -251,7 +251,7 @@ def isnan(p):
         return p
 
 
-def voc_ap(prec, rec, use_07_metric=False):
+def vocAp(prec, rec, use_07_metric=False):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
     """
     n_fg_class = len(prec)
@@ -295,7 +295,7 @@ def voc_ap(prec, rec, use_07_metric=False):
     return ap_f
 
 
-def voc_F1(tp_, fp_, prec, rec, score, threshold):
+def vocF1(tp_, fp_, prec, rec, score, threshold):
     """Calculate average precisions based on evaluation code of PASCAL VOC.
     """
     n_fg_class = len(prec)
@@ -333,7 +333,7 @@ def voc_F1(tp_, fp_, prec, rec, score, threshold):
     return tp, fp, precision, recall, f1, score_threshold, F1_, id_
 
 
-def get_metric(tp, fp, fn):
+def getMetric(tp, fp, fn):
     if tp + fp == 0 or tp + fn == 0:
         return 0, 0, 0
 

@@ -30,8 +30,8 @@ class Container:
     def to(self, *args, **kwargs):
         return self._call('to', *args, **kwargs)
 
-    def record_stream(self, *args, **kwargs):
-        self._call('record_stream', *args, **kwargs)
+    def recordStream(self, *args, **kwargs):
+        self._call('recordStream', *args, **kwargs)
 
     def numpy(self):
         return self._call('numpy')
