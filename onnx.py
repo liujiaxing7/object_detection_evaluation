@@ -11,7 +11,9 @@ import os
 
 from tqdm import tqdm
 
+
 from src.utils.process.yolov3.preprocess_yolov3 import preProcess as yoloPreProcessYolov3
+from src.utils.process.yolov3.preprocess_yolov3 import pre_process_mmdetection as yoloPreProcess_yolov3_mmdetection
 from src.utils.process.yolov3.preprocess_yolov3 import preProcessPadding as yoloPreProcessYolov3Padding
 from src.utils.process.yolov5.preprocess_yolov5 import preProcess as yoloPreProcessYolov5
 from src.utils.process.yolov3.postprocess_yolov3 import THRESHOLD_YOLOV3, postProcessing, \
@@ -19,6 +21,7 @@ from src.utils.process.yolov3.postprocess_yolov3 import THRESHOLD_YOLOV3, postPr
 from src.utils.process.yolov3_tiny3.postprocess_yolov3_tiny3 import postProcessingTiny3
 from src.utils.process.yolov5.postprocess_yolov5 import postProcessorYOLOV5, IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5, \
     getPredictionYolov5, postProcessorYOLOV5x
+
 import cv2
 import onnxruntime
 from src.evaluation import *
@@ -55,8 +58,11 @@ class ONNX(object):
             image = yoloPreProcessYolov3(image)
         elif self.process_method == 'yolov3_padding':
             image = yoloPreProcessYolov3Padding(image)
+        elif self.process_method == 'yolov3_mmdetection':
+            image=yoloPreProcess_yolov3_mmdetection(image)
         elif self.process_method == 'yolov5' or self.process_method == 'yolov5x':
             image = yoloPreProcessYolov5(image)
+
 
         input_name = self.session.get_inputs()[0].name
         outputs = self.session.run(None, {input_name: image})
@@ -84,6 +90,11 @@ class ONNX(object):
         elif self.process_method == 'yolov3_tiny3':
             boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
             prediction = getPredictionYolov3(boxes, oriX, oriY)
+            self.predictions.append(prediction)
+
+        elif self.process_method == 'yolov3_mmdetection':
+            boxes = post_processing(image, THRESHOLD_YOLOV3, 0.6, outputs)
+            prediction = get_prediction_yolov3_mmdetection(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
     def evaluate(self):

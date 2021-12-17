@@ -72,3 +72,25 @@ def preProcess(inp_img):
     img = np.transpose(img, (0, 3, 1, 2)).astype(np.float32)
 
     return img.astype(np.float32)
+
+
+def pre_process_mmdetection(inp_img):
+    
+    if len(inp_img.shape)==3:
+        gray = inp_img[:, :, 0]
+    else:gray = inp_img[:, :]
+    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
+
+    img = image.copy().astype(np.float32)
+    mean = np.float64(np.array([0, 0, 0]).reshape(1, -1))
+    stdinv = 1 / np.float64(np.array([255., 255., 255.]).reshape(1, -1))
+
+    cv2.subtract(img, mean, img)  # inplace
+    cv2.multiply(img, stdinv, img)  # inplace
+
+    if img.shape[-1] == 3:
+        img = np.expand_dims(img, 0)
+    img = np.transpose(img, (0, 3, 1, 2)).astype(np.float32)
+
+    return img.astype(np.float32)

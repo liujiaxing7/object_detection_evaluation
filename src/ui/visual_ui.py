@@ -7,6 +7,7 @@
 @desc:
 '''
 import random
+import sys
 from decimal import Decimal
 
 from PyQt5 import QtGui, QtCore, QtWidgets, QtSql
@@ -704,8 +705,10 @@ class Ui_Window(QTabWidget):
         onnx_type_hbox = QHBoxLayout()
         onnx_type_hbox.addWidget(QLabel("Onnx Model Type:"), 2, Qt.AlignLeft)
         self.combobox_process = QComboBox()
-        onnx_type_hbox.addWidget(self.combobox_process, 9, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3'])
+
+        h5.addWidget(self.combobox_process, 9, Qt.AlignLeft)
+        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3', 'yolov3_mmdetection'])
+
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChangedModels)
         onnx_type_hbox.addWidget(QLabel("Datasets Name:"), 0, Qt.AlignLeft)
@@ -855,7 +858,9 @@ class Ui_Window(QTabWidget):
 
         table_grid = QGridLayout()
         self.table_widget = QtWidgets.QTableView()
-        self.table_widget.horizontalHeader().setStretchLastSection(False)
+
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.verticalHeader().setStretchLastSection(True)
 
         query = QSqlQuery()
         self.value = []
@@ -958,6 +963,7 @@ class Ui_Window(QTabWidget):
         self.error_table_view_widget = QtWidgets.QTableView()
         self.error_table_view_widget.horizontalHeader().setStretchLastSection(True)
         self.error_table_view_widget.verticalHeader().setStretchLastSection(True)
+
         db_text = os.getcwd() + '/src/database/core'
 
         # 实例化一个可编辑数据模型
@@ -1124,7 +1130,7 @@ class Ui_Window(QTabWidget):
                 for n in range(TABLE_VALUE_NUMS):
                     # item=QtGui.QStandardItem()
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[id_max[m]][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[id_max[m]][n])))
                 tmp_index += 1
@@ -1206,6 +1212,8 @@ class Ui_Window(QTabWidget):
             self.process_method = 'yolov5x'
         elif text == 'yolov3_tiny3':
             self.process_method = 'yolov3_tiny3'
+        elif text == 'yolov3_mmdetection':
+            self.process_method = 'yolov3_mmdetection'
 
     def comboSelectionChangedClasses(self, index):
         text = self.combobox_classes.itemText(index)
@@ -2102,7 +2110,7 @@ class Ui_Window(QTabWidget):
                 for n in range(TABLE_VALUE_NUMS):
                     # item=QtGui.QStandardItem()
                     if n > 5:
-                        self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])[0:5]))
+                        self.model.setItem(row, n, QtGui.QStandardItem(str(round(a[index_thresh][n],3))))
                     else:
                         self.model.setItem(row, n, QtGui.QStandardItem(str(a[index_thresh][n])))
                 tmp_index += 1
