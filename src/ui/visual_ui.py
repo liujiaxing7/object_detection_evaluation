@@ -706,7 +706,7 @@ class Ui_Window(QTabWidget):
         onnx_type_hbox.addWidget(QLabel("Onnx Model Type:"), 2, Qt.AlignLeft)
         self.combobox_process = QComboBox()
 
-        h5.addWidget(self.combobox_process, 9, Qt.AlignLeft)
+        onnx_type_hbox.addWidget(self.combobox_process, 9, Qt.AlignLeft)
         self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3', 'yolov3_mmdetection'])
 
         self.combobox_process.setMinimumSize(200, 27)
