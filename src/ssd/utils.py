@@ -28,7 +28,7 @@ from functools import wraps
 #         #     print(p)
 
 
-def Walk(path, suffix:list, depth=None):
+def pathWalk(path, suffix:list, depth=None):
     file_list = []
     suffix = [s.lower() for s in suffix]
     if not os.path.exists(path):
@@ -52,7 +52,7 @@ def Walk(path, suffix:list, depth=None):
     return file_list
 
 
-def MkdirSimple(path):
+def mkdirSimple(path):
     path_current = path
     suffix = os.path.splitext(os.path.split(path)[1])[1]
 
@@ -63,17 +63,17 @@ def MkdirSimple(path):
     if not os.path.exists(path_current):
         os.makedirs(path_current)
 
-def WriteTxt(txt, path, encoding="w"):
-    MkdirSimple(path)
+def writeTxt(txt, path, encoding="w"):
+    mkdirSimple(path)
     with open(path, encoding) as out:
         out.write(txt)
 
-def Timer(function):
+def getTimer(function):
     @wraps(function)
-    def function_timer(*args, **kwargs):
+    def functionTimer(*args, **kwargs):
         t0 = time.time()
         result = function(*args, **kwargs)
         t1 = time.time()
         print('[{name} spent time: {time:.2f}s]'.format(name = function.__name__,time = t1 - t0))
         return result
-    return function_timer
+    return functionTimer

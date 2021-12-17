@@ -20,7 +20,7 @@ class MyFigure(FigureCanvas):
 path = "/home/fandong/Code/object_detection_evaluation/result"
 
 
-def draw_all(path):
+def drawAll(path):
     path = "/home/fandong/Code/object_detection_evaluation/result"
     """
     draw map f1 recall prediction

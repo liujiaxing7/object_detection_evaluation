@@ -3,7 +3,7 @@ import os
 import sys
 
 
-def setup_logger(name, distributed_rank, save_dir=None, mode="train"):
+def setupLogger(name, distributed_rank, save_dir=None, mode="train"):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     # don't log results for the non-master process
@@ -23,7 +23,7 @@ def setup_logger(name, distributed_rank, save_dir=None, mode="train"):
         logger.addHandler(fh)
     return logger
 
-def close_logger(name):
+def closeLogger(name):
     logger = logging.getLogger(name)
     if len(logger.handlers) < 2:
         return
@@ -31,7 +31,7 @@ def close_logger(name):
     logger.handlers[0].stream.close()
     logger.removeHandler(logger.handlers[0])
 
-def print_log(msg, logger=None, level=logging.INFO):
+def printLog(msg, logger=None, level=logging.INFO):
     """Print a log message.
 
     Args:

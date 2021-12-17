@@ -28,7 +28,7 @@ MAX_PER_IMAGE = 100
 # MAX_PER_IMAGE = 2
 BACKGROUND_ID = 0
 import time
-from src.utils.nms import boxes_nms
+from src.utils.nms import boxesNms
 
 def xywh2xyxy(x):
     # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
@@ -39,7 +39,7 @@ def xywh2xyxy(x):
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
 
-def box_iou(box1, box2):
+def boxIou(box1, box2):
     # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
     """
     Return intersection-over-union (Jaccard index) of boxes.
@@ -52,18 +52,18 @@ def box_iou(box1, box2):
             IoU values for every element in boxes1 and boxes2
     """
 
-    def box_area(box):
+    def boxArea(box):
         # box = 4xn
         return (box[2] - box[0]) * (box[3] - box[1])
 
-    area1 = box_area(box1.T)
-    area2 = box_area(box2.T)
+    area1 = boxArea(box1.T)
+    area2 = boxArea(box2.T)
 
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
     inter = (np.minimum(box1[:, None, 2:], box2[:, 2:]) - np.maximum(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
     return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
 
-def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
+def nonMaxSuppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
                         labels=()):
     """Runs Non-Maximum Suppression (NMS) on inference results
 
@@ -138,12 +138,12 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         # Batched NMS
         c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-        i = boxes_nms(boxes, scores, iou_thres)  # NMS
+        i = boxesNms(boxes, scores, iou_thres)  # NMS
         if i.shape[0] > max_det:  # limit detections
             i = i[:max_det]
         if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
-            iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
+            iou = boxIou(boxes[i], boxes) > iou_thres  # iou matrix
             weights = iou * scores[None]  # box weights
             x[i, :4] = np.multiply(weights, x[:, :4]).float() / weights.sum(1, keepdim=True)  # merged boxes
             if redundant:
@@ -156,14 +156,14 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
     return output
 
-def _make_grid(nx=20, ny=20):
+def makeGrid(nx=20, ny=20):
     xv, yv = np.meshgrid(np.arange(ny), np.arange(nx))
     return np.stack((xv, yv), 2).reshape((1, 1, ny, nx, 2)).astype(np.float32)
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
 
-def PostProcessor_YOLOV5(x):
+def postProcessorYOLOV5(x):
 
     grid = [np.zeros(1)] * 3  # init grid
     z = []  # inference output
@@ -173,7 +173,7 @@ def PostProcessor_YOLOV5(x):
         bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
 
         if grid[i].shape[2:4] != x[i].shape[2:4]:
-            grid[i] = _make_grid(nx, ny)
+            grid[i] = makeGrid(nx, ny)
 
         y = sigmoid(x[i])       # sigmoid is defined above with NumPy
 
@@ -189,11 +189,11 @@ def PostProcessor_YOLOV5(x):
         z.append(y.reshape(bs, -1, 85))
 
     output = np.concatenate(z, 1)
-    pred = non_max_suppression(output, 0.25, 0.45, classes=None, agnostic=False)
+    pred = nonMaxSuppression(output, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
 
-def PostProcessor_YOLOV5x(x):
+def postProcessorYOLOV5x(x):
 
     grid = [np.zeros(1)] * 3  # init grid
     z = []  # inference output
@@ -203,7 +203,7 @@ def PostProcessor_YOLOV5x(x):
         bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
 
         if grid[i].shape[2:4] != x[i].shape[2:4]:
-            grid[i] = _make_grid(nx, ny)
+            grid[i] = makeGrid(nx, ny)
 
         y = sigmoid(x[i])       # sigmoid is defined above with NumPy
 
@@ -219,10 +219,10 @@ def PostProcessor_YOLOV5x(x):
         z.append(y.reshape(bs, -1, 11))
 
     output = np.concatenate(z, 1)
-    pred = non_max_suppression(output, 0.25, 0.45, classes=None, agnostic=False)
+    pred = nonMaxSuppression(output, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
-def get_prediction_yolov5(boxes,oriX,oriY):
+def getPredictionYolov5(boxes,oriX,oriY):
     box_es = []
     labels = []
     scores = []

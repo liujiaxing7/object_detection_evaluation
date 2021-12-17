@@ -19,9 +19,9 @@
 import  os
 from lxml import etree as ET
 from xml.dom import minidom
-from src.ssd.utils import MkdirSimple
+from src.ssd.utils import mkdirSimple
 
-def WriteXML(box_list, label_list, width, height, file, class_names):
+def writeXML(box_list, label_list, width, height, file, class_names):
     root = ET.Element("annotation")
     # root.set("version", "1.0")
     ET.SubElement(root, "folder").text = "none"
@@ -47,7 +47,7 @@ def WriteXML(box_list, label_list, width, height, file, class_names):
         ET.SubElement(bndbox, "ymax").text = str(int(box[3]))
     tree = ET.ElementTree(root)
 
-    MkdirSimple(file)
+    mkdirSimple(file)
     tree.write(file, encoding="UTF-8", xml_declaration=True)
     root = ET.parse(file)
     file_lines = minidom.parseString(ET.tostring(root, encoding="Utf-8")).toprettyxml(

@@ -36,7 +36,7 @@ class VOCDataset(XML):
         super(VOCDataset, self).__init__(data_dir, classes, image_sets_file, target, transform, target_transform,
                                          keep_difficult, train, format)
 
-    def get_file(self, index):
+    def getFile(self, index):
         image_id = self.file_list[index]
         image_file = self.data_dir + "/JPEGImages/" + "%s.png" % image_id
         annotation_file = self.data_dir + "/Annotations/" + "%s.xml" % image_id
@@ -45,7 +45,7 @@ class VOCDataset(XML):
         # annotation_file = os.path.join(self.data_dir, "Annotations", "%s.xml" % image_id)
         return image_file, annotation_file
 
-    def get_file_txt(self, index):
+    def getFileTxt(self, index):
         image_id = self.file_list[index]
         image_file = image_id
         if 'JPEGImages' in image_id:
@@ -57,7 +57,7 @@ class VOCDataset(XML):
 
         return image_file, annotation_file
 
-    def get_file_txt_darknet(self, index):
+    def getFileTxtDarknet(self, index):
         image_id = self.file_list[index]
         image_file = image_id
         if 'JPEGImages' in image_id:
@@ -67,7 +67,7 @@ class VOCDataset(XML):
 
         return image_file, annotation_file
 
-    def get_file_darknet(self, index):
+    def getFileDarknet(self, index):
         image_id = self.file_list[index]
         image_file = self.data_dir + "/JPEGImages" + "%s.png" % image_id
         if not os.path.isfile(image_file):
@@ -75,9 +75,9 @@ class VOCDataset(XML):
         annotation_file = self.data_dir + "/labels" + "%s.txt" % image_id
         return image_file, annotation_file
 
-    def get_classes(self):
+    def getClasses(self):
         return self.class_names
 
-    def get_file_json(self):
+    def getFileJson(self):
         json_file = os.path.join(self.data_dir, "train.json")
         return json_file

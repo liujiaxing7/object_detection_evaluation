@@ -1,4 +1,7 @@
 #版本更改记录
+## V2.0.2版本 'amend: code regular'
+1. 函数名称替换、变量名称替换
+2. 添加coding regular
 ## 'fix: datasets exchange，thresh exchange' 2021.12.13
 1. 修复数据集切换崩溃
 2. 阈值切换空行

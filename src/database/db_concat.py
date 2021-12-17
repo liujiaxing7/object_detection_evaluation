@@ -17,7 +17,7 @@ class MyFigure(FigureCanvas):
 
         super(MyFigure,self).__init__(self.fig)
 
-class DBManager_Changed():
+class DBManagerChanged():
     def __init__(self):
         # pass
         self.db=None
@@ -62,9 +62,9 @@ class DBManager_Changed():
                 while query.next():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()
-        self.add_database(database1,value_metric_,value_metric,value_idmax,value_error[:10])
+        self.addDatabase(database1,value_metric_,value_metric,value_idmax,value_error[:10])
 
-    def add_database(self,database1,value_metric_,value_metric,value_idmax,value_error):
+    def addDatabase(self,database1,value_metric_,value_metric,value_idmax,value_error):
         self.db = QSqlDatabase.addDatabase("QSQLITE", 'sqlite')
         self.db.setDatabaseName(database1)
         self.db.open()
@@ -72,22 +72,22 @@ class DBManager_Changed():
         queryModel = QSqlQueryModel()
         if self.db.open():
             for i in tqdm(value_metric_):
-                self.add_item_(i[1],i[2],i[3],i[4],i[5],i[6],i[7],
+                self.addItem_(i[1],i[2],i[3],i[4],i[5],i[6],i[7],
                                i[8],i[9],i[10],i[11],i[12])
             for j in tqdm(value_metric):
-                self.add_item(j[1],j[2],j[3],j[4],j[5],j[6],j[7],
+                self.addItem(j[1],j[2],j[3],j[4],j[5],j[6],j[7],
                                j[8],j[9],j[10],j[11],j[12])
             for m in tqdm(value_idmax):
-                self.add_item_id(m[1],m[2],m[3],m[4])
+                self.addItemId(m[1],m[2],m[3],m[4])
             for n in tqdm(value_error):
-                self.add_erro_file(n[1],n[2],n[3])
+                self.addErrorFile(n[1],n[2],n[3])
 
-    def add_item(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+    def addItem(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_metric:
-            id=self.get_max_id()+1
+            id=self.getMaxId()+1
             self.count_metric = id+1
             self.first_metric=False
         else:
@@ -107,12 +107,12 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+    def addItem_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_metric_:
-            id = self.get_max_id_() + 1
+            id = self.getMaxId_() + 1
             self.count_metric_ = id + 1
             self.first_metric_=False
         else:
@@ -132,12 +132,12 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_id(self,model_name,dataset_name,class_name,id_):
+    def addItemId(self,model_name,dataset_name,class_name,id_):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
         if self.first_id:
-            id=self.get_max_id_id()+1
+            id=self.getMaxIdFromId()+1
             self.count_id = id+1
             self.first_id=False
         else:
@@ -156,13 +156,13 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_erro_file(self,model_name,dataset_name,error_file):
+    def addErrorFile(self,model_name,dataset_name,error_file):
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         error_file = "\"" + error_file + "\""
 
         if self.first_error:
-            id=self.get_max_id_error()+1
+            id=self.getMaxIdError()+1
             self.count_error = id+1
             self.first_error=False
         else:
@@ -183,7 +183,7 @@ class DBManager_Changed():
             # query.addBindValue(1)
             self.db.close()
 
-    def get_max_id(self):
+    def getMaxId(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery(self.db)
@@ -195,7 +195,7 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-    def get_max_id_(self):
+    def getMaxId_(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery(self.db)
@@ -207,7 +207,7 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-    def get_max_id_id(self):
+    def getMaxIdFromId(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery(self.db)
@@ -219,7 +219,7 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-    def get_max_id_error(self):
+    def getMaxIdError(self):
         self.db.open()
         id_all=[]
         query = QSqlQuery(self.db)
@@ -231,4 +231,4 @@ class DBManager_Changed():
             return 0
         return max(id_all)
 
-# DBManager_Changed().merge("/home/fandong/Code/weights/save/main.db","/home/fandong/Code/weights/save/other.db")
+# DBManagerChanged().merge("/home/fandong/Code/weights/save/main.db","/home/fandong/Code/weights/save/other.db")

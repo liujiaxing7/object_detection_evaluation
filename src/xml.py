@@ -12,13 +12,13 @@ from src.ssd.structures.container import Container
 import sys
 import abc
 
-from src.utils.process.yolov3.preprocess_yolov3 import letterbox
-from src.utils.utils import Empty
-from src.utils.xml import WriteXML
+from src.utils.process.yolov3.preprocess_yolov3 import letterBox
+from src.utils.utils import empty
+from src.utils.xml import writeXML
 import cv2
 from random import randint, choice, uniform
-from src.utils.image_process import have_color, transparent, augment, to_transparent, Gray
-from src.ssd.utils import Walk
+from src.utils.image_process import haveColor, transparent, augment, toTransparent, getGray
+from src.ssd.utils import pathWalk
 
 class XML():
     __metaclass__ = abc.ABCMeta
@@ -59,7 +59,7 @@ class XML():
         self.with_mixup = True
 
         print("loading targets...")
-        file_list = Walk(path, ['jpg', 'png'])
+        file_list = pathWalk(path, ['jpg', 'png'])
         target_length = len(path)
         self.target = dict()
 
@@ -72,7 +72,7 @@ class XML():
             if w < 20 or h < 20:
                 continue
 
-            image = to_transparent(image)
+            image = toTransparent(image)
 
             if name in self.target:
                 self.target[name].append(image)
@@ -87,7 +87,7 @@ class XML():
         return (index+1) % len(self.file_list)
 
     def _raiseNofile(self, index):
-        raise IOError("no such file: ", self.get_file(index)[0])
+        raise IOError("no such file: ", self.getFile(index)[0])
 
     def _randomTarget(self, color):
         class_name = choice(list(self.target))
@@ -95,7 +95,7 @@ class XML():
         target = self.target[class_name][img_id]
 
         if not color:
-            target = Gray(target)
+            target = getGray(target)
 
         return target, self.class_dict[class_name]
 
@@ -112,7 +112,7 @@ class XML():
                 if not (0==i and num_h-1==j) and uniform(0, 1) > 0.5:
                     continue
 
-                target, target_name = self._randomTarget(color=have_color(img))
+                target, target_name = self._randomTarget(color=haveColor(img))
                 target = augment(target, 0, 0)
 
                 # random resize
@@ -160,18 +160,18 @@ class XML():
         return img, boxes, labels
 
     def _get_item(self, index):
-        image_file, ann_file = self.get_file(index)
-        image = self.read_image(image_file)
-        boxes, labels = self.get_annotation(ann_file)
+        image_file, ann_file = self.getFile(index)
+        image = self.readImage(image_file)
+        boxes, labels = self.getAnnotation(ann_file)
 
-        if self.with_mixup and Empty(boxes) and not have_color(image):
+        if self.with_mixup and empty(boxes) and not haveColor(image):
             image, boxes, labels = self._mixup(image, boxes, labels)
-        if Empty(boxes):
-            if have_color(image) or not self.with_mixup:
+        if empty(boxes):
+            if haveColor(image) or not self.with_mixup:
                 return self._get_item(self._next(index))
 
             if self.train:
-                print("no object: ", self.get_file(index)[0])
+                print("no object: ", self.getFile(index)[0])
                 sys.exit(0)
             else:
                 return self._get_item(self._next(index))
@@ -190,11 +190,11 @@ class XML():
         return image, targets, index
 
     @abc.abstractmethod
-    def get_file(self, index):
+    def getFile(self, index):
         pass
 
     @abc.abstractmethod
-    def get_file_darknet(self, index):
+    def getFileDarknet(self, index):
         pass
 
     def __len__(self):
@@ -208,7 +208,7 @@ class XML():
                 ids.append(line.rstrip())
         return ids
 
-    def get_annotation(self, ann_file):
+    def getAnnotation(self, ann_file):
         if not os.path.exists(ann_file):
             if self.with_mixup:
                 return (np.array([]), np.array([]))
@@ -244,7 +244,7 @@ class XML():
 
         return (boxes, labels)
 
-    def get_darknet_labels_padding(self,img_file,ann_file):
+    def getDarknetLabelsPadding(self,img_file,ann_file):
         if not os.path.exists(ann_file):
             raise IOError("no such file: ", ann_file)
 
@@ -276,7 +276,7 @@ class XML():
         labels = np.array(labels, dtype=np.int64)
         return boxes,labels
 
-    def get_darknet_labels(self,img_file,ann_file):
+    def getDarknetLabels(self,img_file,ann_file):
         if not os.path.exists(ann_file):
             raise IOError("no such file: ", ann_file)
         box_label=np.loadtxt(ann_file).tolist()
@@ -311,7 +311,7 @@ class XML():
 
         w = np.array(img).shape[1]
         h = np.array(img).shape[0]
-        img, ratio, padw, padh = letterbox(img, new_shape=416, mode='square')
+        img, ratio, padw, padh = letterBox(img, new_shape=416, mode='square')
         x=np.array(boxes).astype("float32")
         if x.size > 0:
         # Normalized xywh to pixel xyxy format
@@ -322,7 +322,7 @@ class XML():
             labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
         return labels
 
-    def get_coco_labels(self,ann_file,index1):
+    def getCocoLabels(self,ann_file,index1):
         if not os.path.exists(ann_file):
             raise IOError("no such file: ", ann_file)
         # boxes_coco = []
@@ -380,23 +380,23 @@ class XML():
 
         return boxes_coco_1,labels_coco_1
 
-    def save_annotation(self, box_list, label_list, score_list, thresholds, path):
+    def saveAnnotation(self, box_list, label_list, score_list, thresholds, path):
         file_list = [os.path.join(path, os.path.splitext(f)[0] + ".xml") for f in self.file_list]
         for i, (box, label, score, file) in enumerate(zip(box_list, label_list, score_list, file_list)):
             if len(box) == 0:
                 continue
             # box = box[score > thresholds[label[i]]]
-            info = self.get_img_info(i)
-            WriteXML(box, label, info['width'], info['height'], file, self.class_names)
+            info = self.getImgInfo(i)
+            writeXML(box, label, info['width'], info['height'], file, self.class_names)
 
-    def get_img_info(self, index):
-        img_id, annotation_file = self.get_file(index)
+    def getImgInfo(self, index):
+        img_id, annotation_file = self.getFile(index)
         anno = ET.parse(annotation_file).getroot()
         size = anno.find("size")
         im_info = tuple(map(int, (size.find("height").text, size.find("width").text)))
         return {"height": im_info[0], "width": im_info[1]}
 
-    def read_image(self, image_file):
+    def readImage(self, image_file):
         try:
             image = Image.open(image_file).convert("RGB")
             image = np.array(image)

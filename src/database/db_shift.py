@@ -26,7 +26,7 @@ class DBManager():
         self.queryModel = QSqlQueryModel()
 
     # id, model_name, dataset, class, [f1, fp, tp, fn, map, prec, recall], threshold(best select by f1)
-    def add_item(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
+    def addItem(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
         model_name = "\"" + model_name + "\""
         dataset_name = "\"" + dataset_name + "\""
         class_name = "\"" + class_name + "\""
@@ -48,7 +48,7 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
+    def addItem_(self, model_name, dataset_name, class_name, tp, fp, fn, F1, ap, map, prec, recall, thre):
         model_name = "\"" + model_name + "\""
         dataset_name = "\"" + dataset_name + "\""
         class_name = "\"" + class_name + "\""
@@ -70,7 +70,7 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_item_id(self, model_name, dataset_name, class_name, id_):
+    def addItemId(self, model_name, dataset_name, class_name, id_):
         model_name = "\"" + model_name + "\""
         dataset_name = "\"" + dataset_name + "\""
         class_name = "\"" + class_name + "\""
@@ -90,7 +90,7 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def add_erro_file(self, model_name, dataset_name, error_file):
+    def addErrorFile(self, model_name, dataset_name, error_file):
         model_name = "\"" + model_name + "\""
         dataset_name = "\"" + dataset_name + "\""
         error_file = "\"" + error_file + "\""
@@ -109,7 +109,7 @@ class DBManager():
             # query.addBindValue(1)
             self.db.close()
 
-    def search_classes(self, name):
+    def searchClasses(self, name):
         classes = []
         self.db.open()
         query = QSqlQuery()
@@ -128,7 +128,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return classes
 
-    def search_model_datasets(self):
+    def searchModelDatasets(self):
         models = []
         datasets = []
         self.db.open()
@@ -151,7 +151,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return models, datasets
 
-    def search_id(self):
+    def searchId(self):
         id_list = defaultdict(list)
         class_num = defaultdict(list)
         datasets = []
@@ -172,7 +172,7 @@ class DBManager():
                 # print(id, model_name, dataset_name, class_name, tp, fp, fn, f1, Ap, Map, prec, rec, Threshold)
         return id_list, class_num, datasets
 
-    def get_max_id(self):
+    def getMaxId(self):
         self.db.open()
         id_all = []
         query = QSqlQuery()
@@ -184,7 +184,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_(self):
+    def getMaxId_(self):
         self.db.open()
         id_all = []
         query = QSqlQuery()
@@ -196,7 +196,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_id(self):
+    def getMaxIdFromId(self):
         self.db.open()
         id_all = []
         query = QSqlQuery()
@@ -208,7 +208,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def get_max_id_error(self):
+    def getMaxIdError(self):
         self.db.open()
         id_all = []
         query = QSqlQuery()
@@ -220,7 +220,7 @@ class DBManager():
             return 0
         return max(id_all)
 
-    def draw_by_model(self, models, datasets, classses):
+    def drawByModel(self, models, datasets, classses):
         map, ap, recall, Precision, F1_, index, TP, FP, FN, Thre = [], [], [], [], [], [], [], [], [], []
 
         self.db.open()
@@ -279,7 +279,7 @@ class DBManager():
 
         return F1
 
-    def draw_by_data(self, models, datasets, classses):
+    def drawByData(self, models, datasets, classses):
         map, ap, recall, Precision, F1_, index, TP, FP, FN, Thre = [], [], [], [], [], [], [], [], [], []
 
         self.db.open()

@@ -11,7 +11,7 @@
 import numpy as np
 import cv2
 IMAGE_SIZE_YOLOV3=416
-def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
+def letterBox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2] # current shape [height, width]
@@ -41,13 +41,13 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2
         left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color) # add border
     return img, ratio, dw, dh
-def pre_process_padding(inp_img):
+def preProcessPadding(inp_img):
     if len(inp_img.shape)==3:
         gray = inp_img[:, :, 0]
     else:gray = inp_img[:, :]
     gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
     # image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
-    image,ratio, dw, dh=letterbox(gray,new_shape=416, mode='square')
+    image,ratio, dw, dh=letterBox(gray,new_shape=416, mode='square')
 
     img = np.half(image)
     img /= 255.0
@@ -57,13 +57,13 @@ def pre_process_padding(inp_img):
 
     return img.astype(np.float32)
 
-def pre_process(inp_img):
+def preProcess(inp_img):
     if len(inp_img.shape)==3:
         gray = inp_img[:, :, 0]
     else:gray = inp_img[:, :]
     gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
     image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
-    # image,ratio, dw, dh=letterbox(gray,new_shape=416, mode='square')
+    # image,ratio, dw, dh=letterBox(gray,new_shape=416, mode='square')
 
     img = np.half(image)
     img /= 255.0

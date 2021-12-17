@@ -14,3 +14,10 @@
 4.错误文件界面：
 
 ![](src/window/error_file.png)
+
+## 代码规范
+#### 函数名称：string stringString小驼峰 或者 _string_string 【动词性质】
+#### 变量名称：string string_string 【名词性质】
+#### 类名：StringString大驼峰
+#### 文件名：string 或者 string【小写】 + 下划线
+#### 文件夹名：string【小写】

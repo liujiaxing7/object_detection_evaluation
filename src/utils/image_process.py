@@ -11,14 +11,14 @@ import cv2
 from random import uniform, randint
 import numpy as np
 
-__all__ = ['crop_foreground', 'random_affine', 'transparent',
-           'add_noise', 'add_gaussian_noise', 'add_salt_noise',
-           'augment', 'to_transparent', 'have_color', 'Gray']
+__all__ = ['cropForeground', 'randomAffine', 'transparent',
+           'add_noise', 'add_gaussian_noise', 'addSaltNoise',
+           'augment', 'toTransparent', 'haveColor', 'getGray']
 
 def transparent(img):
     return  4 == img.shape[2]
 
-def crop_foreground(img):
+def cropForeground(img):
     if transparent(img):
         h, w, c = img.shape
         gray = img[:, :, 3]
@@ -37,7 +37,7 @@ def crop_foreground(img):
     else:
         return img
 
-def random_affine(img, crop=True, plain=False):
+def randomAffine(img, crop=True, plain=False):
     w, h, c = img.shape
     top_left = (uniform(0, 0.3), uniform(0, 0.3))
     bottom_left = (uniform(0, 0.3), uniform(0.6, 1))
@@ -65,11 +65,11 @@ def random_affine(img, crop=True, plain=False):
         affine = cv2.warpPerspective(img, M, (w, h), borderMode=mode)
 
     if crop:
-        affine = crop_foreground(affine)
+        affine = cropForeground(affine)
 
     return affine
 
-def random_set_pixel(img, n, value):
+def randomSetPixel(img, n, value):
     n = int(n)
     w, h, c = img.shape
 
@@ -77,13 +77,13 @@ def random_set_pixel(img, n, value):
         i, j = randint(0, w-1), randint(0, h-1)
         img[i, j, :] = value
 
-def add_salt_noise(img, rate=0.5):
+def addSaltNoise(img, rate=0.5):
     h, w, c = img.shape
     n = max(w*h*rate, 20)
     out = img.copy()
 
-    random_set_pixel(out, n, randint(0, 255))
-    random_set_pixel(out, n, randint(0, 255))
+    randomSetPixel(out, n, randint(0, 255))
+    randomSetPixel(out, n, randint(0, 255))
 
     if transparent(img):
         out[:, :, 3] = img[:, :, 3]
@@ -111,20 +111,20 @@ def add_noise(img, salt_rate=0.5, gaussian_rate=1):
     if uniform(0, 1) < gaussian_rate:
         img = add_gaussian_noise(img, mean=uniform(0.1, 2), var=uniform(0.002, 0.1), gray=1)
     if uniform(0, 1) < salt_rate:
-        img = add_salt_noise(img, uniform(0.05, 0.3))
+        img = addSaltNoise(img, uniform(0.05, 0.3))
 
     return img
 
 def augment(img, salt_rate=0.5, gaussian_rate=1):
 
     img = cv2.copyMakeBorder(img, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
-    target = random_affine(img)
+    target = randomAffine(img)
     i = 0
     while not valid(target):
         if i > 5:
             target = img
             break
-        target = random_affine(img)
+        target = randomAffine(img)
         i += 1
     target = add_noise(target, salt_rate, gaussian_rate)
 
@@ -143,7 +143,7 @@ def valid(img):
 
     return True
 
-def to_transparent(img):
+def toTransparent(img):
     if img.shape[2] == 3:
         img = img.repeat((1, 1, 2), 2)
         img[:, :, 3] = 255
@@ -151,7 +151,7 @@ def to_transparent(img):
 
     return img
 
-def have_color(image):
+def haveColor(image):
     diff = image[:, :, 2] - image[:, :, 1]
     diff = np.sum(diff)
 
@@ -160,8 +160,8 @@ def have_color(image):
     else:
         return False
 
-def Gray(image):
-    color = have_color(image)
+def getGray(image):
+    color = haveColor(image)
 
     if color:
         if transparent(image):
