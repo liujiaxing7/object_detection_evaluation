@@ -1,4 +1,6 @@
 #版本更改记录
+## support export error by classes
+增加错误文件类别选择
 ## V2.0.2版本 'amend: code regular'
 1. 函数名称替换、变量名称替换
 2. 添加coding regular

@@ -2338,10 +2338,20 @@ class Ui_Window(QTabWidget):
         DBManagerChanged().merge(self.main_database_dir_, self.ano_database_dir_)
 
     def searchError(self):
-        global model_selecion, dataset_selection
+        global model_selecion, dataset_selection, class_selection
         tmp_error_list = []
         tmp_model_selection = model_selecion
         tmp_dataset_selection = dataset_selection
+        tmp_class_selection = class_selection
+        if len(tmp_model_selection) == 0:
+            self.showPopUp('please select models!', 'warning')
+            return
+        if len(tmp_dataset_selection) == 0:
+            self.showPopUp('please select datasets!', 'warning')
+            return
+        if len(tmp_class_selection) == 0:
+            self.showPopUp('please select classes!', 'warning')
+            return
         error_dic = self.DBManager.searchError()
         for key, value in error_dic.items():
             tmp_model_name, tmp_data_name = key.split('$')
@@ -2352,7 +2362,9 @@ class Ui_Window(QTabWidget):
             for index_value in value:
                 if '---' not in index_value:
                     continue
-                tmp_error_list.append(index_value)
+                match_class = index_value.split('---')[1].split('+')[0]
+                if match_class in tmp_class_selection:
+                    tmp_error_list.append(index_value)
         global error_file_list
         error_file_list = tmp_error_list
 
