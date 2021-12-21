@@ -249,6 +249,7 @@ class DBManager():
 
     def searchError(self):
         error_dic = defaultdict(list)
+        eror_id = defaultdict(list)
         self.db.open()
         query = QSqlQuery()
         if query.exec(
@@ -257,7 +258,8 @@ class DBManager():
                 value = [query.value(i) for i in range(4)]
                 id, model_name, dataset_name, file = value
                 error_dic[str(model_name)+'$'+str(dataset_name)].append(file)
-        return error_dic
+                eror_id[str(model_name)+'$'+str(dataset_name)].append(id)
+        return eror_id, error_dic
 
     def getMaxId(self):
         self.db.open()

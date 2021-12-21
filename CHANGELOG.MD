@@ -1,4 +1,6 @@
 #版本更改记录
+## error&showbase linked
+支持错误列表与精度列表的联动
 ## support export error by classes
 增加错误文件类别选择
 ## V2.0.2版本 'amend: code regular'

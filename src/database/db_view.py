@@ -74,7 +74,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.table_widget.setModel(self.model)
         self.table_widget.setSortingEnabled(True)
 
-        self.model.setTable('id_max')  # 设置数据模型的数据表
+        self.model.setTable('error')  # 设置数据模型的数据表
         self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)  # 允许字段更改
         self.model.select()  # 查询所有数据
         # 设置表格头
