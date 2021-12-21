@@ -967,21 +967,23 @@ class Ui_Window(QTabWidget):
         db_text = os.getcwd() + '/src/database/core'
 
         # 实例化一个可编辑数据模型
-        self.error_model = QtSql.QSqlTableModel()
+        self.error_model = QtGui.QStandardItemModel()
 
         self.error_table_view_widget.setModel(self.error_model)
+        # self.error_model.itemChanged.connect(self.setQStandardModelItemChanged)
         self.error_table_view_widget.setSortingEnabled(True)
         self.error_table_view_widget.doubleClicked.connect(self.showErrorFile)
 
-        self.error_model.setTable('error')  # 设置数据模型的数据表
-        self.error_model.setEditStrategy(False)  # 允许字段更改
-        self.error_model.select()  # 查询所有数据
-        # 设置表格头
-        self.error_model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
-        self.error_model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
-        self.error_model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
-        self.error_model.setHeaderData(3, QtCore.Qt.Horizontal, 'Error file')
+        # self.error_model.setTable('error')  # 设置数据模型的数据表
+        # self.error_model.setEditStrategy(False)  # 允许字段更改
+        # self.error_model.select()  # 查询所有数据
+        # # 设置表格头
+        # self.error_model.setHeaderData(0, QtCore.Qt.Horizontal, 'ID')
+        # self.error_model.setHeaderData(1, QtCore.Qt.Horizontal, 'Model')
+        # self.error_model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
+        # self.error_model.setHeaderData(3, QtCore.Qt.Horizontal, 'Error file')
         self.error_table_view_widget.setColumnWidth(3, 1035)
+        self.initRefreshError()
         for i in range(4):
             self.error_table_view_widget.setItemDelegateForColumn(i, EmptyDelegate(self))
         error_table_grid.addWidget(self.error_table_view_widget)
@@ -1043,10 +1045,13 @@ class Ui_Window(QTabWidget):
         diary_window = Sub_window()
         diary_window.exec_()
         self.refreshByThresh()
+        self.refreshError()
 
     def popErrorSelect(self):
         diary_window = Sub_window()
         diary_window.exec_()
+        self.refreshError()
+        self.refreshByThresh()
 
     @staticmethod
     def popModelSelect(self):
@@ -2043,6 +2048,9 @@ class Ui_Window(QTabWidget):
         global model_selecion, dataset_selection
         temp_models = model_selecion
         temp_dataset = dataset_selection
+        if len(temp_models) == 0 or len(temp_dataset) == 0:
+            self.showPopUp('please select models and datasets', 'warning')
+            return
         self.model.clear()
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
@@ -2352,7 +2360,7 @@ class Ui_Window(QTabWidget):
         if len(tmp_class_selection) == 0:
             self.showPopUp('please select classes!', 'warning')
             return
-        error_dic = self.DBManager.searchError()
+        error_id, error_dic = self.DBManager.searchError()
         for key, value in error_dic.items():
             tmp_model_name, tmp_data_name = key.split('$')
             if not tmp_model_name in tmp_model_selection:
@@ -2386,3 +2394,72 @@ class Ui_Window(QTabWidget):
             error_file.write(index_file + '\n')
         error_file.close()
         self.export_selection.setEnabled(True)
+
+    def initRefreshError(self):
+        self.error_model.clear()
+        self.error_model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'error file'])
+        error_id, error_dic = self.DBManager.searchError()
+        row_ = self.error_model.rowCount()
+
+        for key, values in error_dic.items():
+            tmp_model_name, tmp_data_name = key.split('$')
+            tmp_ids = error_id[key]
+            tmp_model_dataset = [tmp_model_name, tmp_data_name]
+            tmp_values = values
+            for index, index_value in enumerate(tmp_values):
+                tmp_id = tmp_ids[index]
+                row_ += 1
+                self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
+                for n in range(1, 4):
+                    if 0 < n < 3:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
+                    else:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
+
+    def refreshError(self):
+        global model_selecion, dataset_selection, class_selection
+        tmp_model_selection = model_selecion
+        tmp_dataset_selection = dataset_selection
+        tmp_class_selection = class_selection
+
+        if len(tmp_model_selection) == 0:
+            self.showPopUp('please select models!', 'warning')
+            return
+        if len(tmp_dataset_selection) == 0:
+            self.showPopUp('please select datasets!', 'warning')
+            return
+        if len(tmp_class_selection) == 0:
+            self.showPopUp('please select classes!', 'warning')
+            return
+
+        self.error_model.clear()
+        self.error_model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'error file'])
+        error_id, error_dic = self.DBManager.searchError()
+        row_ = self.error_model.rowCount()
+
+        for key, values in error_dic.items():
+            tmp_model_name, tmp_data_name = key.split('$')
+            if not tmp_model_name in tmp_model_selection:
+                continue
+            if not tmp_data_name in tmp_dataset_selection:
+                continue
+            tmp_ids = error_id[key]
+            tmp_model_dataset = [tmp_model_name, tmp_data_name]
+            tmp_values = values
+            for index, index_value in enumerate(tmp_values):
+                if '---' not in index_value:
+                    continue
+                match_class = index_value.split('---')[1].split('+')[0]
+                if not match_class in tmp_class_selection:
+                    continue
+                tmp_id = tmp_ids[index]
+                row_ += 1
+                self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
+                for n in range(1, 4):
+                    if 0 < n < 3:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
+                    else:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
+        row_last = self.error_model.rowCount()
+        self.error_model.setItem(row_last, 0, QtGui.QStandardItem(str('')))
+
