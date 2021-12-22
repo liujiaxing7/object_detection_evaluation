@@ -15,6 +15,7 @@ class MyFigure(FigureCanvas):
 
         super(MyFigure,self).__init__(self.fig)
 
+classes=["person","escalator","escalator_handrails","person_dummy","escalator_model","escalator_handrails_model"]
 
 class DBManager():
     def __init__(self):
@@ -61,6 +62,8 @@ class DBManager():
             self.db.close()
 
     def addItem_(self,model_name,dataset_name,class_name,tp,fp,fn,F1,ap,map,prec,recall,thre):
+        if str(class_name) not in classes:
+            return
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         class_name = "\"" + class_name + "\""
@@ -110,6 +113,8 @@ class DBManager():
             self.db.close()
 
     def addErrorFile(self,model_name,dataset_name,error_file):
+        if str(error_file) in classes:
+            return
         model_name="\""+model_name+"\""
         dataset_name="\""+dataset_name+"\""
         error_file = "\"" + error_file + "\""
