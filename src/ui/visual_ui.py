@@ -1457,7 +1457,7 @@ class Ui_Window(QTabWidget):
             nums_list = np.arange(0, len(self.result['error'])).tolist()
             nums = nums_list
 
-            for j in nums:
+            for j in tqdm(nums):
                 DB.addErrorFile(model_name, dataset_name, self.result['error'][j])
 
     def getMetric(self, tp, fp, fn):
@@ -2401,20 +2401,20 @@ class Ui_Window(QTabWidget):
         error_id, error_dic = self.DBManager.searchError()
         row_ = self.error_model.rowCount()
 
-        for key, values in error_dic.items():
-            tmp_model_name, tmp_data_name = key.split('$')
-            tmp_ids = error_id[key]
-            tmp_model_dataset = [tmp_model_name, tmp_data_name]
-            tmp_values = values
-            for index, index_value in enumerate(tmp_values):
-                tmp_id = tmp_ids[index]
-                row_ += 1
-                self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
-                for n in range(1, 4):
-                    if 0 < n < 3:
-                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
-                    else:
-                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
+        # for key, values in error_dic.items():
+        #     tmp_model_name, tmp_data_name = key.split('$')
+        #     tmp_ids = error_id[key]
+        #     tmp_model_dataset = [tmp_model_name, tmp_data_name]
+        #     tmp_values = values
+        #     for index, index_value in enumerate(tmp_values):
+        #         tmp_id = tmp_ids[index]
+        #         row_ += 1
+        #         self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
+        #         for n in range(1, 4):
+        #             if 0 < n < 3:
+        #                 self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
+        #             else:
+        #                 self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
 
     def refreshError(self):
         global model_selecion, dataset_selection, class_selection
