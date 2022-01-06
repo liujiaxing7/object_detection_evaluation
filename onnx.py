@@ -87,9 +87,14 @@ class ONNX(object):
             prediction = getPredictionYolov5(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
-        elif self.process_method == 'yolov3_tiny3' or self.process_method == 'yolov3_tiny3_padding':
+        elif self.process_method == 'yolov3_tiny3':
             boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
             prediction = getPredictionYolov3(boxes, oriX, oriY)
+            self.predictions.append(prediction)
+
+        elif self.process_method == 'yolov3_tiny3_padding':
+            boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
+            prediction = getPredictionYolov3(boxes, self.img_size[0], self.img_size[1])
             self.predictions.append(prediction)
 
         elif self.process_method == 'yolov3_mmdetection':
