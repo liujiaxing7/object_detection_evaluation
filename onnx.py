@@ -87,7 +87,7 @@ class ONNX(object):
             prediction = getPredictionYolov5(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
-        elif self.process_method == 'yolov3_tiny3':
+        elif self.process_method == 'yolov3_tiny3' or self.process_method == 'yolov3_tiny3_padding':
             boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
             prediction = getPredictionYolov3(boxes, oriX, oriY)
             self.predictions.append(prediction)
