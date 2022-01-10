@@ -35,20 +35,20 @@ class DBManager_Deleted():
         value_error = []
         if db1.open():
             if query.exec(
-                    'delete from metric_ where model_name="yolov3_best"'):
+                    'delete from metric_ where  model_name="V1017_best" and dataset_name="garage_test"'):
                 while query.next():
                     value_metric_.append([query.value(i) for i in range(13)])
             if query.exec(
-                    'delete from metric where model_name="yolov3_best"'):
+                    'delete from metric where  model_name="V1017_best" and dataset_name="garage_test"'):
                  while query.next():
                      print(1)
 
             if query.exec(
-                    'delete from id_max where  model_name="yolov3_best"'):
+                    'delete from id_max where  model_name="V1017_best" and dataset_name="garage_test"'):
                 while query.next():
                     value_idmax.append([query.value(i) for i in range(5)])
             if query.exec(
-                    'delete from error where  model_name="yolov3_best"'):
+                    'delete from error where  model_name="V1017_best" and dataset_name="garage_test"'):
                 while query.next():
                     value_error.append([query.value(i) for i in range(4)])
         db1.close()
@@ -103,5 +103,5 @@ class DBManager_Deleted_singal():
         db1.close()
 
 
-# DBManager_Deleted().merge("/home/fandong/Code/object_detection_evaluation/src/database/core.db")
+# DBManager_Deleted().merge("/home/fandong/Code/200sever/object_detection_evaluation/src/database/core.db")
 

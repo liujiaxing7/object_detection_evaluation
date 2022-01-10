@@ -56,7 +56,7 @@ class ONNX(object):
 
         if self.process_method == 'yolov3' or self.process_method == 'yolov3_tiny3':
             image = yoloPreProcessYolov3(image)
-        elif self.process_method == 'yolov3_padding':
+        elif self.process_method == 'yolov3_padding' or self.process_method == 'yolov3_tiny3_padding':
             image = yoloPreProcessYolov3Padding(image)
         elif self.process_method == 'yolov3_mmdetection':
             image=yoloPreProcessYolov3Mmdetection(image)
@@ -90,6 +90,11 @@ class ONNX(object):
         elif self.process_method == 'yolov3_tiny3':
             boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
             prediction = getPredictionYolov3(boxes, oriX, oriY)
+            self.predictions.append(prediction)
+
+        elif self.process_method == 'yolov3_tiny3_padding':
+            boxes = postProcessingTiny3(image, THRESHOLD_YOLOV3, self.conf, outputs)
+            prediction = getPredictionYolov3(boxes, self.img_size[0], self.img_size[1])
             self.predictions.append(prediction)
 
         elif self.process_method == 'yolov3_mmdetection':
@@ -130,7 +135,7 @@ class ONNX(object):
         if self.format == 'coco':
             result_csv, result = xml.evaluationCoco(self.datasets, self.predictions, output_dir, False, None, None,
                                                      batch_size)
-        if self.format == 'darknet' and self.process_method == 'yolov3_padding':
+        if self.format == 'darknet' and self.process_method == 'yolov3_padding'or self.process_method == 'yolov3_tiny3_padding':
             result_csv, result = xml.evaluationDarknetPadding(self.datasets, self.predictions, output_dir, False,
                                                                 None, None, batch_size)
         if self.format == 'darknet' and not self.process_method == 'yolov3_padding':

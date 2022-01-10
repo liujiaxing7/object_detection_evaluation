@@ -708,7 +708,7 @@ class Ui_Window(QTabWidget):
         self.combobox_process = QComboBox()
 
         onnx_type_hbox.addWidget(self.combobox_process, 9, Qt.AlignLeft)
-        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3', 'yolov3_mmdetection'])
+        self.combobox_process.addItems(['', 'yolov3', 'yolov3_padding', 'yolov5', 'yolov5x', 'yolov3_tiny3', 'yolov3_tiny3_padding', 'yolov3_mmdetection'])
 
         self.combobox_process.setMinimumSize(200, 27)
         self.combobox_process.currentIndexChanged.connect(self.comboSelectionChangedModels)
@@ -1216,6 +1216,8 @@ class Ui_Window(QTabWidget):
             self.process_method = 'yolov5'
         elif text == 'yolov5x':
             self.process_method = 'yolov5x'
+        elif text == 'yolov3_tiny3_padding':
+            self.process_method = 'yolov3_tiny3_padding'
         elif text == 'yolov3_tiny3':
             self.process_method = 'yolov3_tiny3'
         elif text == 'yolov3_mmdetection':
@@ -1458,7 +1460,7 @@ class Ui_Window(QTabWidget):
             nums_list = np.arange(0, len(self.result['error'])).tolist()
             nums = nums_list
 
-            for j in nums:
+            for j in tqdm(nums):
                 DB.addErrorFile(model_name, dataset_name, self.result['error'][j])
 
     def getMetric(self, tp, fp, fn):
@@ -2407,6 +2409,7 @@ class Ui_Window(QTabWidget):
         error_id, error_dic = self.DBManager.searchError()
         row_ = self.error_model.rowCount()
 
+
         init_show_nums = 0
         for key, values in error_dic.items():
             tmp_model_name, tmp_data_name = key.split('$')
@@ -2425,6 +2428,7 @@ class Ui_Window(QTabWidget):
                     else:
                         self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
                 row_ += 1
+
 
     def refreshError(self):
         global model_selecion, dataset_selection, class_selection
