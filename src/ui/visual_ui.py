@@ -28,7 +28,7 @@ from src.database.db_concat import DBManagerChanged
 
 MAIN_WINDOW_GEOMETRY = [300, 300, 1380, 800]
 SUBDIALOG_GEOMETRY = [400, 400, 200, 400]
-SUB_WINDOW_GEOMETRY = [400, 400, 800, 400]
+SUB_WINDOW_GEOMETRY = [400, 400, 1000, 400]
 WHITE_COLOR = QtGui.QColor(255, 255, 255)
 GRAY_COLOR = QtGui.QColor(125, 125, 125)
 TABLE_VALUE_NUMS = 13
@@ -354,7 +354,8 @@ class Sub_window(QtWidgets.QDialog):
         self.checkdatasets = datasets.copy()
         self.checkclasses = classes.copy()
         self.table = QTabWidget(self)
-        self.table.resize(800, 400)
+        self.vbox_stretch = QVBoxLayout()
+        self.table.setMinimumSize(900, 400)
 
         self.setGeometry(SUB_WINDOW_GEOMETRY[0], SUB_WINDOW_GEOMETRY[1], SUB_WINDOW_GEOMETRY[2], SUB_WINDOW_GEOMETRY[3])
         self.centerScreen()
@@ -374,6 +375,8 @@ class Sub_window(QtWidgets.QDialog):
         self.initModelUI()
         self.initDatasetUI()
         self.initClassesUI()
+        self.vbox_stretch.addWidget(self.table)
+        self.setLayout(self.vbox_stretch)
 
     def centerScreen(self):
         size = self.size()
@@ -414,8 +417,6 @@ class Sub_window(QtWidgets.QDialog):
         for i in range(len(self.datasets)):
             self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
             self.checkdatasets[i].stateChanged.connect(self.btnDrawDatasetsClicked)
-            # if str(self.datasets[i]) in dataset_selection:
-            #     self.checkdatasets[i].ser
             if i > 0 and i % 5 == 0:
                 m += 1
                 n = 0
@@ -777,19 +778,19 @@ class Ui_Window(QTabWidget):
         view_layout.addRow(class_load_hbox)
 
         models_grid = QGridLayout()
-        group_box = QtWidgets.QGroupBox('Model')
-        self.group_box_layout = QtWidgets.QHBoxLayout()
-        group_box.setLayout(self.group_box_layout)
+        group_model_box = QtWidgets.QGroupBox('Model')
+        self.group_box_model_layout = QtWidgets.QHBoxLayout()
+        group_model_box.setLayout(self.group_box_model_layout)
 
-        group_box.setMinimumSize(100, 10)
-        models_grid.addWidget(group_box, 0, 0, 1, 2)
+        group_model_box.setMinimumSize(100, 10)
+        models_grid.addWidget(group_model_box, 0, 0, 1, 2)
 
-        self._group_box1 = QtWidgets.QGroupBox('Datasets')
-        self.group_box_layout1 = QtWidgets.QVBoxLayout()
-        self._group_box1.setLayout(self.group_box_layout1)
+        self._group_dataset_box = QtWidgets.QGroupBox('Datasets')
+        self.group_box_dataset_layout = QtWidgets.QVBoxLayout()
+        self._group_dataset_box.setLayout(self.group_box_dataset_layout)
 
-        self._group_box1.setMaximumSize(200, 1000)
-        models_grid.addWidget(self._group_box1, 1, 0)
+        self._group_dataset_box.setMaximumSize(200, 1000)
+        models_grid.addWidget(self._group_dataset_box, 1, 0)
         # self.btnLoadMd()
 
         self.draw_grid = QWidget()
@@ -983,7 +984,7 @@ class Ui_Window(QTabWidget):
         # self.error_model.setHeaderData(2, QtCore.Qt.Horizontal, 'dataset')
         # self.error_model.setHeaderData(3, QtCore.Qt.Horizontal, 'Error file')
         self.error_table_view_widget.setColumnWidth(3, 1035)
-        self.initRefreshError()
+        # self.initRefreshError()
         for i in range(4):
             self.error_table_view_widget.setItemDelegateForColumn(i, EmptyDelegate(self))
         error_table_grid.addWidget(self.error_table_view_widget)
@@ -1534,6 +1535,9 @@ class Ui_Window(QTabWidget):
                 continue
             if self.class_name_draw == None:
                 self.class_name_draw = 'person'
+            if self.class_name_draw not in self.class_dict or (self.class_dict[self.class_name_draw] + 1) > len(value):
+                print("there is no ", self.class_name_draw)
+                return
             id_max = value[self.class_dict[self.class_name_draw]]
             tmp_data = []
             tmp_thresh = []
@@ -2131,7 +2135,8 @@ class Ui_Window(QTabWidget):
         self.model.setHorizontalHeaderLabels(['ID', 'Model', 'dataset', 'class', 'TP', 'FP'
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.filter_thresh = 1
-        self.btnLoadSelection()
+        # self.btnLoadSelection()
+        self.btnLoadSelection_test()
 
     def getIndexNumber(self, li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
@@ -2198,47 +2203,48 @@ class Ui_Window(QTabWidget):
         cv2.imshow("Image", img)
 
     def btnLoadSelection(self):
+
+        for dataset_check_name in self.checkdatasets:
+            self.group_box_dataset_layout.removeWidget(dataset_check_name)
+            dataset_check_name.setParent(None)
+        for model_check_name in self.checkmodels:
+            self.group_box_model_layout.removeWidget(model_check_name)
+            model_check_name.setParent(None)
+
         global dataset_selection, model_selecion
-        pre_models, pre_datasets = self.models.copy(), self.datasets.copy()
-        tmp_dataset = []
-        tmp_model = []
-        for new_model in model_selecion:
-            if new_model in pre_models:
-                # p = pre_models.index(new_model)
-                # self.checkmodels[p].setChecked(False)
-                continue
-            else:
-                tmp_model.append(new_model)
-        for new_dataset in dataset_selection:
-            if new_dataset in pre_datasets:
-                # p = pre_datasets.index(new_dataset)
-                # self.checkdatasets[p].setChecked(False)
-                continue
-            else:
-                tmp_dataset.append(new_dataset)
+        self.models = []
+        self.datasets = []
+
+        self.checkdatasets = []
+        self.checkmodels = []
+        tmp_dataset = dataset_selection.copy()
+        tmp_model = model_selecion.copy()
 
         if not len(tmp_model) == 0:
             self.checkmodels.extend(tmp_model)
             self.models.extend(tmp_model)
-            for i in range(len(pre_models), len(self.models)):
+            for i in range(len(self.models)):
                 self.checkmodels[i] = QCheckBox(str(self.models[i]))
                 self.checkmodels[i].stateChanged.connect(self.btnDraw)
-                self.group_box_layout.addWidget(self.checkmodels[i])
+                self.group_box_model_layout.addWidget(self.checkmodels[i])
 
         if not len(tmp_dataset) == 0:
-            self.checkdatasets.extend(tmp_dataset)
             self.datasets.extend(tmp_dataset)
-            for i in range(len(pre_datasets), len(self.datasets)):
+            self.checkdatasets.extend(self.datasets)
+            for i in range(len(self.datasets)):
                 self.checkdatasets[i] = QCheckBox(str(self.datasets[i]))
                 self.checkdatasets[i].stateChanged.connect(self.btnDraw)
-                self.group_box_layout1.addWidget(self.checkdatasets[i])
+                self.group_box_dataset_layout.addWidget(self.checkdatasets[i])
 
         for i in range(len(self.models)):
             self.checkmodels[i].setChecked(True)
-        self.checkdatasets[0].setChecked(True)
+        for i in range(len(self.checkdatasets)):
+            if i == len(self.checkdatasets) - 1:
+                self.checkdatasets[i].setChecked(True)
+            else:
+                self.checkdatasets[i].setChecked(False)
 
         self.btnShowClassesClicked()
-
     def btnLoadDiffThresh(self):
         if self.filter_thresh == 1:
             self.filter_thresh = 0
@@ -2269,7 +2275,7 @@ class Ui_Window(QTabWidget):
             for i in range(len(tmp_model)):
                 self.checkmodels[i] = QCheckBox(str(tmp_model[i]))
                 self.checkmodels[i].stateChanged.connect(self.btnDraw)
-                self.group_box_layout.addWidget(self.checkmodels[i])
+                self.group_box_model_layout.addWidget(self.checkmodels[i])
 
         if not len(tmp_dataset) == 0:
             self.checkdatasets.extend(tmp_dataset)
@@ -2277,7 +2283,7 @@ class Ui_Window(QTabWidget):
             for i in range(len(tmp_dataset)):
                 self.checkdatasets[i] = QCheckBox(str(tmp_dataset[i]))
                 self.checkdatasets[i].stateChanged.connect(self.btnDraw)
-                self.group_box_layout1.addWidget(self.checkdatasets[i])
+                self.group_box_dataset_layout.addWidget(self.checkdatasets[i])
 
         for i in range(len(tmp_model)):
             self.checkmodels[i].setChecked(True)
@@ -2295,11 +2301,11 @@ class Ui_Window(QTabWidget):
         for i in range(len(models)):
             self.checkmodels[i] = QCheckBox(str(models[i]))
             self.checkmodels[i].stateChanged.connect(self.btnDrawClicked)
-            self.group_box_layout.addWidget(self.checkmodels[i])
+            self.group_box_model_layout.addWidget(self.checkmodels[i])
         for i in range(len(datasets)):
             self.checkdatasets[i] = QCheckBox(str(datasets[i]))
             self.checkdatasets[i].stateChanged.connect(self.btnDrawClicked)
-            self.group_box_layout1.addWidget(self.checkdatasets[i])
+            self.group_box_dataset_layout.addWidget(self.checkdatasets[i])
 
     def btnShowClassesClicked(self):
         name = None
@@ -2403,20 +2409,26 @@ class Ui_Window(QTabWidget):
         error_id, error_dic = self.DBManager.searchError()
         row_ = self.error_model.rowCount()
 
-        # for key, values in error_dic.items():
-        #     tmp_model_name, tmp_data_name = key.split('$')
-        #     tmp_ids = error_id[key]
-        #     tmp_model_dataset = [tmp_model_name, tmp_data_name]
-        #     tmp_values = values
-        #     for index, index_value in enumerate(tmp_values):
-        #         tmp_id = tmp_ids[index]
-        #         row_ += 1
-        #         self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
-        #         for n in range(1, 4):
-        #             if 0 < n < 3:
-        #                 self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
-        #             else:
-        #                 self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
+
+        init_show_nums = 0
+        for key, values in error_dic.items():
+            tmp_model_name, tmp_data_name = key.split('$')
+            tmp_ids = error_id[key]
+            tmp_model_dataset = [tmp_model_name, tmp_data_name]
+            tmp_values = values
+            if init_show_nums > 100:
+                break
+            for index, index_value in enumerate(tmp_values):
+                tmp_id = tmp_ids[index]
+                self.error_model.setItem(row_, 0, QtGui.QStandardItem(str(tmp_id)))
+                init_show_nums += 1
+                for n in range(1, 4):
+                    if 0 < n < 3:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(tmp_model_dataset[n - 1])))
+                    else:
+                        self.error_model.setItem(row_, n, QtGui.QStandardItem(str(index_value)))
+                row_ += 1
+
 
     def refreshError(self):
         global model_selecion, dataset_selection, class_selection

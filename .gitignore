@@ -1,6 +1,7 @@
 .idea/workspace.xml
 .idea/
 src/core.db
+src/database/core.db*
 result/
 __pycache__
 src/database/core.db
