@@ -1161,11 +1161,20 @@ class Ui_Window(QTabWidget):
             pass
         for i in range(row_last-1):
             for j in range(col_last):
-                self.model.item(i, j).setBackground(QtGui.QBrush(WHITE_COLOR))
+                try:
+                    self.model.item(i, j).setBackground(QtGui.QBrush(WHITE_COLOR))
+                except:
+                    print(1)
         for i in range(row_last-1):
-            self.model.item(i, c).setBackground(QtGui.QBrush(GRAY_COLOR))
+            try:
+                self.model.item(i, c).setBackground(QtGui.QBrush(GRAY_COLOR))
+            except:
+                print(1)
         for j in range(col_last):
-            self.model.item(r, j).setBackground(QtGui.QBrush(GRAY_COLOR))
+            try:
+                self.model.item(r, j).setBackground(QtGui.QBrush(GRAY_COLOR))
+            except:
+                print(1)
         self.model.itemChanged.connect(self.setQStandardModelItemChanged)
 
 
