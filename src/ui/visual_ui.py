@@ -2136,7 +2136,7 @@ class Ui_Window(QTabWidget):
                                                  , 'FN', 'F1', 'Ap', 'Map', 'Precision', 'Recall', 'Threshold'])
         self.filter_thresh = 1
         # self.btnLoadSelection()
-        self.btnLoadSelection_test()
+        self.btnLoadSelection()
 
     def getIndexNumber(self, li, defaultnumber):
         select = Decimal(str(defaultnumber)) - Decimal(str(li[0]))
