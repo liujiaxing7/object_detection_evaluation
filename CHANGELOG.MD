@@ -1,4 +1,6 @@
 #版本更改记录
+## fix load slow bug
+开启时只展示后50组实验结果
 ## error&showbase linked
 支持错误列表与精度列表的联动
 ## support export error by classes

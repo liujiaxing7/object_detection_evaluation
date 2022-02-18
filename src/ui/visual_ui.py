@@ -2020,7 +2020,11 @@ class Ui_Window(QTabWidget):
 
         id_max1, class_name1, datasets = self.DBManager.searchId()
 
+        showID = 0
         for key, value in id_max1.items():
+            if showID<len(id_max1)-50:
+                showID+=1
+                continue
             # for m1 in range(len(class_name1[key])):
             #     value[m1]+=1
 
