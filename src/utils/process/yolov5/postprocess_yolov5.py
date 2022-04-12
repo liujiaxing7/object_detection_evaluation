@@ -11,7 +11,8 @@ from yacs.config import CfgNode as CN
 
 import cv2
 
-IMAGE_SIZE_YOLOV5 = 640
+IMAGE_SIZE_YOLOV5 = 448
+IMAGE_SIZE_YOLOV5x = 640
 PIXEL_MEAN = [123, 117, 104]
 THRESHOLD_YOLOV5 = 0.25
 
@@ -165,31 +166,31 @@ def sigmoid(x):
 
 def postProcessorYOLOV5(x):
 
-    grid = [np.zeros(1)] * 3  # init grid
-    z = []  # inference output
-    stride = [8, 16, 32]
-
-    for i in range(3):
-        bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
-
-        if grid[i].shape[2:4] != x[i].shape[2:4]:
-            grid[i] = makeGrid(nx, ny)
-
-        y = sigmoid(x[i])       # sigmoid is defined above with NumPy
-
-        y[..., 0:2] = (y[..., 0:2] * 2. - 0.5 + grid[i]) * stride[i]  # xy
-
-        anchors = [[10, 13, 16, 30, 33, 23],            # P3/8
-                    [30, 61, 62, 45, 59, 119],          # P4/16
-                    [116, 90, 156, 198, 373, 326]]      # P5/32
-
-        anchors = np.array(anchors)
-        anchor_grid = anchors.copy().reshape(len(anchors), 1, -1, 1, 1, 2)
-        y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * anchor_grid[i]  # wh
-        z.append(y.reshape(bs, -1, 85))
-
-    output = np.concatenate(z, 1)
-    pred = nonMaxSuppression(output, 0.25, 0.45, classes=None, agnostic=False)
+    # grid = [np.zeros(1)] * 3  # init grid
+    # z = []  # inference output
+    # stride = [8, 16, 32]
+    #
+    # for i in range(3):
+    #     bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
+    #
+    #     if grid[i].shape[2:4] != x[i].shape[2:4]:
+    #         grid[i] = makeGrid(nx, ny)
+    #
+    #     y = sigmoid(x[i])       # sigmoid is defined above with NumPy
+    #
+    #     y[..., 0:2] = (y[..., 0:2] * 2. - 0.5 + grid[i]) * stride[i]  # xy
+    #
+    #     anchors = [[10, 13, 16, 30, 33, 23],            # P3/8
+    #                 [30, 61, 62, 45, 59, 119],          # P4/16
+    #                 [116, 90, 156, 198, 373, 326]]      # P5/32
+    #
+    #     anchors = np.array(anchors)
+    #     anchor_grid = anchors.copy().reshape(len(anchors), 1, -1, 1, 1, 2)
+    #     y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * anchor_grid[i]  # wh
+    #     z.append(y.reshape(bs, -1, 85))
+    #
+    # output = np.concatenate(z, 1)
+    pred = nonMaxSuppression(x, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
 
@@ -216,12 +217,13 @@ def postProcessorYOLOV5x(x):
         anchors = np.array(anchors)
         anchor_grid = anchors.copy().reshape(len(anchors), 1, -1, 1, 1, 2)
         y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * anchor_grid[i]  # wh
-        z.append(y.reshape(bs, -1, 11))
+        z.append(y.reshape(bs, -1, 95))
 
     output = np.concatenate(z, 1)
     pred = nonMaxSuppression(output, 0.25, 0.45, classes=None, agnostic=False)
 
     return pred
+
 def getPredictionYolov5(boxes,oriX,oriY):
     box_es = []
     labels = []
@@ -230,9 +232,46 @@ def getPredictionYolov5(boxes,oriX,oriY):
         if len(result) > 0:
             result = result.tolist()
             result = [r for r in result if r[4] > THRESHOLD_YOLOV5]
+
             for i in result:
-                box_es.append([i[0]/IMAGE_SIZE_YOLOV5 * oriX, i[1]/IMAGE_SIZE_YOLOV5 * oriY,
-                               i[2]/IMAGE_SIZE_YOLOV5 * oriX, i[3]/IMAGE_SIZE_YOLOV5 * oriY])
+                x, y, x2, y2, score, label = i
+
+                w = IMAGE_SIZE_YOLOV5 / max(oriX, oriY)
+
+                y = (y - (IMAGE_SIZE_YOLOV5 - w * oriY) / 2) / w
+                y2 = (y2 - (IMAGE_SIZE_YOLOV5 - w * oriY) / 2) / w
+                x = (x - (IMAGE_SIZE_YOLOV5 - w * oriX) / 2) / w
+                x2 = (x2 - (IMAGE_SIZE_YOLOV5 - w * oriX) / 2) / w
+
+                box_es.append([x, y,
+                               x2, y2])
+                labels.append(i[5])
+                scores.append(i[4])
+    prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
+    return prediction
+
+
+def getPredictionYolov5x(boxes, oriX, oriY):
+    box_es = []
+    labels = []
+    scores = []
+    for result in boxes:
+        if len(result) > 0:
+            result = result.tolist()
+            result = [r for r in result if r[4] > THRESHOLD_YOLOV5]
+
+            for i in result:
+                x, y, x2, y2, score, label = i
+
+                w = IMAGE_SIZE_YOLOV5x / max(oriX, oriY)
+
+                y = (y - (IMAGE_SIZE_YOLOV5x - w * oriY) / 2) / w
+                y2 = (y2 - (IMAGE_SIZE_YOLOV5x - w * oriY) / 2) / w
+                x = (x - (IMAGE_SIZE_YOLOV5x - w * oriX) / 2) / w
+                x2 = (x2 - (IMAGE_SIZE_YOLOV5x - w * oriX) / 2) / w
+
+                box_es.append([x, y,
+                               x2, y2])
                 labels.append(i[5])
                 scores.append(i[4])
     prediction = {'boxes': box_es, 'labels': labels, 'scores': scores}
