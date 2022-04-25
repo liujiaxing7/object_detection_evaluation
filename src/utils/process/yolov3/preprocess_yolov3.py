@@ -42,12 +42,10 @@ def letterBox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color) # add border
     return img, ratio, dw, dh
 def preProcessPadding(inp_img):
-    if len(inp_img.shape)==3:
-        gray = inp_img[:, :, 0]
-    else:gray = inp_img[:, :]
-    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    if inp_img.shape[-1]==1 or len(inp_img.shape)==2:
+        inp_img = cv2.cvtColor(inp_img[:,:], cv2.COLOR_GRAY2RGB)
     # image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
-    image,ratio, dw, dh=letterBox(gray,new_shape=416, mode='square')
+    image,ratio, dw, dh=letterBox(inp_img,new_shape=416, mode='square')
 
     img = np.half(image)
     img /= 255.0
@@ -58,11 +56,9 @@ def preProcessPadding(inp_img):
     return img.astype(np.float32)
 
 def preProcess(inp_img):
-    if len(inp_img.shape)==3:
-        gray = inp_img[:, :, 0]
-    else:gray = inp_img[:, :]
-    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-    image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
+    if inp_img.shape[-1]==1 or len(inp_img.shape)==2:
+        inp_img = cv2.cvtColor(inp_img[:,:], cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(inp_img, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
     # image,ratio, dw, dh=letterBox(gray,new_shape=416, mode='square')
 
     img = np.half(image)
@@ -75,12 +71,9 @@ def preProcess(inp_img):
 
 
 def preProcessMmdetection(inp_img):
-    
-    if len(inp_img.shape)==3:
-        gray = inp_img[:, :, 0]
-    else:gray = inp_img[:, :]
-    gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-    image = cv2.resize(gray, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
+    if inp_img.shape[-1]==1 or len(inp_img.shape)==2:
+        inp_img = cv2.cvtColor(inp_img[:,:], cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(inp_img, (IMAGE_SIZE_YOLOV3, IMAGE_SIZE_YOLOV3), interpolation=cv2.INTER_LINEAR)
 
     img = image.copy().astype(np.float32)
     mean = np.float64(np.array([0, 0, 0]).reshape(1, -1))
