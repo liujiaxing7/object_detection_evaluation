@@ -11,7 +11,8 @@ import os
 
 from tqdm import tqdm
 
-
+from src.utils.process.ssd.ssd import PostProcessor_SSD, getPredictionSSD
+from src.utils.process.ssd.preprocess import pre_process as SSD_preProcess
 from src.utils.process.yolov3.preprocess_yolov3 import preProcess as yoloPreProcessYolov3
 from src.utils.process.yolov3.preprocess_yolov3 import preProcessMmdetection as yoloPreProcessYolov3Mmdetection
 from src.utils.process.yolov3.preprocess_yolov3 import preProcessPadding as yoloPreProcessYolov3Padding
@@ -21,6 +22,7 @@ from src.utils.process.yolov3.postprocess_yolov3 import THRESHOLD_YOLOV3, postPr
 from src.utils.process.yolov3_tiny3.postprocess_yolov3_tiny3 import postProcessingTiny3
 from src.utils.process.yolov5.postprocess_yolov5 import postProcessorYOLOV5, IMAGE_SIZE_YOLOV5, THRESHOLD_YOLOV5, \
     getPredictionYolov5, postProcessorYOLOV5x, getPredictionYolov5x
+
 
 import cv2
 import onnxruntime
@@ -66,6 +68,8 @@ class ONNX(object):
             image = yoloPreProcessYolov5(image,self.img_size_yolov5s[0])
         elif self.process_method == 'yolov5x':
             image = yoloPreProcessYolov5(image, self.img_size_yolov5x[0])
+        elif self.process_method == 'ssd':
+            image = SSD_preProcess(image)
 
 
         input_name = self.session.get_inputs()[0].name
@@ -106,6 +110,11 @@ class ONNX(object):
             prediction = getPredictionYolov3Mmdetection(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
+        elif self.process_method == 'ssd':
+            boxes = PostProcessor_SSD(outputs[0], outputs[1], outputs[2])
+            prediction = getPredictionSSD(boxes, oriX, oriY)
+            self.predictions.append(prediction)
+
     def evaluate(self):
         self.classes = loadClassNames(self.classes_path)
 
@@ -133,16 +142,16 @@ class ONNX(object):
         if self.format == 'voc':
             result_csv, result = xml.evaluation(self.datasets, self.predictions, output_dir, False, None, None,
                                                 batch_size)
-        if self.format == 'xml':
+        elif self.format == 'xml':
             result_csv, result = xml.evaluationXml(self.datasets, self.predictions, output_dir, False, None, None,
                                                     batch_size)
-        if self.format == 'coco':
+        elif self.format == 'coco':
             result_csv, result = xml.evaluationCoco(self.datasets, self.predictions, output_dir, False, None, None,
                                                      batch_size)
-        if self.format == 'darknet' and self.process_method == 'yolov3_padding'or self.process_method == 'yolov3_tiny3_padding':
+        elif self.format == 'darknet' and self.process_method == 'yolov3_padding' or self.process_method == 'yolov3_tiny3_padding':
             result_csv, result = xml.evaluationDarknetPadding(self.datasets, self.predictions, output_dir, False,
                                                                 None, None, batch_size)
-        if self.format == 'darknet' and not self.process_method == 'yolov3_padding':
+        elif self.format == 'darknet':
             result_csv, result = xml.evaluationDarknet(self.datasets, self.predictions, output_dir, False, None, None,
                                                         batch_size)
         return result_csv, result
