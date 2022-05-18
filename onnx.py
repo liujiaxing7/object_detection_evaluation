@@ -47,9 +47,9 @@ class ONNX(object):
             self.format = ret
             self.process_method = process_method
             self.img_size_yolov3 = [416, 416]
-            self.img_size_yolov5s = [448, 448]
+            self.img_size_yolov5s = [320, 320]
             self.img_size_yolov5x = [640, 640]
-            self.conf = 0.6
+            self.conf = 0.45
 
         else:
             raise IOError("no such file {}".format(file))

@@ -11,7 +11,7 @@ from yacs.config import CfgNode as CN
 
 import cv2
 
-IMAGE_SIZE_YOLOV5 = 448
+IMAGE_SIZE_YOLOV5 = 320
 IMAGE_SIZE_YOLOV5x = 640
 PIXEL_MEAN = [123, 117, 104]
 THRESHOLD_YOLOV5 = 0.25
