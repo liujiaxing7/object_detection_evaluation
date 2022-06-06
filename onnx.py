@@ -35,6 +35,28 @@ from PIL import Image
 import numpy as np
 import src.datasets.voctodarknet as create_list
 
+channel_means = {"default": [123, 117, 104],
+"coco": [108.97, 114.27, 116.82],
+"gray": [38.39, 38.39, 38.39],
+"gan": [53.65, 54.74, 54.99]}
+
+def reduce_mean(image, path):
+    if "coco" in path:
+        channel_mean = channel_means["coco"]
+    elif "gray" in path:
+        channel_mean = channel_means["gray"]
+    elif "gan" in path:
+        channel_mean = channel_means["gan"]
+    else:
+        channel_mean = channel_means["default"]
+    # convert np.float64 to float32
+    channel_mean = np.array(channel_mean).astype(np.float32)
+    # different to train open image function
+    if image.shape[-1]==1 or len(image.shape)==2:
+        image = cv2.cvtColor(image[:,:], cv2.COLOR_GRAY2RGB)
+    image_mean = image.astype(np.float32) - channel_mean[::-1]
+    return image_mean
+
 class ONNX(object):
     def __init__(self, file, batch_size, data_dir, classes, ret, process_method):
         if os.path.isfile(file):
@@ -136,7 +158,7 @@ class ONNX(object):
             # image = cv2.imread(image_id,cv2.IMREAD_GRAYSCALE)
             # image=cv2.equalizeHist(image)
             image = np.array(Image.open(image_id))
-
+            image = reduce_mean(image, image_id)
             self.forward(image)
 
         if self.format == 'voc':
