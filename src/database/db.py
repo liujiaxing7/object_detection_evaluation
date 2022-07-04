@@ -15,7 +15,7 @@ class MyFigure(FigureCanvas):
 
         super(MyFigure,self).__init__(self.fig)
 
-classNames=["all","person","escalator","escalator_handrails","person_dummy","escalator_model","escalator_handrails_model",'__background__', 'shoes', 'bin', 'pedestal', 'wire', 'socket']
+classNames=["all","person","escalator","escalator_handrails","person_dummy","escalator_model","escalator_handrails_model",'__background__', 'shoes', 'bin', 'pedestal', 'wire', 'socket','robot','i18R-DVT','i18R-EVT','rbn100-EVT']
 
 class DBManager():
     def __init__(self):
