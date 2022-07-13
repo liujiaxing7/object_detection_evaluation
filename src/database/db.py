@@ -172,7 +172,7 @@ class DBManager():
                 if model_name=='yolov3_prune' or model_name=='yolov3_best':
                     continue
                 if class_name == 'all':
-                    break
+                    continue
                 if class_name in classes:
                     continue
                 else:
