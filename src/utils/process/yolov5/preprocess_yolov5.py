@@ -50,7 +50,9 @@ def preProcessPadding(inp_img,img_size):
 
     img = np.half(image)
     img /= 255.0
-    if img.shape[-1] == 3:
+    if (img.shape[-1]) == 4:
+        img=img[:,:,0:3]
+    if len(img.shape) == 3:
         img = np.expand_dims(img, 0)
     img = np.transpose(img, (0, 3, 1, 2)).astype(np.float32)
 

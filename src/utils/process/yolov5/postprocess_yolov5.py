@@ -194,13 +194,16 @@ def postProcessorYOLOV5(x):
 
     return pred
 
-def postProcessorYOLOV5x(x):
+def postProcessorYOLOV5x(x,nums):
 
     grid = [np.zeros(1)] * 3  # init grid
     z = []  # inference output
     stride = [8, 16, 32]
 
     for i in range(3):
+        #print(x[i].shape)
+        x[i]=x[i][:,:,:,:,:nums]
+        #print("after:",x[i].shape)
         bs, _, ny, nx, _ = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
 
         if grid[i].shape[2:4] != x[i].shape[2:4]:
@@ -217,7 +220,7 @@ def postProcessorYOLOV5x(x):
         anchors = np.array(anchors)
         anchor_grid = anchors.copy().reshape(len(anchors), 1, -1, 1, 1, 2)
         y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * anchor_grid[i]  # wh
-        z.append(y.reshape(bs, -1, 95))
+        z.append(y.reshape(bs, -1, nums))
 
     output = np.concatenate(z, 1)
     pred = nonMaxSuppression(output, 0.25, 0.45, classes=None, agnostic=False)

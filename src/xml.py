@@ -279,7 +279,13 @@ class XML():
     def getDarknetLabels(self,img_file,ann_file):
         if not os.path.exists(ann_file):
             raise IOError("no such file: ", ann_file)
-        box_label=np.loadtxt(ann_file).tolist()
+
+        with open(ann_file,'r') as f:
+            ann_file_lines = f.readlines()
+        box_label = []
+        for ann_file_line in ann_file_lines:
+            line_temp = ann_file_line.strip().split(' ')
+            box_label.append(list(map(float,line_temp)))
 
         if len(box_label)==0:
             return np.array([]),np.array([])

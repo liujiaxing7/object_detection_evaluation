@@ -86,7 +86,7 @@ class ONNX(object):
             self.predictions.append(prediction)
 
         elif self.process_method == 'yolov5':
-            boxes = postProcessorYOLOV5(outputs[0])
+            boxes = postProcessorYOLOV5x(outputs,14)
             prediction = getPredictionYolov5(boxes, oriX, oriY)
             self.predictions.append(prediction)
 
@@ -135,7 +135,10 @@ class ONNX(object):
                 image_id, annotation = self.datasets.getFile(i)
             # image = cv2.imread(image_id,cv2.IMREAD_GRAYSCALE)
             # image=cv2.equalizeHist(image)
-            image = np.array(Image.open(image_id))
+            try:
+               image = np.array(Image.open(image_id))
+            except:
+               print(image_id)
 
             self.forward(image)
 
